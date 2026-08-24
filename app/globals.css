@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, "SFMono-Regular", monospace;
+
+  /* Paleta institucional */
+  --color-primary-950: #101d33;
+  --color-primary-900: #16294a;
+  --color-primary-800: #1f3864;
+  --color-primary-700: #2a4a80;
+  --color-primary-600: #365d9c;
+  --color-primary-500: #4a74b8;
+  --color-primary-200: #c7d3e8;
+  --color-primary-100: #e3e9f4;
+  --color-primary-50: #f2f5fa;
+
+  --color-gold-700: #8a6420;
+  --color-gold-600: #a67a29;
+  --color-gold-500: #b8892b;
+  --color-gold-100: #f6ecd6;
+  --color-gold-50: #fbf6ea;
+
+  --color-ink: #14213d;
+  --color-ink-soft: #4b5768;
+  --color-ink-faint: #8994a5;
+  --color-line: #e3e7ee;
+  --color-line-soft: #eef1f6;
+
+  --color-success: #2f7d5c;
+  --color-success-bg: #eaf6f0;
+  --color-warning: #b45309;
+  --color-warning-bg: #fdf1e2;
+  --color-danger: #b3261e;
+  --color-danger-bg: #fbeae9;
+}
+
+body {
+  background: #ffffff;
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+h1, h2, h3, h4, .font-display {
+  font-family: var(--font-display);
+}
+
+.font-tabular {
+  font-family: var(--font-mono);
+  font-feature-settings: "tnum";
+}
+
+::selection {
+  background: var(--color-primary-100);
+  color: var(--color-primary-900);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-primary-700);
+  outline-offset: 2px;
+}
