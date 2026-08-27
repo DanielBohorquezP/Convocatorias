@@ -1,13 +1,26 @@
 "use client";
 
 import Link from "next/link";
-import { FileStack, CheckCircle2, EyeOff, Archive, AlertTriangle } from "lucide-react";
+import { FileStack, CheckCircle2, EyeOff, Archive, AlertTriangle, UserCheck, ClipboardList, CreditCard } from "lucide-react";
 import { useAppStore } from "@/lib/store";
-import { diasRestantes, formatFecha, ESTADO_CONVOCATORIA_LABEL, ESTADO_CONVOCATORIA_ESTILO } from "@/lib/utils";
+import {
+  diasRestantes,
+  formatFecha,
+  ESTADO_CONVOCATORIA_LABEL,
+  ESTADO_CONVOCATORIA_ESTILO,
+  ESTADO_SUSCRIPCION_LABEL,
+  ESTADO_SUSCRIPCION_ESTILO,
+} from "@/lib/utils";
+import type { EstadoSuscripcion } from "@/lib/types";
 import { Badge } from "@/components/ui/Badge";
+
+const ESTADOS_SUSCRIPCION: EstadoSuscripcion[] = ["trial", "activa", "en_gracia", "vencida", "suspendida"];
 
 export default function AdminDashboardPage() {
   const convocatorias = useAppStore((s) => s.convocatorias);
+  const consultores = useAppStore((s) => s.consultores);
+  const encargos = useAppStore((s) => s.encargos);
+  const suscripciones = useAppStore((s) => s.suscripciones);
 
   const totales = {
     borrador: convocatorias.filter((c) => c.estado === "borrador").length,
@@ -15,6 +28,9 @@ export default function AdminDashboardPage() {
     despublicada: convocatorias.filter((c) => c.estado === "despublicada").length,
     cerrada: convocatorias.filter((c) => c.estado === "cerrada").length,
   };
+
+  const perfilesEnRevision = consultores.filter((c) => c.estadoPerfil === "en_revision").length;
+  const encargosEsperandoAsignacion = encargos.filter((e) => e.estado === "esperando_asignacion").length;
 
   const proximasAVencer = convocatorias
     .filter((c) => c.estado === "publicada")
@@ -52,6 +68,46 @@ export default function AdminDashboardPage() {
           valor={totales.cerrada}
           tono="text-slate-500 bg-slate-100"
         />
+      </div>
+
+      <div className="mt-4 grid gap-4 sm:grid-cols-2">
+        <Link href="/admin/consultores/revision" className="block">
+          <TarjetaTotal
+            icon={UserCheck}
+            etiqueta="Perfiles de consultor en revisión"
+            valor={perfilesEnRevision}
+            tono="text-brick-600 bg-brick-50"
+          />
+        </Link>
+        <Link href="/admin/encargos" className="block">
+          <TarjetaTotal
+            icon={ClipboardList}
+            etiqueta="Encargos esperando asignación"
+            valor={encargosEsperandoAsignacion}
+            tono="text-brick-600 bg-brick-50"
+          />
+        </Link>
+      </div>
+
+      <div className="mt-8 rounded-2xl border border-line bg-white p-6">
+        <div className="mb-4 flex items-center gap-2">
+          <CreditCard className="h-4 w-4 text-primary-700" />
+          <h2 className="font-display text-base font-semibold text-ink">Suscripciones por estado</h2>
+        </div>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+          {ESTADOS_SUSCRIPCION.map((estado) => (
+            <Link
+              key={estado}
+              href="/admin/suscripciones"
+              className="rounded-xl border border-line-soft p-3 text-center hover:bg-slate-50"
+            >
+              <p className="font-tabular text-2xl font-bold text-ink">
+                {suscripciones.filter((s) => s.estado === estado).length}
+              </p>
+              <Badge className={ESTADO_SUSCRIPCION_ESTILO[estado]}>{ESTADO_SUSCRIPCION_LABEL[estado]}</Badge>
+            </Link>
+          ))}
+        </div>
       </div>
 
       <div className="mt-8 rounded-2xl border border-line bg-white p-6">

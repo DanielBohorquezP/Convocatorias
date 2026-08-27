@@ -9,21 +9,52 @@ import {
   Tags,
   ArrowLeftRight,
   Building2,
+  UserCheck,
+  Users,
+  ClipboardList,
+  Layers,
+  CreditCard,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const enlaces = [
-  { href: "/admin", label: "Panel general", icon: LayoutDashboard, exacto: true },
-  { href: "/admin/convocatorias", label: "Convocatorias", icon: FileStack },
-  { href: "/admin/fuentes", label: "Fuentes", icon: Rss },
-  { href: "/admin/categorias", label: "Categorías", icon: Tags },
+const grupos: Array<{
+  titulo: string;
+  enlaces: Array<{ href: string; label: string; icon: React.ElementType; exacto?: boolean }>;
+}> = [
+  {
+    titulo: "General",
+    enlaces: [{ href: "/admin", label: "Panel general", icon: LayoutDashboard, exacto: true }],
+  },
+  {
+    titulo: "Convocatorias",
+    enlaces: [
+      { href: "/admin/convocatorias", label: "Convocatorias", icon: FileStack },
+      { href: "/admin/fuentes", label: "Fuentes", icon: Rss },
+      { href: "/admin/categorias", label: "Categorías", icon: Tags },
+    ],
+  },
+  {
+    titulo: "Consultores",
+    enlaces: [
+      { href: "/admin/consultores/revision", label: "Perfiles en revisión", icon: UserCheck },
+      { href: "/admin/consultores", label: "Consultores", icon: Users },
+      { href: "/admin/encargos", label: "Encargos por asignar", icon: ClipboardList },
+    ],
+  },
+  {
+    titulo: "Suscripciones",
+    enlaces: [
+      { href: "/admin/planes", label: "Planes", icon: Layers },
+      { href: "/admin/suscripciones", label: "Suscripciones", icon: CreditCard },
+    ],
+  },
 ];
 
 export function AdminSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="flex h-screen w-64 shrink-0 flex-col border-r border-line bg-primary-950 text-white">
+    <aside className="flex h-screen w-64 shrink-0 flex-col overflow-y-auto border-r border-line bg-primary-950 text-white">
       <div className="flex items-center gap-2.5 border-b border-white/10 px-5 py-5">
         <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10">
           <Building2 className="h-5 w-5" strokeWidth={2} />
@@ -34,23 +65,32 @@ export function AdminSidebar() {
         </div>
       </div>
 
-      <nav className="flex-1 space-y-1 px-3 py-4">
-        {enlaces.map(({ href, label, icon: Icon, exacto }) => {
-          const activo = exacto ? pathname === href : pathname === href || pathname.startsWith(href + "/");
-          return (
-            <Link
-              key={href}
-              href={href}
-              className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
-                activo ? "bg-white/10 text-white" : "text-white/60 hover:bg-white/5 hover:text-white"
-              )}
-            >
-              <Icon className="h-4 w-4" strokeWidth={2} />
-              {label}
-            </Link>
-          );
-        })}
+      <nav className="flex-1 space-y-5 px-3 py-4">
+        {grupos.map((grupo) => (
+          <div key={grupo.titulo}>
+            <p className="mb-1.5 px-3 text-[11px] font-semibold uppercase tracking-wide text-white/35">
+              {grupo.titulo}
+            </p>
+            <div className="space-y-1">
+              {grupo.enlaces.map(({ href, label, icon: Icon, exacto }) => {
+                const activo = exacto ? pathname === href : pathname === href || pathname.startsWith(href + "/");
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    className={cn(
+                      "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                      activo ? "bg-white/10 text-white" : "text-white/60 hover:bg-white/5 hover:text-white"
+                    )}
+                  >
+                    <Icon className="h-4 w-4 shrink-0" strokeWidth={2} />
+                    {label}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </nav>
 
       <div className="border-t border-white/10 p-3">

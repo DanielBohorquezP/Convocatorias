@@ -6,9 +6,11 @@ import { ArrowLeft, Check, X as XIcon, MapPin, Wallet } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import type { Convocatoria, Proyecto } from "@/lib/types";
 import { diasRestantes, formatCOP, ESTADO_CONVOCATORIA_LABEL, ESTADO_CONVOCATORIA_ESTILO } from "@/lib/utils";
+import { useAccesoSuscripcion } from "@/lib/hooks";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import { Lock, Sparkles } from "lucide-react";
 
 type Criterio = {
   clave: string;
@@ -48,6 +50,7 @@ export default function SugerenciasPage({ params }: { params: Promise<{ id: stri
   const { id } = use(params);
   const proyecto = useAppStore((s) => s.proyectos.find((p) => p.id === id));
   const convocatorias = useAppStore((s) => s.convocatorias);
+  const { tieneAcceso, requerirAcceso } = useAccesoSuscripcion();
 
   const sugerencias = useMemo(() => {
     if (!proyecto) return [];
@@ -69,6 +72,29 @@ export default function SugerenciasPage({ params }: { params: Promise<{ id: stri
         <Link href="/proyectos" className="mt-3 inline-block text-sm font-semibold text-primary-700 hover:underline">
           Volver a mis proyectos
         </Link>
+      </div>
+    );
+  }
+
+  if (!tieneAcceso) {
+    return (
+      <div className="mx-auto max-w-4xl">
+        <Link
+          href="/proyectos"
+          className="mb-6 inline-flex items-center gap-1.5 text-sm font-semibold text-ink-soft hover:text-primary-800"
+        >
+          <ArrowLeft className="h-4 w-4" /> Volver a mis proyectos
+        </Link>
+        <EmptyState
+          icon={Lock}
+          titulo="Suscríbete para ver sugerencias"
+          descripcion="Tu suscripción está vencida. Renuévala para ver qué convocatorias coinciden con este proyecto."
+          accion={
+            <Button variant="primary" onClick={() => requerirAcceso("ver sugerencias de convocatorias")}>
+              Ver planes
+            </Button>
+          }
+        />
       </div>
     );
   }

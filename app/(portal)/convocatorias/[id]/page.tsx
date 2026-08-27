@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import { categoriaPorId } from "@/lib/mock-data";
+import { useAccesoSuscripcion } from "@/lib/hooks";
 import {
   diasRestantes,
   formatCOP,
@@ -42,6 +43,7 @@ export default function DetalleConvocatoriaPage({
   const crearPostulacion = useAppStore((s) => s.crearPostulacion);
   const [modalAbierto, setModalAbierto] = useState(false);
   const [proyectoSel, setProyectoSel] = useState<string>("");
+  const { requerirAcceso } = useAccesoSuscripcion();
 
   if (!convocatoria) {
     return (
@@ -181,7 +183,10 @@ export default function DetalleConvocatoriaPage({
             variant="primary"
             size="lg"
             disabled={cerrada}
-            onClick={() => setModalAbierto(true)}
+            onClick={() => {
+              if (!requerirAcceso("postularte a esta convocatoria")) return;
+              setModalAbierto(true);
+            }}
           >
             Postular
           </Button>

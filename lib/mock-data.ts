@@ -1,10 +1,22 @@
 import type {
+  Calificacion,
   Categoria,
   Convocatoria,
+  Empresa,
+  Encargo,
   Fuente,
+  Pago,
+  PerfilConsultor,
+  Plan,
   Postulacion,
   Proyecto,
+  Suscripcion,
 } from "./types";
+
+function avatarUrl(nombre: string, fondo: string): string {
+  const encoded = encodeURIComponent(nombre);
+  return `https://ui-avatars.com/api/?name=${encoded}&background=${fondo}&color=ffffff&size=256&bold=true&font-size=0.36`;
+}
 
 // ---------------------------------------------------------------------------
 // Categorías
@@ -463,4 +475,363 @@ export const fuentes: Fuente[] = [
   { id: "fuente-5", nombre: "Delegación de la Unión Europea en Colombia", tipoEntidad: "Cooperación internacional", url: "https://www.eeas.europa.eu/colombia_es", activa: false },
   { id: "fuente-6", nombre: "Ruta N Medellín", tipoEntidad: "Fondo regional", url: "https://rutan.co", activa: true },
   { id: "fuente-7", nombre: "Bancóldex", tipoEntidad: "Entidad financiera pública", url: "https://www.bancoldex.com", activa: true },
+];
+
+// ---------------------------------------------------------------------------
+// Empresas (mínimo, solo para nombres legibles en el panel admin)
+// ---------------------------------------------------------------------------
+
+export const empresas: Empresa[] = [
+  { id: "empresa-1", nombre: "EcoEmpaques Andinos S.A.S." },
+  { id: "empresa-2", nombre: "Manufacturas del Cauca S.A.S." },
+  { id: "empresa-3", nombre: "Ruta Textil Caribe Ltda." },
+];
+
+export function empresaPorId(id: string): Empresa | undefined {
+  return empresas.find((e) => e.id === id);
+}
+
+// ---------------------------------------------------------------------------
+// Consultores
+// ---------------------------------------------------------------------------
+
+export const consultores: PerfilConsultor[] = [
+  {
+    id: "consultor-1",
+    nombreProfesional: "Andrés Felipe Rojas",
+    descripcion:
+      "Consultor en transformación digital y estructuración de proyectos de innovación con 9 años de experiencia acompañando mipymes y startups colombianas en procesos de cofinanciación pública.",
+    fotoUrl: avatarUrl("Andres Rojas", "1F3864"),
+    sitioWeb: "https://andresrojas.co",
+    redes: [
+      { id: "red-1-1", tipo: "linkedin", url: "https://linkedin.com/in/andresrojasco" },
+      { id: "red-1-2", tipo: "instagram", url: "https://instagram.com/andresrojas.consultor" },
+    ],
+    especialidades: ["tp-digital", "tp-innovacion", "sec-tic"],
+    portafolio: [
+      {
+        id: "port-1-1",
+        nombreProyecto: "Estructuración técnica AgroDatos",
+        entidad: "AgroDatos Cauca",
+        anio: 2025,
+        descripcion: "Acompañamiento en la formulación técnica y financiera para una convocatoria de iNNpulsa.",
+        resultado: "Proyecto aprobado con cofinanciación de $180M COP",
+      },
+      {
+        id: "port-1-2",
+        nombreProyecto: "Hoja de ruta de transformación digital",
+        entidad: "Distribuidora La Sabana",
+        anio: 2024,
+        descripcion: "Diseño de plan de adopción tecnológica para línea de crédito Bancóldex Innova.",
+        resultado: "Crédito aprobado por $220M COP",
+      },
+    ],
+    cvNombre: "hoja-de-vida-andres-rojas.pdf",
+    estadoPerfil: "aprobado",
+    esEquipoInterno: false,
+    ratingPromedio: 4.8,
+    totalEncargosCompletados: 14,
+  },
+  {
+    id: "consultor-2",
+    nombreProfesional: "Mariana Cifuentes",
+    descripcion:
+      "Ingeniera agrónoma especializada en formulación de proyectos agroindustriales y cadenas de valor rurales, con experiencia en cooperación internacional (UE, USAID) y fondos regionales.",
+    fotoUrl: avatarUrl("Mariana Cifuentes", "8A2A21"),
+    sitioWeb: "https://marianacifuentes.co",
+    redes: [{ id: "red-2-1", tipo: "linkedin", url: "https://linkedin.com/in/marianacifuentes" }],
+    especialidades: ["sec-agro", "tp-fortalecimiento", "tp-internacionalizacion"],
+    portafolio: [
+      {
+        id: "port-2-1",
+        nombreProyecto: "Cadena de valor cafetera",
+        entidad: "Asociación de Caficultores del Cauca",
+        anio: 2025,
+        descripcion: "Formulación de proyecto rural para el Programa ADEL de la Unión Europea.",
+        resultado: "Cofinanciación aprobada por $150M COP",
+      },
+    ],
+    cvNombre: "hoja-de-vida-mariana-cifuentes.pdf",
+    estadoPerfil: "aprobado",
+    esEquipoInterno: false,
+    ratingPromedio: 4.3,
+    totalEncargosCompletados: 9,
+  },
+  {
+    id: "consultor-3",
+    nombreProfesional: "Jorge Iván Salcedo",
+    descripcion:
+      "Consultor comercial enfocado en internacionalización y comercio exterior para pymes manufactureras antioqueñas y del Valle del Cauca.",
+    fotoUrl: avatarUrl("Jorge Salcedo", "365D9C"),
+    sitioWeb: "",
+    redes: [{ id: "red-3-1", tipo: "linkedin", url: "https://linkedin.com/in/jorgesalcedo" }],
+    especialidades: ["tp-internacionalizacion", "sec-comercio", "sec-manufactura"],
+    portafolio: [
+      {
+        id: "port-3-1",
+        nombreProyecto: "Diagnóstico exportador",
+        entidad: "Confecciones del Norte",
+        anio: 2024,
+        descripcion: "Diagnóstico y plan de acción para participar en Medellín Exporta.",
+        resultado: "Empresa seleccionada para rueda de negocios internacional",
+      },
+    ],
+    cvNombre: "hoja-de-vida-jorge-salcedo.pdf",
+    estadoPerfil: "aprobado",
+    esEquipoInterno: false,
+    ratingPromedio: 3.5,
+    totalEncargosCompletados: 5,
+  },
+  {
+    id: "consultor-4",
+    nombreProfesional: "Valentina Duarte",
+    descripcion:
+      "Consultora ambiental joven especializada en economía circular y sostenibilidad para pequeñas empresas manufactureras.",
+    fotoUrl: avatarUrl("Valentina Duarte", "2F7D5C"),
+    sitioWeb: "https://valentinaduarte.eco",
+    redes: [
+      { id: "red-4-1", tipo: "linkedin", url: "https://linkedin.com/in/valentinaduarte" },
+      { id: "red-4-2", tipo: "instagram", url: "https://instagram.com/valeduarte.eco" },
+    ],
+    especialidades: ["tp-sostenibilidad", "sec-manufactura"],
+    portafolio: [
+      {
+        id: "port-4-1",
+        nombreProyecto: "Diagnóstico de economía circular",
+        entidad: "EcoEmpaques Andinos",
+        anio: 2026,
+        descripcion: "Levantamiento de indicadores ambientales para el fondo GIZ de economía circular.",
+        resultado: "Diagnóstico entregado a tiempo, base para la postulación",
+      },
+    ],
+    cvNombre: "hoja-de-vida-valentina-duarte.pdf",
+    estadoPerfil: "aprobado",
+    esEquipoInterno: false,
+    ratingPromedio: 5.0,
+    totalEncargosCompletados: 2,
+  },
+  {
+    id: "consultor-5",
+    nombreProfesional: "Camilo Restrepo",
+    descripcion:
+      "Consultor en innovación abierta y gestión de propiedad intelectual para startups de base tecnológica. Recién vinculado a la plataforma.",
+    fotoUrl: avatarUrl("Camilo Restrepo", "A67A29"),
+    sitioWeb: "https://camilorestrepo.io",
+    redes: [{ id: "red-5-1", tipo: "linkedin", url: "https://linkedin.com/in/camilorestrepo" }],
+    especialidades: ["tp-innovacion", "sec-tic"],
+    portafolio: [
+      {
+        id: "port-5-1",
+        nombreProyecto: "Registro de propiedad intelectual",
+        entidad: "NeuroSalud Labs",
+        anio: 2025,
+        descripcion: "Acompañamiento en declaración de propiedad intelectual para convocatoria CTeI de Ruta N.",
+        resultado: "Registro completado y proyecto habilitado para postularse",
+      },
+    ],
+    cvNombre: "hoja-de-vida-camilo-restrepo.pdf",
+    estadoPerfil: "en_revision",
+    esEquipoInterno: false,
+    ratingPromedio: 0,
+    totalEncargosCompletados: 0,
+  },
+  {
+    id: "consultor-6",
+    nombreProfesional: "Patricia Elena Gómez",
+    descripcion:
+      "Asesora financiera independiente para acceso a crédito y líneas de fomento empresarial.",
+    fotoUrl: avatarUrl("Patricia Gomez", "8994A5"),
+    sitioWeb: "",
+    redes: [],
+    especialidades: ["tp-fortalecimiento", "sec-servicios"],
+    portafolio: [],
+    cvNombre: "hoja-de-vida-patricia-gomez.pdf",
+    estadoPerfil: "rechazado",
+    motivoRechazo:
+      "La hoja de vida no evidencia experiencia verificable en los últimos 3 años. Por favor actualiza tu portafolio con proyectos recientes y referencias de contacto.",
+    esEquipoInterno: false,
+    ratingPromedio: 0,
+    totalEncargosCompletados: 0,
+  },
+  {
+    id: "consultor-7",
+    nombreProfesional: "Equipo interno · Laura Jiménez",
+    descripcion:
+      "Analista del equipo interno de la plataforma, disponible para encargos asignados directamente por administración cuando no se elige un consultor del directorio.",
+    fotoUrl: avatarUrl("Laura Jimenez", "16294A"),
+    sitioWeb: "",
+    redes: [],
+    especialidades: ["tp-fortalecimiento", "tp-emprendimiento", "sec-servicios"],
+    portafolio: [],
+    cvNombre: "hoja-de-vida-laura-jimenez.pdf",
+    estadoPerfil: "aprobado",
+    esEquipoInterno: true,
+    ratingPromedio: 4.6,
+    totalEncargosCompletados: 21,
+  },
+  {
+    id: "consultor-8",
+    nombreProfesional: "Equipo interno · David Otálora",
+    descripcion:
+      "Analista del equipo interno con experiencia en formulación de proyectos productivos y agroindustriales.",
+    fotoUrl: avatarUrl("David Otalora", "16294A"),
+    sitioWeb: "",
+    redes: [],
+    especialidades: ["sec-agro", "tp-fortalecimiento"],
+    portafolio: [],
+    cvNombre: "hoja-de-vida-david-otalora.pdf",
+    estadoPerfil: "aprobado",
+    esEquipoInterno: true,
+    ratingPromedio: 4.4,
+    totalEncargosCompletados: 17,
+  },
+];
+
+export function consultorPorId(id: string): PerfilConsultor | undefined {
+  return consultores.find((c) => c.id === id);
+}
+
+// ---------------------------------------------------------------------------
+// Calificaciones (reseñas de perfil, además de las ligadas a encargos)
+// ---------------------------------------------------------------------------
+
+export const calificaciones: Calificacion[] = [
+  { id: "calif-1-a", encargoId: "encargo-hist-1a", consultorId: "consultor-1", estrellas: 5, comentario: "Excelente acompañamiento, cumplió todos los plazos.", fecha: "2025-11-10" },
+  { id: "calif-1-b", encargoId: "encargo-hist-1b", consultorId: "consultor-1", estrellas: 5, comentario: "Muy claro explicando los requisitos técnicos de Minciencias.", fecha: "2025-09-02" },
+  { id: "calif-1-c", encargoId: "encargo-hist-1c", consultorId: "consultor-1", estrellas: 4, comentario: "Buen trabajo, aunque la entrega final se retrasó un par de días.", fecha: "2025-06-18" },
+  { id: "calif-2-a", encargoId: "encargo-hist-2a", consultorId: "consultor-2", estrellas: 4, comentario: "Conoce muy bien el sector agro y la cooperación internacional.", fecha: "2025-10-05" },
+  { id: "calif-2-b", encargoId: "encargo-hist-2b", consultorId: "consultor-2", estrellas: 5, comentario: "Nos ayudó a conseguir la cofinanciación de ADEL.", fecha: "2025-04-22" },
+  { id: "calif-2-c", encargoId: "encargo-hist-2c", consultorId: "consultor-2", estrellas: 4, comentario: "Recomendada para proyectos rurales.", fecha: "2025-02-11" },
+  { id: "calif-3-a", encargoId: "encargo-hist-3a", consultorId: "consultor-3", estrellas: 3, comentario: "Cumplió, pero la comunicación pudo ser más frecuente.", fecha: "2025-08-14" },
+  { id: "calif-3-b", encargoId: "encargo-hist-3b", consultorId: "consultor-3", estrellas: 4, comentario: "Buen diagnóstico exportador.", fecha: "2025-05-30" },
+  { id: "calif-4-a", encargoId: "encargo-hist-4a", consultorId: "consultor-4", estrellas: 5, comentario: "Muy juiciosa con los indicadores ambientales, súper recomendada.", fecha: "2026-07-20" },
+];
+
+// ---------------------------------------------------------------------------
+// Encargos
+// ---------------------------------------------------------------------------
+
+export const encargos: Encargo[] = [
+  {
+    id: "encargo-1",
+    proyectoId: "proy-1",
+    empresaId: "empresa-1",
+    consultorId: "consultor-1",
+    tituloTarea: "Estructuración financiera para postulación a Minciencias",
+    descripcionTarea:
+      "Necesitamos apoyo para estructurar el presupuesto detallado y la carta de contrapartida exigidos por la convocatoria de Fortalecimiento de la I+D+i Empresarial 2026.",
+    via: "directorio",
+    estado: "pendiente",
+    avances: [],
+    fechas: { creada: "2026-08-20", aceptado: null, completado: null },
+  },
+  {
+    id: "encargo-2",
+    proyectoId: "proy-2",
+    empresaId: "empresa-1",
+    consultorId: "consultor-1",
+    tituloTarea: "Diagnóstico de trazabilidad de datos agrícolas",
+    descripcionTarea:
+      "Revisar la arquitectura de datos de AgroDatos Cauca y proponer mejoras de trazabilidad antes de postularnos a Aldea de iNNpulsa.",
+    via: "directorio",
+    estado: "en_curso",
+    avances: [
+      { id: "avance-2-1", nota: "Revisé el modelo de datos actual y detecté 3 brechas de trazabilidad en el módulo climático.", fecha: "2026-08-18" },
+      { id: "avance-2-2", nota: "Entregué el primer borrador del plan de mejora a AgroDatos para retroalimentación.", fecha: "2026-08-22" },
+    ],
+    fechas: { creada: "2026-08-10", aceptado: "2026-08-12", completado: null },
+  },
+  {
+    id: "encargo-3",
+    proyectoId: "proy-3",
+    empresaId: "empresa-1",
+    consultorId: "consultor-1",
+    tituloTarea: "Ajuste de modelo de negocio para TurismoVivo",
+    descripcionTarea:
+      "Revisar y ajustar el modelo de negocio de TurismoVivo Caribe antes de presentar el plan de negocio a Fondo Emprender.",
+    via: "directorio",
+    estado: "calificado",
+    avances: [
+      { id: "avance-3-1", nota: "Ajustamos el modelo de ingresos y la propuesta de valor con base en la validación de mercado.", fecha: "2026-07-05" },
+    ],
+    fechas: { creada: "2026-06-20", aceptado: "2026-06-21", completado: "2026-07-08" },
+  },
+  {
+    id: "encargo-4",
+    proyectoId: "proy-3",
+    empresaId: "empresa-1",
+    consultorId: null,
+    tituloTarea: "Formulación de plan de negocio para Fondo Emprender SENA",
+    descripcionTarea:
+      "Requerimos acompañamiento integral para diligenciar el plan de negocio oficial y el flujo de caja proyectado a 3 años.",
+    via: "asignacion_interna",
+    estado: "esperando_asignacion",
+    avances: [],
+    fechas: { creada: "2026-08-23", aceptado: null, completado: null },
+  },
+  {
+    id: "encargo-5",
+    proyectoId: "proy-1",
+    empresaId: "empresa-1",
+    consultorId: "consultor-2",
+    tituloTarea: "Plan de economía circular para GIZ",
+    descripcionTarea:
+      "Levantar el diagnóstico ambiental y el plan de acción de economía circular para postularnos al fondo de la Cooperación Alemana GIZ.",
+    via: "directorio",
+    estado: "completado",
+    avances: [
+      { id: "avance-5-1", nota: "Diagnóstico ambiental entregado con indicadores de reducción de material virgen.", fecha: "2026-08-05" },
+    ],
+    fechas: { creada: "2026-07-15", aceptado: "2026-07-16", completado: "2026-08-06" },
+  },
+];
+
+export function encargoPorId(id: string): Encargo | undefined {
+  return encargos.find((e) => e.id === id);
+}
+
+// ---------------------------------------------------------------------------
+// Planes
+// ---------------------------------------------------------------------------
+
+export const planes: Plan[] = [
+  { id: "plan-empresa-basico", nombre: "Empresa Básico", rol: "empresa", precioMensual: 89_000, precioAnual: 890_000 },
+  { id: "plan-empresa-pro", nombre: "Empresa Pro", rol: "empresa", precioMensual: 179_000, precioAnual: 1_790_000 },
+  { id: "plan-consultor-basico", nombre: "Consultor Básico", rol: "consultor", precioMensual: 49_000, precioAnual: 490_000 },
+  { id: "plan-consultor-pro", nombre: "Consultor Pro", rol: "consultor", precioMensual: 99_000, precioAnual: 990_000 },
+];
+
+export function planPorId(id: string): Plan | undefined {
+  return planes.find((p) => p.id === id);
+}
+
+// ---------------------------------------------------------------------------
+// Suscripciones
+// ---------------------------------------------------------------------------
+
+export const suscripciones: Suscripcion[] = [
+  { id: "sub-1", usuarioId: "empresa-1", planId: "plan-empresa-basico", modalidad: "trial", estado: "trial", fechaInicio: "2026-08-13", fechaVencimiento: "2026-08-27" },
+  { id: "sub-2", usuarioId: "empresa-2", planId: "plan-empresa-pro", modalidad: "mensual", estado: "vencida", fechaInicio: "2026-06-01", fechaVencimiento: "2026-07-01" },
+  { id: "sub-3", usuarioId: "empresa-3", planId: "plan-empresa-pro", modalidad: "anual", estado: "activa", fechaInicio: "2026-01-10", fechaVencimiento: "2027-01-10" },
+  { id: "sub-4", usuarioId: "consultor-1", planId: "plan-consultor-pro", modalidad: "mensual", estado: "activa", fechaInicio: "2026-08-01", fechaVencimiento: "2026-09-01" },
+  { id: "sub-5", usuarioId: "consultor-2", planId: "plan-consultor-basico", modalidad: "anual", estado: "activa", fechaInicio: "2026-02-01", fechaVencimiento: "2027-02-01" },
+  { id: "sub-6", usuarioId: "consultor-5", planId: "plan-consultor-basico", modalidad: "trial", estado: "trial", fechaInicio: "2026-08-18", fechaVencimiento: "2026-09-01" },
+  { id: "sub-7", usuarioId: "consultor-6", planId: "plan-consultor-basico", modalidad: "mensual", estado: "vencida", fechaInicio: "2026-05-01", fechaVencimiento: "2026-06-01" },
+];
+
+export function suscripcionDeUsuario(usuarioId: string): Suscripcion | undefined {
+  return suscripciones.find((s) => s.usuarioId === usuarioId);
+}
+
+// ---------------------------------------------------------------------------
+// Pagos (historial simulado)
+// ---------------------------------------------------------------------------
+
+export const pagos: Pago[] = [
+  { id: "pago-1", suscripcionId: "sub-2", monto: 179_000, fecha: "2026-06-01" },
+  { id: "pago-2", suscripcionId: "sub-3", monto: 1_790_000, fecha: "2026-01-10" },
+  { id: "pago-3", suscripcionId: "sub-4", monto: 99_000, fecha: "2026-08-01" },
+  { id: "pago-4", suscripcionId: "sub-4", monto: 99_000, fecha: "2026-07-01" },
+  { id: "pago-5", suscripcionId: "sub-5", monto: 490_000, fecha: "2026-02-01" },
+  { id: "pago-6", suscripcionId: "sub-7", monto: 49_000, fecha: "2026-05-01" },
 ];

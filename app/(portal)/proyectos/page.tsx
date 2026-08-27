@@ -2,11 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { FolderKanban, Plus, Pencil, Trash2, MapPin, Wallet, Sparkles, X } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import { categorias, categoriaPorId } from "@/lib/mock-data";
 import type { Proyecto } from "@/lib/types";
 import { formatCOP } from "@/lib/utils";
+import { useAccesoSuscripcion } from "@/lib/hooks";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -28,10 +30,17 @@ const formularioVacio: FormularioProyecto = {
 };
 
 export default function ProyectosPage() {
+  const router = useRouter();
   const proyectos = useAppStore((s) => s.proyectos);
   const agregarProyecto = useAppStore((s) => s.agregarProyecto);
   const actualizarProyecto = useAppStore((s) => s.actualizarProyecto);
   const eliminarProyecto = useAppStore((s) => s.eliminarProyecto);
+  const { requerirAcceso } = useAccesoSuscripcion();
+
+  const verSugerencias = (proyectoId: string) => {
+    if (!requerirAcceso("ver sugerencias de convocatorias")) return;
+    router.push(`/proyectos/${proyectoId}/sugerencias`);
+  };
 
   const [modalAbierto, setModalAbierto] = useState(false);
   const [editandoId, setEditandoId] = useState<string | null>(null);
@@ -110,7 +119,9 @@ export default function ProyectosPage() {
         <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
           {proyectos.map((p) => (
             <div key={p.id} className="flex flex-col rounded-2xl border border-line p-5">
-              <h3 className="font-display text-base font-semibold text-ink">{p.nombre}</h3>
+              <Link href={`/proyectos/${p.id}`} className="font-display text-base font-semibold text-ink hover:text-primary-800">
+                {p.nombre}
+              </Link>
               <p className="mt-1.5 line-clamp-2 text-sm text-ink-soft">{p.descripcion}</p>
 
               <div className="mt-3 flex flex-wrap gap-1.5">
@@ -135,11 +146,9 @@ export default function ProyectosPage() {
               </div>
 
               <div className="mt-4 flex items-center gap-2">
-                <Link href={`/proyectos/${p.id}/sugerencias`} className="flex-1">
-                  <Button variant="secondary" size="sm" className="w-full">
-                    <Sparkles className="h-3.5 w-3.5" /> Ver sugerencias
-                  </Button>
-                </Link>
+                <Button variant="secondary" size="sm" className="flex-1" onClick={() => verSugerencias(p.id)}>
+                  <Sparkles className="h-3.5 w-3.5" /> Ver sugerencias
+                </Button>
                 <Button variant="ghost" size="sm" onClick={() => abrirEditar(p)} aria-label="Editar proyecto">
                   <Pencil className="h-3.5 w-3.5" />
                 </Button>

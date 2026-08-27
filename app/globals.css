@@ -34,6 +34,13 @@
   --color-warning-bg: #fdf1e2;
   --color-danger: #b3261e;
   --color-danger-bg: #fbeae9;
+
+  /* Acento del módulo de consultores (rojo ladrillo) */
+  --color-brick-700: #6e211a;
+  --color-brick-600: #7d2620;
+  --color-brick-500: #8a2a21;
+  --color-brick-100: #f5e1de;
+  --color-brick-50: #fbf0ee;
 }
 
 body {

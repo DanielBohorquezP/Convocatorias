@@ -91,3 +91,150 @@ export interface Fuente {
   url: string;
   activa: boolean;
 }
+
+// ---------------------------------------------------------------------------
+// Empresas (mínimo, solo para mostrar nombre en paneles de admin)
+// ---------------------------------------------------------------------------
+
+export interface Empresa {
+  id: string;
+  nombre: string;
+}
+
+// ---------------------------------------------------------------------------
+// Consultores
+// ---------------------------------------------------------------------------
+
+export type RedSocialTipo = "linkedin" | "instagram" | "facebook" | "otra";
+
+export interface RedSocial {
+  id: string;
+  tipo: RedSocialTipo;
+  url: string;
+}
+
+export interface ItemPortafolio {
+  id: string;
+  nombreProyecto: string;
+  entidad: string;
+  anio: number;
+  descripcion: string;
+  resultado: string;
+}
+
+export type EstadoPerfilConsultor =
+  | "incompleto"
+  | "en_revision"
+  | "aprobado"
+  | "rechazado"
+  | "suspendido";
+
+export interface PerfilConsultor {
+  id: string;
+  nombreProfesional: string;
+  descripcion: string;
+  fotoUrl: string;
+  sitioWeb: string;
+  redes: RedSocial[];
+  especialidades: string[]; // Categoria ids
+  portafolio: ItemPortafolio[];
+  cvNombre: string;
+  estadoPerfil: EstadoPerfilConsultor;
+  motivoRechazo?: string;
+  esEquipoInterno: boolean;
+  ratingPromedio: number;
+  totalEncargosCompletados: number;
+}
+
+// ---------------------------------------------------------------------------
+// Encargos
+// ---------------------------------------------------------------------------
+
+export type ViaEncargo = "directorio" | "asignacion_interna";
+
+export type EstadoEncargo =
+  | "esperando_asignacion"
+  | "pendiente"
+  | "en_curso"
+  | "rechazado"
+  | "completado"
+  | "calificado"
+  | "cancelado";
+
+export interface AvanceEncargo {
+  id: string;
+  nota: string;
+  fecha: string; // ISO date
+}
+
+export interface Encargo {
+  id: string;
+  proyectoId: string;
+  empresaId: string;
+  consultorId: string | null;
+  tituloTarea: string;
+  descripcionTarea: string;
+  via: ViaEncargo;
+  estado: EstadoEncargo;
+  avances: AvanceEncargo[];
+  fechas: {
+    creada: string;
+    aceptado: string | null;
+    completado: string | null;
+  };
+}
+
+export interface Calificacion {
+  id: string;
+  encargoId: string;
+  consultorId: string;
+  estrellas: number;
+  comentario: string;
+  fecha: string; // ISO date
+}
+
+// ---------------------------------------------------------------------------
+// Planes y suscripciones
+// ---------------------------------------------------------------------------
+
+export type RolPlan = "empresa" | "consultor";
+
+export interface Plan {
+  id: string;
+  nombre: string;
+  rol: RolPlan;
+  precioMensual: number;
+  precioAnual: number;
+}
+
+export type ModalidadSuscripcion = "trial" | "mensual" | "anual";
+
+export type EstadoSuscripcion = "trial" | "activa" | "en_gracia" | "vencida" | "suspendida";
+
+export interface Pago {
+  id: string;
+  suscripcionId: string;
+  monto: number;
+  fecha: string; // ISO date
+}
+
+export interface Suscripcion {
+  id: string;
+  usuarioId: string;
+  planId: string;
+  modalidad: ModalidadSuscripcion;
+  estado: EstadoSuscripcion;
+  fechaInicio: string; // ISO date
+  fechaVencimiento: string; // ISO date
+}
+
+// ---------------------------------------------------------------------------
+// Simulador de modo demo (roles/estados de sesión, sin autenticación real)
+// ---------------------------------------------------------------------------
+
+export type ModoDemo =
+  | "empresa_trial"
+  | "empresa_vencida"
+  | "consultor_aprobado"
+  | "consultor_revision"
+  | "admin";

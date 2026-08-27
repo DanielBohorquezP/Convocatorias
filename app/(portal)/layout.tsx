@@ -1,4 +1,5 @@
 import { Navbar } from "@/components/Navbar";
+import { ModalSuscripcion } from "@/components/ModalSuscripcion";
 
 export default function PortalLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -10,6 +11,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
       <footer className="border-t border-line-soft py-6 text-center text-xs text-ink-faint">
         Plataforma de Gestión de Convocatorias — prototipo visual, datos de ejemplo.
       </footer>
+      <ModalSuscripcion />
     </div>
   );
 }
