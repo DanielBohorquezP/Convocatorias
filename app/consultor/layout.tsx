@@ -1,5 +1,6 @@
 import { ConsultorNavbar } from "@/components/ConsultorNavbar";
 import { ModalSuscripcion } from "@/components/ModalSuscripcion";
+import { ModalCreditos } from "@/components/ModalCreditos";
 
 export default function ConsultorLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -10,6 +11,7 @@ export default function ConsultorLayout({ children }: { children: React.ReactNod
         Plataforma de Gestión de Convocatorias — portal de consultores, datos de ejemplo.
       </footer>
       <ModalSuscripcion />
+      <ModalCreditos />
     </div>
   );
 }

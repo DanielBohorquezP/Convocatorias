@@ -12,6 +12,7 @@ import { useAccesoSuscripcion } from "@/lib/hooks";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { CompletitudBadge } from "@/components/CompletitudProyecto";
 
 type FormularioProyecto = {
   nombre: string;
@@ -19,6 +20,16 @@ type FormularioProyecto = {
   montoBuscado: string;
   ubicacion: string;
   categorias: string[];
+  // Contenido
+  problema: string;
+  objetivoGeneral: string;
+  objetivosEspecificos: string;
+  poblacionBeneficiaria: string;
+  actividades: string;
+  resultadosEsperados: string;
+  duracionMeses: string;
+  presupuestoEstimado: string;
+  experienciaEmpresa: string;
 };
 
 const formularioVacio: FormularioProyecto = {
@@ -27,6 +38,15 @@ const formularioVacio: FormularioProyecto = {
   montoBuscado: "",
   ubicacion: "",
   categorias: [],
+  problema: "",
+  objetivoGeneral: "",
+  objetivosEspecificos: "",
+  poblacionBeneficiaria: "",
+  actividades: "",
+  resultadosEsperados: "",
+  duracionMeses: "",
+  presupuestoEstimado: "",
+  experienciaEmpresa: "",
 };
 
 export default function ProyectosPage() {
@@ -60,6 +80,15 @@ export default function ProyectosPage() {
       montoBuscado: String(p.montoBuscado),
       ubicacion: p.ubicacion,
       categorias: p.categorias,
+      problema: p.problema ?? "",
+      objetivoGeneral: p.objetivoGeneral ?? "",
+      objetivosEspecificos: (p.objetivosEspecificos ?? []).join("\n"),
+      poblacionBeneficiaria: p.poblacionBeneficiaria ?? "",
+      actividades: p.actividades ?? "",
+      resultadosEsperados: p.resultadosEsperados ?? "",
+      duracionMeses: p.duracionMeses ? String(p.duracionMeses) : "",
+      presupuestoEstimado: p.presupuestoEstimado ? String(p.presupuestoEstimado) : "",
+      experienciaEmpresa: p.experienciaEmpresa ?? "",
     });
     setModalAbierto(true);
   };
@@ -81,6 +110,18 @@ export default function ProyectosPage() {
       montoBuscado: Number(form.montoBuscado) || 0,
       ubicacion: form.ubicacion.trim(),
       categorias: form.categorias,
+      problema: form.problema.trim() || undefined,
+      objetivoGeneral: form.objetivoGeneral.trim() || undefined,
+      objetivosEspecificos: form.objetivosEspecificos
+        .split("\n")
+        .map((o) => o.trim())
+        .filter(Boolean),
+      poblacionBeneficiaria: form.poblacionBeneficiaria.trim() || undefined,
+      actividades: form.actividades.trim() || undefined,
+      resultadosEsperados: form.resultadosEsperados.trim() || undefined,
+      duracionMeses: Number(form.duracionMeses) || undefined,
+      presupuestoEstimado: Number(form.presupuestoEstimado) || undefined,
+      experienciaEmpresa: form.experienciaEmpresa.trim() || undefined,
     };
     if (editandoId) {
       actualizarProyecto(editandoId, datos);
@@ -119,9 +160,12 @@ export default function ProyectosPage() {
         <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
           {proyectos.map((p) => (
             <div key={p.id} className="flex flex-col rounded-2xl border border-line p-5">
-              <Link href={`/proyectos/${p.id}`} className="font-display text-base font-semibold text-ink hover:text-primary-800">
-                {p.nombre}
-              </Link>
+              <div className="flex items-start justify-between gap-2">
+                <Link href={`/proyectos/${p.id}`} className="font-display text-base font-semibold text-ink hover:text-primary-800">
+                  {p.nombre}
+                </Link>
+                <CompletitudBadge proyecto={p} className="shrink-0" />
+              </div>
               <p className="mt-1.5 line-clamp-2 text-sm text-ink-soft">{p.descripcion}</p>
 
               <div className="mt-3 flex flex-wrap gap-1.5">
@@ -251,6 +295,93 @@ export default function ProyectosPage() {
                   ))}
                 </div>
               </Campo>
+
+              <div className="border-t border-dashed border-line pt-4">
+                <p className="mb-1 flex items-center gap-1.5 text-sm font-semibold text-teal-700">
+                  <Sparkles className="h-3.5 w-3.5" /> Contenido para generación de documentos
+                </p>
+                <p className="mb-3 text-xs text-ink-faint">
+                  Estos campos alimentan la generación de documentos con IA y determinan la completitud del proyecto.
+                </p>
+
+                <div className="space-y-4">
+                  <Campo etiqueta="Problema que atiende el proyecto">
+                    <textarea
+                      value={form.problema}
+                      onChange={(e) => setForm({ ...form, problema: e.target.value })}
+                      rows={2}
+                      className="w-full resize-none rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-teal-500"
+                    />
+                  </Campo>
+                  <Campo etiqueta="Objetivo general">
+                    <textarea
+                      value={form.objetivoGeneral}
+                      onChange={(e) => setForm({ ...form, objetivoGeneral: e.target.value })}
+                      rows={2}
+                      className="w-full resize-none rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-teal-500"
+                    />
+                  </Campo>
+                  <Campo etiqueta="Objetivos específicos (uno por línea)">
+                    <textarea
+                      value={form.objetivosEspecificos}
+                      onChange={(e) => setForm({ ...form, objetivosEspecificos: e.target.value })}
+                      rows={3}
+                      placeholder={"Ej.\nInstalar 5 sensores climáticos\nCapacitar a 100 productores"}
+                      className="w-full resize-none rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-teal-500"
+                    />
+                  </Campo>
+                  <Campo etiqueta="Población beneficiaria">
+                    <textarea
+                      value={form.poblacionBeneficiaria}
+                      onChange={(e) => setForm({ ...form, poblacionBeneficiaria: e.target.value })}
+                      rows={2}
+                      className="w-full resize-none rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-teal-500"
+                    />
+                  </Campo>
+                  <Campo etiqueta="Actividades y metodología">
+                    <textarea
+                      value={form.actividades}
+                      onChange={(e) => setForm({ ...form, actividades: e.target.value })}
+                      rows={2}
+                      className="w-full resize-none rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-teal-500"
+                    />
+                  </Campo>
+                  <Campo etiqueta="Resultados esperados">
+                    <textarea
+                      value={form.resultadosEsperados}
+                      onChange={(e) => setForm({ ...form, resultadosEsperados: e.target.value })}
+                      rows={2}
+                      className="w-full resize-none rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-teal-500"
+                    />
+                  </Campo>
+                  <div className="grid grid-cols-2 gap-4">
+                    <Campo etiqueta="Duración (meses)">
+                      <input
+                        type="number"
+                        value={form.duracionMeses}
+                        onChange={(e) => setForm({ ...form, duracionMeses: e.target.value })}
+                        className="w-full rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-teal-500"
+                      />
+                    </Campo>
+                    <Campo etiqueta="Presupuesto estimado (COP)">
+                      <input
+                        type="number"
+                        value={form.presupuestoEstimado}
+                        onChange={(e) => setForm({ ...form, presupuestoEstimado: e.target.value })}
+                        className="w-full rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-teal-500"
+                      />
+                    </Campo>
+                  </div>
+                  <Campo etiqueta="Experiencia de la empresa">
+                    <textarea
+                      value={form.experienciaEmpresa}
+                      onChange={(e) => setForm({ ...form, experienciaEmpresa: e.target.value })}
+                      rows={2}
+                      className="w-full resize-none rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-teal-500"
+                    />
+                  </Campo>
+                </div>
+              </div>
             </div>
 
             <div className="mt-6 flex justify-end gap-3">

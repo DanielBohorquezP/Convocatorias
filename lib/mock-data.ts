@@ -2,13 +2,16 @@ import type {
   Calificacion,
   Categoria,
   Convocatoria,
+  DocumentoGenerado,
   Empresa,
   Encargo,
+  EstadisticasIA,
   Fuente,
   Pago,
   PerfilConsultor,
   Plan,
   Postulacion,
+  PromptVersion,
   Proyecto,
   Suscripcion,
 } from "./types";
@@ -342,6 +345,27 @@ export const convocatorias: Convocatoria[] = [
       { id: "req-12-2", descripcion: "Teoría de cambio diligenciada", tipo: "documento", obligatorio: true, orden: 2 },
     ],
   },
+  {
+    id: "conv-13",
+    nombre: "Antioquia Agroinnova",
+    entidadConvocante: "Gobernación de Antioquia",
+    descripcion:
+      "Cofinanciación de proyectos de innovación agroindustrial para mipymes del departamento de Antioquia, con énfasis en tecnificación de procesos productivos rurales.",
+    montoMin: 18_000_000,
+    montoMax: 80_000_000,
+    ubicacion: "Antioquia",
+    fechaApertura: "2026-08-05",
+    fechaCierre: "2026-10-05",
+    estado: "publicada",
+    categorias: ["tp-innovacion", "sec-agro", "te-mipyme"],
+    documentos: [
+      { id: "doc-13-1", tipo: "TDR", nombre: "Términos de referencia Antioquia Agroinnova", archivo: "tdr-antioquia-agroinnova.pdf", pesoKb: 460 },
+    ],
+    requisitos: [
+      { id: "req-13-1", descripcion: "Domicilio o sede de operaciones en Antioquia", tipo: "condicion", obligatorio: true, orden: 1 },
+      { id: "req-13-2", descripcion: "Certificado de existencia y representación legal", tipo: "documento", obligatorio: true, orden: 2 },
+    ],
+  },
 ];
 
 export function convocatoriaPorId(id: string): Convocatoria | undefined {
@@ -361,6 +385,26 @@ export const proyectos: Proyecto[] = [
     montoBuscado: 150_000_000,
     ubicacion: "Bogotá D.C.",
     categorias: ["tp-sostenibilidad", "tp-innovacion", "sec-manufactura", "te-mipyme"],
+    // Contenido completo (100%) — usado para probar el flujo de generación sin pendientes.
+    problema:
+      "Colombia genera cerca de 1,2 millones de toneladas de residuos plásticos de un solo uso al año en el sector de empaques alimentarios, la mayoría sin un sistema de disposición adecuado, lo que agrava la contaminación de suelos y fuentes hídricas.",
+    objetivoGeneral:
+      "Desarrollar y escalar una línea de empaques biodegradables a base de fibra de fique como alternativa sostenible a los empaques plásticos de un solo uso en la industria alimentaria colombiana.",
+    objetivosEspecificos: [
+      "Optimizar el proceso de extracción y tratamiento de la fibra de fique para uso en empaques.",
+      "Validar la resistencia y vida útil de los empaques biodegradables con tres aliados del sector alimentario.",
+      "Diseñar un modelo de producción escalable que reduzca el costo unitario en un 20% frente al prototipo actual.",
+    ],
+    poblacionBeneficiaria:
+      "150 pequeños productores de fique del altiplano cundiboyacense y 12 empresas del sector alimentario que buscan reemplazar empaques plásticos en sus líneas de producción.",
+    actividades:
+      "1) Caracterización técnica de la fibra de fique. 2) Desarrollo de prototipos de empaque en laboratorio. 3) Pruebas piloto con aliados alimentarios. 4) Ajuste del proceso productivo. 5) Certificación de biodegradabilidad.",
+    resultadosEsperados:
+      "Una línea de empaques biodegradables certificada, con al menos 3 alianzas comerciales firmadas y una reducción proyectada de 40 toneladas anuales de plástico de un solo uso.",
+    duracionMeses: 12,
+    presupuestoEstimado: 150_000_000,
+    experienciaEmpresa:
+      "EcoEmpaques Andinos ha desarrollado dos prototipos de empaque biodegradable en los últimos 3 años y cuenta con un equipo de 6 personas, incluyendo dos ingenieras de materiales.",
   },
   {
     id: "proy-2",
@@ -370,6 +414,18 @@ export const proyectos: Proyecto[] = [
     montoBuscado: 90_000_000,
     ubicacion: "Cauca",
     categorias: ["tp-digital", "tp-investigacion", "sec-agro", "te-startup"],
+    // Contenido parcial (~56%) — 5 de 9 campos diligenciados.
+    problema:
+      "Los pequeños caficultores del Cauca no cuentan con información climática y de suelos oportuna para tomar decisiones de siembra y cosecha, lo que reduce su rendimiento y aumenta las pérdidas por eventos climáticos extremos.",
+    objetivoGeneral:
+      "Implementar una plataforma de analítica de datos y monitoreo climático que mejore la toma de decisiones productivas de los caficultores del Cauca.",
+    objetivosEspecificos: [
+      "Instalar una red de sensores climáticos en 5 veredas cafeteras del Cauca.",
+      "Desarrollar un panel de alertas tempranas accesible desde celulares básicos.",
+    ],
+    poblacionBeneficiaria: "320 familias caficultoras de pequeña escala en los municipios de Popayán, Totoró y Silvia (Cauca).",
+    actividades:
+      "Instalación de sensores, recolección y limpieza de datos, desarrollo del panel de visualización, y capacitación a caficultores en el uso de la herramienta.",
   },
   {
     id: "proy-3",
@@ -379,6 +435,11 @@ export const proyectos: Proyecto[] = [
     montoBuscado: 60_000_000,
     ubicacion: "Bolívar",
     categorias: ["tp-emprendimiento", "sec-turismo", "te-startup"],
+    // Contenido mínimo (~22%) — solo 2 de 9 campos diligenciados.
+    problema:
+      "Las comunidades del Caribe colombiano que ofrecen experiencias de turismo comunitario tienen baja visibilidad frente a operadores turísticos tradicionales, lo que limita sus ingresos.",
+    objetivoGeneral:
+      "Conectar a comunidades del Caribe colombiano con viajeros interesados en turismo comunitario sostenible mediante una aplicación móvil.",
   },
 ];
 
@@ -485,6 +546,7 @@ export const empresas: Empresa[] = [
   { id: "empresa-1", nombre: "EcoEmpaques Andinos S.A.S." },
   { id: "empresa-2", nombre: "Manufacturas del Cauca S.A.S." },
   { id: "empresa-3", nombre: "Ruta Textil Caribe Ltda." },
+  { id: "empresa-4", nombre: "Café de la Sierra S.A.S." },
 ];
 
 export function empresaPorId(id: string): Empresa | undefined {
@@ -795,28 +857,120 @@ export function encargoPorId(id: string): Encargo | undefined {
 // ---------------------------------------------------------------------------
 
 export const planes: Plan[] = [
-  { id: "plan-empresa-basico", nombre: "Empresa Básico", rol: "empresa", precioMensual: 89_000, precioAnual: 890_000 },
-  { id: "plan-empresa-pro", nombre: "Empresa Pro", rol: "empresa", precioMensual: 179_000, precioAnual: 1_790_000 },
-  { id: "plan-consultor-basico", nombre: "Consultor Básico", rol: "consultor", precioMensual: 49_000, precioAnual: 490_000 },
-  { id: "plan-consultor-pro", nombre: "Consultor Pro", rol: "consultor", precioMensual: 99_000, precioAnual: 990_000 },
+  { id: "plan-trial", nombre: "Trial", rol: "empresa", precioMensual: 0, precioAnual: 0, creditosIaMensuales: 3 },
+  { id: "plan-empresa-esencial", nombre: "Empresa Esencial", rol: "empresa", precioMensual: 89_000, precioAnual: 890_000, creditosIaMensuales: 10 },
+  { id: "plan-empresa-pro", nombre: "Empresa Pro", rol: "empresa", precioMensual: 189_000, precioAnual: 1_890_000, creditosIaMensuales: 30 },
+  { id: "plan-consultor", nombre: "Consultor", rol: "consultor", precioMensual: 69_000, precioAnual: 690_000, creditosIaMensuales: 30 },
 ];
 
 export function planPorId(id: string): Plan | undefined {
   return planes.find((p) => p.id === id);
 }
 
+export const PAQUETE_CREDITOS_PRECIO = 39_000;
+export const PAQUETE_CREDITOS_CANTIDAD = 10;
+
 // ---------------------------------------------------------------------------
 // Suscripciones
 // ---------------------------------------------------------------------------
 
 export const suscripciones: Suscripcion[] = [
-  { id: "sub-1", usuarioId: "empresa-1", planId: "plan-empresa-basico", modalidad: "trial", estado: "trial", fechaInicio: "2026-08-13", fechaVencimiento: "2026-08-27" },
-  { id: "sub-2", usuarioId: "empresa-2", planId: "plan-empresa-pro", modalidad: "mensual", estado: "vencida", fechaInicio: "2026-06-01", fechaVencimiento: "2026-07-01" },
-  { id: "sub-3", usuarioId: "empresa-3", planId: "plan-empresa-pro", modalidad: "anual", estado: "activa", fechaInicio: "2026-01-10", fechaVencimiento: "2027-01-10" },
-  { id: "sub-4", usuarioId: "consultor-1", planId: "plan-consultor-pro", modalidad: "mensual", estado: "activa", fechaInicio: "2026-08-01", fechaVencimiento: "2026-09-01" },
-  { id: "sub-5", usuarioId: "consultor-2", planId: "plan-consultor-basico", modalidad: "anual", estado: "activa", fechaInicio: "2026-02-01", fechaVencimiento: "2027-02-01" },
-  { id: "sub-6", usuarioId: "consultor-5", planId: "plan-consultor-basico", modalidad: "trial", estado: "trial", fechaInicio: "2026-08-18", fechaVencimiento: "2026-09-01" },
-  { id: "sub-7", usuarioId: "consultor-6", planId: "plan-consultor-basico", modalidad: "mensual", estado: "vencida", fechaInicio: "2026-05-01", fechaVencimiento: "2026-06-01" },
+  {
+    id: "sub-1",
+    usuarioId: "empresa-1",
+    planId: "plan-trial",
+    modalidad: "trial",
+    estado: "trial",
+    fechaInicio: "2026-08-13",
+    fechaVencimiento: "2026-08-27",
+    creditosUsadosPeriodo: 1,
+    creditosExtra: 0,
+    periodoCreditosInicio: "2026-08-13",
+  },
+  {
+    id: "sub-2",
+    usuarioId: "empresa-2",
+    planId: "plan-empresa-pro",
+    modalidad: "mensual",
+    estado: "vencida",
+    fechaInicio: "2026-06-01",
+    fechaVencimiento: "2026-07-01",
+    creditosUsadosPeriodo: 30,
+    creditosExtra: 0,
+    periodoCreditosInicio: "2026-06-01",
+  },
+  {
+    id: "sub-3",
+    usuarioId: "empresa-3",
+    planId: "plan-empresa-pro",
+    modalidad: "anual",
+    estado: "activa",
+    fechaInicio: "2026-01-10",
+    fechaVencimiento: "2027-01-10",
+    creditosUsadosPeriodo: 12,
+    creditosExtra: 5,
+    periodoCreditosInicio: "2026-08-01",
+  },
+  {
+    id: "sub-4",
+    usuarioId: "consultor-1",
+    planId: "plan-consultor",
+    modalidad: "mensual",
+    estado: "activa",
+    fechaInicio: "2026-08-01",
+    fechaVencimiento: "2026-09-01",
+    creditosUsadosPeriodo: 5,
+    creditosExtra: 0,
+    periodoCreditosInicio: "2026-08-01",
+  },
+  {
+    id: "sub-5",
+    usuarioId: "consultor-2",
+    planId: "plan-consultor",
+    modalidad: "anual",
+    estado: "activa",
+    fechaInicio: "2026-02-01",
+    fechaVencimiento: "2027-02-01",
+    creditosUsadosPeriodo: 30,
+    creditosExtra: 0,
+    periodoCreditosInicio: "2026-08-01",
+  },
+  {
+    id: "sub-6",
+    usuarioId: "consultor-5",
+    planId: "plan-consultor",
+    modalidad: "trial",
+    estado: "trial",
+    fechaInicio: "2026-08-18",
+    fechaVencimiento: "2026-09-01",
+    creditosUsadosPeriodo: 0,
+    creditosExtra: 0,
+    periodoCreditosInicio: "2026-08-18",
+  },
+  {
+    id: "sub-7",
+    usuarioId: "consultor-6",
+    planId: "plan-consultor",
+    modalidad: "mensual",
+    estado: "vencida",
+    fechaInicio: "2026-05-01",
+    fechaVencimiento: "2026-06-01",
+    creditosUsadosPeriodo: 20,
+    creditosExtra: 0,
+    periodoCreditosInicio: "2026-05-01",
+  },
+  {
+    id: "sub-8",
+    usuarioId: "empresa-4",
+    planId: "plan-empresa-esencial",
+    modalidad: "mensual",
+    estado: "activa",
+    fechaInicio: "2026-08-01",
+    fechaVencimiento: "2026-09-01",
+    creditosUsadosPeriodo: 10,
+    creditosExtra: 0,
+    periodoCreditosInicio: "2026-08-01",
+  },
 ];
 
 export function suscripcionDeUsuario(usuarioId: string): Suscripcion | undefined {
@@ -828,10 +982,131 @@ export function suscripcionDeUsuario(usuarioId: string): Suscripcion | undefined
 // ---------------------------------------------------------------------------
 
 export const pagos: Pago[] = [
-  { id: "pago-1", suscripcionId: "sub-2", monto: 179_000, fecha: "2026-06-01" },
-  { id: "pago-2", suscripcionId: "sub-3", monto: 1_790_000, fecha: "2026-01-10" },
-  { id: "pago-3", suscripcionId: "sub-4", monto: 99_000, fecha: "2026-08-01" },
-  { id: "pago-4", suscripcionId: "sub-4", monto: 99_000, fecha: "2026-07-01" },
-  { id: "pago-5", suscripcionId: "sub-5", monto: 490_000, fecha: "2026-02-01" },
-  { id: "pago-6", suscripcionId: "sub-7", monto: 49_000, fecha: "2026-05-01" },
+  { id: "pago-1", suscripcionId: "sub-2", monto: 189_000, fecha: "2026-06-01" },
+  { id: "pago-2", suscripcionId: "sub-3", monto: 1_890_000, fecha: "2026-01-10" },
+  { id: "pago-3", suscripcionId: "sub-4", monto: 69_000, fecha: "2026-08-01" },
+  { id: "pago-4", suscripcionId: "sub-4", monto: 69_000, fecha: "2026-07-01" },
+  { id: "pago-5", suscripcionId: "sub-5", monto: 690_000, fecha: "2026-02-01" },
+  { id: "pago-6", suscripcionId: "sub-7", monto: 69_000, fecha: "2026-05-01" },
+  { id: "pago-7", suscripcionId: "sub-8", monto: 89_000, fecha: "2026-08-01" },
 ];
+
+// ---------------------------------------------------------------------------
+// Plantilla del prompt de generación (panel admin)
+// ---------------------------------------------------------------------------
+
+export const promptVersiones: PromptVersion[] = [
+  {
+    id: "prompt-v1",
+    version: 1,
+    contenido:
+      "Actúa como consultor experto en cofinanciación pública. A partir de los datos del proyecto, redacta un borrador para la convocatoria indicada, sección por sección. No inventes datos: si un campo no existe, márcalo como [COMPLETAR: ...].",
+    activa: false,
+    fechaCreacion: "2026-06-01",
+  },
+  {
+    id: "prompt-v2",
+    version: 2,
+    contenido:
+      "Eres un asistente de redacción de propuestas para convocatorias colombianas de financiación. Usa exclusivamente la información provista del proyecto y de la convocatoria. Estructura el documento en las secciones: resumen ejecutivo, problema y justificación, objetivos, población beneficiaria, metodología y actividades, resultados esperados, presupuesto, cronograma y experiencia de la organización. Cuando un dato no esté disponible en el proyecto, insértalo como [COMPLETAR: descripción específica de lo que falta] — nunca inventes cifras, poblaciones ni resultados. Menciona siempre el nombre de la convocatoria y la entidad convocante en el resumen ejecutivo.",
+    activa: true,
+    fechaCreacion: "2026-08-10",
+  },
+];
+
+export function promptVersionActiva(): PromptVersion {
+  return promptVersiones.find((p) => p.activa) ?? promptVersiones[promptVersiones.length - 1];
+}
+
+// ---------------------------------------------------------------------------
+// Documentos generados con IA
+// ---------------------------------------------------------------------------
+
+export const documentos: DocumentoGenerado[] = [
+  {
+    id: "doc-1",
+    proyectoId: "proy-2",
+    convocatoriaId: "conv-3",
+    titulo: 'AgroDatos Cauca — Propuesta para la convocatoria "Aldea: Escala tu Negocio de Base Tecnológica" de iNNpulsa Colombia',
+    version: 1,
+    estado: "editado",
+    promptVersionId: "prompt-v2",
+    ajustesGratisUsados: 1,
+    fechaCreacion: "2026-08-18",
+    fechaActualizacion: "2026-08-20",
+    secciones: [
+      {
+        id: "titulo",
+        titulo: "Título",
+        contenido:
+          'AgroDatos Cauca — Propuesta para la convocatoria "Aldea: Escala tu Negocio de Base Tecnológica" de iNNpulsa Colombia',
+      },
+      {
+        id: "resumen-ejecutivo",
+        titulo: "Resumen ejecutivo",
+        contenido:
+          'AgroDatos Cauca presenta esta propuesta a la convocatoria "Aldea: Escala tu Negocio de Base Tecnológica", convocada por iNNpulsa Colombia. Plataforma de analítica de datos y monitoreo climático para pequeños caficultores del Cauca, orientada a mejorar el rendimiento y la trazabilidad del cultivo. El proyecto busca una financiación de $ 90.000.000, dentro del rango de $ 50.000.000 a $ 300.000.000 que ofrece esta convocatoria.',
+      },
+      {
+        id: "problema-justificacion",
+        titulo: "Problema y justificación",
+        contenido:
+          "Los pequeños caficultores del Cauca no cuentan con información climática y de suelos oportuna para tomar decisiones de siembra y cosecha, lo que reduce su rendimiento y aumenta las pérdidas por eventos climáticos extremos.",
+      },
+      {
+        id: "objetivos",
+        titulo: "Objetivos",
+        contenido:
+          "Objetivo general: Implementar una plataforma de analítica de datos y monitoreo climático que mejore la toma de decisiones productivas de los caficultores del Cauca.\n\nObjetivos específicos:\n1. Instalar una red de sensores climáticos en 5 veredas cafeteras del Cauca.\n2. Desarrollar un panel de alertas tempranas accesible desde celulares básicos.",
+      },
+      {
+        id: "poblacion-beneficiaria",
+        titulo: "Población beneficiaria",
+        contenido: "320 familias caficultoras de pequeña escala en los municipios de Popayán, Totoró y Silvia (Cauca).",
+      },
+      {
+        id: "metodologia-actividades",
+        titulo: "Metodología y actividades",
+        contenido:
+          "Instalación de sensores, recolección y limpieza de datos, desarrollo del panel de visualización, y capacitación a caficultores en el uso de la herramienta.",
+      },
+      {
+        id: "resultados-esperados",
+        titulo: "Resultados esperados",
+        contenido: "[COMPLETAR: los resultados o impactos esperados del proyecto]",
+      },
+      {
+        id: "presupuesto",
+        titulo: "Presupuesto",
+        contenido:
+          "Monto solicitado a iNNpulsa Colombia: $ 90.000.000.\nPresupuesto estimado total del proyecto: [COMPLETAR: el presupuesto estimado total del proyecto, desglosado por rubros].",
+      },
+      {
+        id: "cronograma",
+        titulo: "Cronograma",
+        contenido:
+          "Duración estimada de ejecución: [COMPLETAR: la duración estimada del proyecto en meses], contados a partir de la fecha de aprobación de la cofinanciación.",
+      },
+      {
+        id: "experiencia-organizacion",
+        titulo: "Experiencia de la organización",
+        contenido: "[COMPLETAR: la experiencia previa de la empresa u organización ejecutora]",
+      },
+    ],
+  },
+];
+
+export function documentoPorId(id: string): DocumentoGenerado | undefined {
+  return documentos.find((d) => d.id === id);
+}
+
+// ---------------------------------------------------------------------------
+// Estadísticas de consumo de IA (panel admin, datos de ejemplo)
+// ---------------------------------------------------------------------------
+
+export const estadisticasIA: EstadisticasIA = {
+  generaciones: 128,
+  ajustes: 341,
+  fallidas: 6,
+  costoEstimadoCOP: 612_000,
+};

@@ -7,7 +7,7 @@ export function ProgressBar({
 }: {
   porcentaje: number;
   className?: string;
-  tono?: "primary" | "gold";
+  tono?: "primary" | "gold" | "teal" | "danger" | "warning" | "success";
 }) {
   const valor = Math.max(0, Math.min(100, porcentaje));
   return (
@@ -21,7 +21,12 @@ export function ProgressBar({
       <div
         className={cn(
           "h-full rounded-full transition-all duration-300",
-          tono === "gold" ? "bg-gold-500" : "bg-primary-700"
+          tono === "gold" && "bg-gold-500",
+          tono === "teal" && "bg-teal-600",
+          tono === "danger" && "bg-danger",
+          tono === "warning" && "bg-warning",
+          tono === "success" && "bg-success",
+          tono === "primary" && "bg-primary-700"
         )}
         style={{ width: `${valor}%` }}
       />

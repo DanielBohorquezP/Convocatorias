@@ -14,6 +14,7 @@ import {
   CheckCircle2,
   Circle,
   Info,
+  Sparkles,
   X,
 } from "lucide-react";
 import { useAppStore } from "@/lib/store";
@@ -179,17 +180,30 @@ export default function DetalleConvocatoriaPage({
               ? "Esta convocatoria ya cerró y no admite nuevas postulaciones."
               : "Al postularte crearás un expediente de seguimiento para esta convocatoria."}
           </div>
-          <Button
-            variant="primary"
-            size="lg"
-            disabled={cerrada}
-            onClick={() => {
-              if (!requerirAcceso("postularte a esta convocatoria")) return;
-              setModalAbierto(true);
-            }}
-          >
-            Postular
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="teal"
+              size="lg"
+              disabled={cerrada}
+              onClick={() => {
+                if (!requerirAcceso("generar un documento con IA")) return;
+                router.push(`/convocatorias/${convocatoria.id}/generar`);
+              }}
+            >
+              <Sparkles className="h-4 w-4" /> Generar documento con IA
+            </Button>
+            <Button
+              variant="primary"
+              size="lg"
+              disabled={cerrada}
+              onClick={() => {
+                if (!requerirAcceso("postularte a esta convocatoria")) return;
+                setModalAbierto(true);
+              }}
+            >
+              Postular
+            </Button>
+          </div>
         </div>
       </div>
 

@@ -5,11 +5,13 @@ import { usePathname } from "next/navigation";
 import { LayoutGrid, Building2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SelectorModoDemo } from "./SelectorModoDemo";
+import { IndicadorCreditos } from "./IndicadorCreditos";
 
 const enlaces = [
   { href: "/convocatorias", label: "Convocatorias" },
   { href: "/proyectos", label: "Proyectos" },
   { href: "/postulaciones", label: "Postulaciones" },
+  { href: "/documentos", label: "Documentos" },
   { href: "/consultores", label: "Consultores" },
   { href: "/encargos", label: "Encargos" },
   { href: "/suscripcion", label: "Suscripción" },
@@ -53,6 +55,7 @@ export function Navbar() {
         </nav>
 
         <div className="flex shrink-0 items-center gap-2.5">
+          <IndicadorCreditos href="/suscripcion" />
           <SelectorModoDemo />
           <Link
             href="/admin"

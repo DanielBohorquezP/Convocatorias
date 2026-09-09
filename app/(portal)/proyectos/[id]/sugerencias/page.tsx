@@ -2,7 +2,7 @@
 
 import { use, useMemo } from "react";
 import Link from "next/link";
-import { ArrowLeft, Check, X as XIcon, MapPin, Wallet } from "lucide-react";
+import { ArrowLeft, Check, X as XIcon, MapPin, Wallet, Info } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import type { Convocatoria, Proyecto } from "@/lib/types";
 import { diasRestantes, formatCOP, ESTADO_CONVOCATORIA_LABEL, ESTADO_CONVOCATORIA_ESTILO } from "@/lib/utils";
@@ -19,8 +19,6 @@ type Criterio = {
 };
 
 function evaluarCriterios(proyecto: Proyecto, convocatoria: Convocatoria): Criterio[] {
-  const catsProyecto = new Set(proyecto.categorias);
-
   const sectorProyecto = proyecto.categorias.filter((c) => c.startsWith("sec-"));
   const tipoProyectoProyecto = proyecto.categorias.filter((c) => c.startsWith("tp-"));
   const tipoEntidadProyecto = proyecto.categorias.filter((c) => c.startsWith("te-"));
@@ -35,15 +33,46 @@ function evaluarCriterios(proyecto: Proyecto, convocatoria: Convocatoria): Crite
     convocatoria.ubicacion.toLowerCase().includes(proyecto.ubicacion.toLowerCase()) ||
     proyecto.ubicacion.toLowerCase().includes(convocatoria.ubicacion.toLowerCase());
 
-  void catsProyecto;
-
   return [
-    { clave: "sector", etiqueta: "Sector", cumple: sectorMatch },
     { clave: "tipo_proyecto", etiqueta: "Tipo de proyecto", cumple: tipoProyectoMatch },
+    { clave: "sector", etiqueta: "Sector", cumple: sectorMatch },
     { clave: "tipo_entidad", etiqueta: "Tipo de entidad", cumple: tipoEntidadMatch },
     { clave: "monto", etiqueta: "Monto dentro del rango", cumple: montoMatch },
     { clave: "ubicacion", etiqueta: "Ubicación", cumple: ubicacionMatch },
   ];
+}
+
+function colorCompatibilidad(porcentaje: number): string {
+  if (porcentaje >= 80) return "text-success";
+  if (porcentaje >= 40) return "text-gold-600";
+  return "text-ink-faint";
+}
+
+function AnilloCompatibilidad({ porcentaje }: { porcentaje: number }) {
+  const radio = 26;
+  const circunferencia = 2 * Math.PI * radio;
+  const offset = circunferencia * (1 - porcentaje / 100);
+
+  return (
+    <div className="relative flex h-16 w-16 shrink-0 items-center justify-center">
+      <svg viewBox="0 0 64 64" className="h-16 w-16 -rotate-90">
+        <circle cx="32" cy="32" r={radio} fill="none" stroke="var(--color-line)" strokeWidth="6" />
+        <circle
+          cx="32"
+          cy="32"
+          r={radio}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="6"
+          strokeLinecap="round"
+          strokeDasharray={circunferencia}
+          strokeDashoffset={offset}
+          className={colorCompatibilidad(porcentaje)}
+        />
+      </svg>
+      <span className="absolute font-tabular text-sm font-bold text-ink">{porcentaje}%</span>
+    </div>
+  );
 }
 
 export default function SugerenciasPage({ params }: { params: Promise<{ id: string }> }) {
@@ -59,10 +88,11 @@ export default function SugerenciasPage({ params }: { params: Promise<{ id: stri
       .map((c) => {
         const criterios = evaluarCriterios(proyecto, c);
         const coincidencias = criterios.filter((cr) => cr.cumple).length;
-        return { convocatoria: c, criterios, coincidencias };
+        const porcentaje = Math.round((coincidencias / criterios.length) * 100);
+        return { convocatoria: c, criterios, coincidencias, porcentaje };
       })
       .filter((s) => s.coincidencias > 0)
-      .sort((a, b) => b.coincidencias - a.coincidencias);
+      .sort((a, b) => b.porcentaje - a.porcentaje);
   }, [proyecto, convocatorias]);
 
   if (!proyecto) {
@@ -116,6 +146,9 @@ export default function SugerenciasPage({ params }: { params: Promise<{ id: stri
         <p className="mt-1 text-sm text-ink-soft">
           Comparamos las categorías, el monto y la ubicación de tu proyecto contra cada convocatoria publicada.
         </p>
+        <p className="mt-2 flex items-center gap-1.5 text-xs text-ink-faint">
+          <Info className="h-3.5 w-3.5" /> Cálculo por coincidencia de criterios, no es una predicción de éxito.
+        </p>
       </div>
 
       {sugerencias.length === 0 ? (
@@ -126,7 +159,7 @@ export default function SugerenciasPage({ params }: { params: Promise<{ id: stri
         />
       ) : (
         <div className="space-y-4">
-          {sugerencias.map(({ convocatoria, criterios, coincidencias }) => {
+          {sugerencias.map(({ convocatoria, criterios, porcentaje }) => {
             const dias = diasRestantes(convocatoria.fechaCierre);
             return (
               <Link
@@ -134,28 +167,28 @@ export default function SugerenciasPage({ params }: { params: Promise<{ id: stri
                 href={`/convocatorias/${convocatoria.id}`}
                 className="block rounded-2xl border border-line p-5 transition-colors hover:border-primary-200 hover:bg-primary-50/30"
               >
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <Badge className={ESTADO_CONVOCATORIA_ESTILO[convocatoria.estado]}>
-                        {ESTADO_CONVOCATORIA_LABEL[convocatoria.estado]}
-                      </Badge>
-                      {dias >= 0 && dias < 15 && (
-                        <Badge className="bg-gold-50 text-gold-700 ring-gold-200">
-                          Cierra en {dias} {dias === 1 ? "día" : "días"}
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div className="flex items-start gap-4">
+                    <AnilloCompatibilidad porcentaje={porcentaje} />
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <Badge className={ESTADO_CONVOCATORIA_ESTILO[convocatoria.estado]}>
+                          {ESTADO_CONVOCATORIA_LABEL[convocatoria.estado]}
                         </Badge>
-                      )}
+                        {dias >= 0 && dias < 15 && (
+                          <Badge className="bg-gold-50 text-gold-700 ring-gold-200">
+                            Cierra en {dias} {dias === 1 ? "día" : "días"}
+                          </Badge>
+                        )}
+                      </div>
+                      <h3 className="mt-2 font-display text-base font-semibold text-ink">{convocatoria.nombre}</h3>
+                      <p className="text-sm text-ink-soft">{convocatoria.entidadConvocante}</p>
                     </div>
-                    <h3 className="mt-2 font-display text-base font-semibold text-ink">
-                      {convocatoria.nombre}
-                    </h3>
-                    <p className="text-sm text-ink-soft">{convocatoria.entidadConvocante}</p>
                   </div>
-                  <div className="flex flex-col items-end">
-                    <span className="font-display text-2xl font-bold text-primary-800">
-                      {coincidencias}/5
-                    </span>
-                    <span className="text-xs text-ink-faint">criterios cumplidos</span>
+                  <div className="text-right">
+                    <p className={`font-display text-lg font-bold ${colorCompatibilidad(porcentaje)}`}>
+                      {porcentaje}% compatible
+                    </p>
                   </div>
                 </div>
 

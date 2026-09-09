@@ -12,6 +12,21 @@ import { Button } from "@/components/ui/Button";
 const tiposProyecto = categorias.filter((c) => c.tipo === "tipo_proyecto");
 const sectores = categorias.filter((c) => c.tipo === "sector");
 
+interface BusquedaSugerida {
+  etiqueta: string;
+  busqueda?: string;
+  tipoProyecto?: string[];
+  sector?: string[];
+}
+
+const BUSQUEDAS_SUGERIDAS: BusquedaSugerida[] = [
+  { etiqueta: "Innovación agro · Antioquia", tipoProyecto: ["tp-innovacion"], sector: ["sec-agro"] },
+  { etiqueta: "Cooperación internacional ambiental", busqueda: "cooperación", tipoProyecto: ["tp-sostenibilidad"] },
+  { etiqueta: "TIC para pymes", sector: ["sec-tic"] },
+  { etiqueta: "Economía naranja", busqueda: "economía naranja" },
+  { etiqueta: "Energías limpias", busqueda: "energías limpias" },
+];
+
 export default function CatalogoConvocatoriasPage() {
   const convocatorias = useAppStore((s) => s.convocatorias);
   const [busqueda, setBusqueda] = useState("");
@@ -49,7 +64,7 @@ export default function CatalogoConvocatoriasPage() {
       .filter((c) => (tipoProyectoSel.length ? tipoProyectoSel.some((id) => c.categorias.includes(id)) : true))
       .filter((c) => (sectorSel.length ? sectorSel.some((id) => c.categorias.includes(id)) : true))
       .filter((c) => (entidadSel ? c.entidadConvocante === entidadSel : true))
-      .filter((c) => (ubicacionSel ? c.ubicacion === ubicacionSel : true))
+      .filter((c) => (ubicacionSel ? c.ubicacion.includes(ubicacionSel) : true))
       .filter((c) => (montoMax ? c.montoMin <= Number(montoMax) * 1_000_000 : true))
       .filter((c) => (cierraAntesDe ? c.fechaCierre <= cierraAntesDe : true))
       .sort((a, b) => diasRestantes(a.fechaCierre) - diasRestantes(b.fechaCierre));
@@ -70,6 +85,14 @@ export default function CatalogoConvocatoriasPage() {
     setUbicacionSel("");
     setMontoMax("");
     setCierraAntesDe("");
+  };
+
+  const aplicarBusquedaSugerida = (sugerida: BusquedaSugerida) => {
+    limpiarFiltros();
+    setBusqueda(sugerida.busqueda ?? "");
+    setTipoProyectoSel(sugerida.tipoProyecto ?? []);
+    setSectorSel(sugerida.sector ?? []);
+    setFiltrosAbiertos(true);
   };
 
   return (
@@ -100,6 +123,19 @@ export default function CatalogoConvocatoriasPage() {
           <SlidersHorizontal className="h-4 w-4" />
           Filtros {hayFiltrosActivos && `(${tipoProyectoSel.length + sectorSel.length + [entidadSel, ubicacionSel, montoMax, cierraAntesDe].filter(Boolean).length})`}
         </Button>
+      </div>
+
+      <div className="mb-6 flex flex-wrap items-center gap-2">
+        <span className="text-xs font-semibold text-ink-faint">Prueba con:</span>
+        {BUSQUEDAS_SUGERIDAS.map((s) => (
+          <button
+            key={s.etiqueta}
+            onClick={() => aplicarBusquedaSugerida(s)}
+            className="rounded-full bg-primary-50 px-3 py-1.5 text-xs font-medium text-primary-800 ring-1 ring-inset ring-primary-100 hover:bg-primary-100"
+          >
+            {s.etiqueta}
+          </button>
+        ))}
       </div>
 
       <div className={cn("grid gap-8", filtrosAbiertos ? "lg:grid-cols-[260px_1fr]" : "grid-cols-1")}>
@@ -204,9 +240,22 @@ export default function CatalogoConvocatoriasPage() {
               titulo="No encontramos convocatorias con esos filtros"
               descripcion="Prueba ajustando los filtros o la búsqueda para ver más resultados."
               accion={
-                <Button variant="secondary" size="sm" onClick={limpiarFiltros}>
-                  Limpiar filtros
-                </Button>
+                <div className="flex flex-col items-center gap-4">
+                  <Button variant="secondary" size="sm" onClick={limpiarFiltros}>
+                    Limpiar filtros
+                  </Button>
+                  <div className="flex flex-wrap justify-center gap-2">
+                    {BUSQUEDAS_SUGERIDAS.map((s) => (
+                      <button
+                        key={s.etiqueta}
+                        onClick={() => aplicarBusquedaSugerida(s)}
+                        className="rounded-full bg-primary-50 px-3 py-1.5 text-xs font-medium text-primary-800 ring-1 ring-inset ring-primary-100 hover:bg-primary-100"
+                      >
+                        {s.etiqueta}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               }
             />
           ) : (

@@ -41,6 +41,15 @@
   --color-brick-500: #8a2a21;
   --color-brick-100: #f5e1de;
   --color-brick-50: #fbf0ee;
+
+  /* Acento del módulo de IA (verde azulado) */
+  --color-teal-800: #0c5c56;
+  --color-teal-700: #0e6b64;
+  --color-teal-600: #0f766e;
+  --color-teal-500: #14877e;
+  --color-teal-200: #a9d9d4;
+  --color-teal-100: #d3ece9;
+  --color-teal-50: #eef8f6;
 }
 
 body {

@@ -15,6 +15,7 @@ import {
 import { GuardaConsultor } from "@/components/GuardaConsultor";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { BloqueCreditos } from "@/components/BloqueCreditos";
 
 export default function SuscripcionConsultorPage() {
   return (
@@ -78,6 +79,8 @@ function ContenidoSuscripcion() {
           </p>
         )}
       </div>
+
+      <BloqueCreditos />
 
       <div className="mt-8">
         <div className="mb-4 flex items-center justify-between">

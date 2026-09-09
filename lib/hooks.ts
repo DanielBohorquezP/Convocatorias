@@ -2,7 +2,7 @@
 
 import { useAppStore } from "./store";
 import { usuarioIdDeModo, consultorIdDeModo, rolDeModo } from "./session";
-import { diasRestantesHasta } from "./utils";
+import { agregarMeses, diasRestantesHasta } from "./utils";
 
 const ESTADOS_CON_ACCESO = new Set(["trial", "activa", "en_gracia"]);
 
@@ -30,6 +30,29 @@ export function useAccesoSuscripcion() {
   }
 
   return { usuarioId, rol, suscripcion, tieneAcceso, diasRestantes, requerirAcceso };
+}
+
+/**
+ * Créditos de IA disponibles para el usuario simulado actual, según su
+ * suscripción vigente (incluidos del plan + extras comprados - usados en el
+ * ciclo actual). Si no hay suscripción registrada, no hay créditos.
+ */
+export function useCreditos() {
+  const modoDemo = useAppStore((s) => s.modoDemo);
+  const suscripciones = useAppStore((s) => s.suscripciones);
+  const planes = useAppStore((s) => s.planes);
+
+  const usuarioId = usuarioIdDeModo(modoDemo);
+  const suscripcion = suscripciones.find((s) => s.usuarioId === usuarioId);
+  const plan = suscripcion ? planes.find((p) => p.id === suscripcion.planId) : undefined;
+
+  const incluidos = plan?.creditosIaMensuales ?? 0;
+  const usados = suscripcion?.creditosUsadosPeriodo ?? 0;
+  const extra = suscripcion?.creditosExtra ?? 0;
+  const disponibles = Math.max(0, incluidos + extra - usados);
+  const fechaReinicio = suscripcion ? agregarMeses(suscripcion.periodoCreditosInicio, 1) : null;
+
+  return { usuarioId, suscripcion, plan, disponibles, usados, incluidos, extra, fechaReinicio };
 }
 
 export function useConsultorActual() {

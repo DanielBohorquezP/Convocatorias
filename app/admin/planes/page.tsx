@@ -14,9 +14,10 @@ type Formulario = {
   rol: RolPlan;
   precioMensual: string;
   precioAnual: string;
+  creditosIaMensuales: string;
 };
 
-const vacio: Formulario = { nombre: "", rol: "empresa", precioMensual: "", precioAnual: "" };
+const vacio: Formulario = { nombre: "", rol: "empresa", precioMensual: "", precioAnual: "", creditosIaMensuales: "" };
 
 export default function AdminPlanesPage() {
   const planes = useAppStore((s) => s.planes);
@@ -41,6 +42,7 @@ export default function AdminPlanesPage() {
       rol: p.rol,
       precioMensual: String(p.precioMensual),
       precioAnual: String(p.precioAnual),
+      creditosIaMensuales: String(p.creditosIaMensuales),
     });
     setModalAbierto(true);
   };
@@ -52,6 +54,7 @@ export default function AdminPlanesPage() {
       rol: form.rol,
       precioMensual: Number(form.precioMensual) || 0,
       precioAnual: Number(form.precioAnual) || 0,
+      creditosIaMensuales: Number(form.creditosIaMensuales) || 0,
     };
     if (editandoId) {
       actualizarPlan(editandoId, datos);
@@ -84,6 +87,7 @@ export default function AdminPlanesPage() {
                 <th className="px-5 py-3">Rol</th>
                 <th className="px-5 py-3">Precio mensual</th>
                 <th className="px-5 py-3">Precio anual</th>
+                <th className="px-5 py-3">Créditos IA/mes</th>
                 <th className="px-5 py-3" />
               </tr>
             </thead>
@@ -104,6 +108,7 @@ export default function AdminPlanesPage() {
                   </td>
                   <td className="px-5 py-3 font-tabular text-ink-soft">{formatCOP(p.precioMensual)}</td>
                   <td className="px-5 py-3 font-tabular text-ink-soft">{formatCOP(p.precioAnual)}</td>
+                  <td className="px-5 py-3 font-tabular text-teal-700">{p.creditosIaMensuales}</td>
                   <td className="px-5 py-3">
                     <div className="flex justify-end gap-1">
                       <Button variant="ghost" size="sm" onClick={() => abrirEditar(p)} aria-label="Editar plan">
@@ -186,6 +191,17 @@ export default function AdminPlanesPage() {
                     className="w-full rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-primary-500"
                   />
                 </div>
+              </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-ink-faint">
+                  Créditos de IA por mes
+                </label>
+                <input
+                  type="number"
+                  value={form.creditosIaMensuales}
+                  onChange={(e) => setForm({ ...form, creditosIaMensuales: e.target.value })}
+                  className="w-full rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-teal-500"
+                />
               </div>
             </div>
 

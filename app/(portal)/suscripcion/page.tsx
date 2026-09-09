@@ -14,6 +14,7 @@ import {
 } from "@/lib/utils";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { BloqueCreditos } from "@/components/BloqueCreditos";
 
 export default function SuscripcionEmpresaPage() {
   const { usuarioId, suscripcion, diasRestantes } = useAccesoSuscripcion();
@@ -71,6 +72,8 @@ export default function SuscripcionEmpresaPage() {
           </p>
         )}
       </div>
+
+      <BloqueCreditos />
 
       <div className="mt-8">
         <div className="mb-4 flex items-center justify-between">

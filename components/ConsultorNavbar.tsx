@@ -6,10 +6,12 @@ import { LayoutGrid, HardHat } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useConsultorActual } from "@/lib/hooks";
 import { SelectorModoDemo } from "./SelectorModoDemo";
+import { IndicadorCreditos } from "./IndicadorCreditos";
 
 const enlaces = [
   { href: "/consultor/perfil", label: "Mi perfil" },
   { href: "/consultor/encargos", label: "Mis encargos" },
+  { href: "/consultor/documentos", label: "Mis documentos" },
   { href: "/consultor/suscripcion", label: "Mi suscripción" },
 ];
 
@@ -50,6 +52,7 @@ export function ConsultorNavbar() {
         </nav>
 
         <div className="flex shrink-0 items-center gap-2.5">
+          <IndicadorCreditos href="/consultor/suscripcion" />
           <SelectorModoDemo />
           <Link
             href="/admin"

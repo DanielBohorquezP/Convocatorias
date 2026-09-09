@@ -1,15 +1,16 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, MapPin, Wallet, Sparkles, UserPlus, Search, Users, CheckCircle2, X } from "lucide-react";
+import { ArrowLeft, MapPin, Wallet, Sparkles, UserPlus, Search, Users, CheckCircle2, X, FileStack } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import { categoriaPorId } from "@/lib/mock-data";
 import { useAccesoSuscripcion } from "@/lib/hooks";
-import { formatCOP } from "@/lib/utils";
+import { diasRestantes, formatCOP } from "@/lib/utils";
 import { Chip } from "@/components/ui/Chip";
 import { Button, LinkButton } from "@/components/ui/Button";
+import { CompletitudDetalle } from "@/components/CompletitudProyecto";
 
 export default function DetalleProyectoPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -18,8 +19,10 @@ export default function DetalleProyectoPage({ params }: { params: Promise<{ id: 
   const todosLosEncargos = useAppStore((s) => s.encargos);
   const encargos = todosLosEncargos.filter((e) => e.proyectoId === id);
   const consultores = useAppStore((s) => s.consultores);
+  const todasLasConvocatorias = useAppStore((s) => s.convocatorias);
   const iniciarSolicitudConsultor = useAppStore((s) => s.iniciarSolicitudConsultor);
   const crearEncargoEsperandoAsignacion = useAppStore((s) => s.crearEncargoEsperandoAsignacion);
+  const setProyectoParaGenerar = useAppStore((s) => s.setProyectoParaGenerar);
   const { requerirAcceso } = useAccesoSuscripcion();
 
   const [modalAbierto, setModalAbierto] = useState(false);
@@ -27,6 +30,12 @@ export default function DetalleProyectoPage({ params }: { params: Promise<{ id: 
   const [titulo, setTitulo] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [confirmacion, setConfirmacion] = useState(false);
+  const [modalGenerarAbierto, setModalGenerarAbierto] = useState(false);
+
+  const convocatoriasVigentes = useMemo(
+    () => todasLasConvocatorias.filter((c) => c.estado === "publicada" && diasRestantes(c.fechaCierre) >= 0),
+    [todasLasConvocatorias]
+  );
 
   if (!proyecto) {
     return (
@@ -69,6 +78,17 @@ export default function DetalleProyectoPage({ params }: { params: Promise<{ id: 
     setConfirmacion(true);
   };
 
+  const abrirSelectorGenerar = () => {
+    if (!requerirAcceso("generar un documento con IA")) return;
+    setModalGenerarAbierto(true);
+  };
+
+  const elegirConvocatoriaParaGenerar = (convocatoriaId: string) => {
+    setProyectoParaGenerar(proyecto.id);
+    setModalGenerarAbierto(false);
+    router.push(`/convocatorias/${convocatoriaId}/generar`);
+  };
+
   return (
     <div className="mx-auto max-w-4xl">
       <Link
@@ -84,9 +104,18 @@ export default function DetalleProyectoPage({ params }: { params: Promise<{ id: 
             <h1 className="font-display text-2xl font-bold text-ink">{proyecto.nombre}</h1>
             <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-ink-soft">{proyecto.descripcion}</p>
           </div>
-          <Button variant="primary" size="lg" onClick={abrirFlujo} className="bg-brick-500 hover:bg-brick-600">
-            <UserPlus className="h-4 w-4" /> Solicitar consultor
-          </Button>
+          <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+            <Button variant="teal" size="lg" onClick={abrirSelectorGenerar}>
+              <Sparkles className="h-4 w-4" /> Generar documento para una convocatoria...
+            </Button>
+            <Button variant="brick" size="lg" onClick={abrirFlujo}>
+              <UserPlus className="h-4 w-4" /> Solicitar consultor
+            </Button>
+          </div>
+        </div>
+
+        <div className="mt-6">
+          <CompletitudDetalle proyecto={proyecto} />
         </div>
 
         <div className="mt-6 grid gap-4 rounded-xl bg-primary-50/60 p-5 sm:grid-cols-2">
@@ -242,6 +271,41 @@ export default function DetalleProyectoPage({ params }: { params: Promise<{ id: 
                   </Button>
                 </div>
               </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {modalGenerarAbierto && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-primary-950/40 p-4">
+          <div className="max-h-[80vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="font-display text-lg font-semibold text-ink">Elige una convocatoria vigente</h3>
+              <button onClick={() => setModalGenerarAbierto(false)} className="text-ink-faint hover:text-ink">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            {convocatoriasVigentes.length === 0 ? (
+              <p className="text-sm text-ink-faint">No hay convocatorias vigentes en este momento.</p>
+            ) : (
+              <ul className="space-y-2">
+                {convocatoriasVigentes.map((c) => (
+                  <li key={c.id}>
+                    <button
+                      onClick={() => elegirConvocatoriaParaGenerar(c.id)}
+                      className="flex w-full items-center gap-3 rounded-lg border border-line p-3 text-left transition-colors hover:border-teal-300 hover:bg-teal-50/40"
+                    >
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-teal-50 text-teal-700">
+                        <FileStack className="h-4 w-4" />
+                      </span>
+                      <span>
+                        <span className="block text-sm font-semibold text-ink">{c.nombre}</span>
+                        <span className="block text-xs text-ink-faint">{c.entidadConvocante}</span>
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
             )}
           </div>
         </div>

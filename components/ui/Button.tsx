@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
-type Variante = "primary" | "secondary" | "ghost" | "danger" | "outline-gold";
+type Variante = "primary" | "secondary" | "ghost" | "danger" | "outline-gold" | "teal" | "brick";
 type Tamano = "sm" | "md" | "lg";
 
 const variantes: Record<Variante, string> = {
@@ -15,6 +15,10 @@ const variantes: Record<Variante, string> = {
     "bg-danger text-white hover:bg-red-800 disabled:bg-slate-300 disabled:text-slate-500",
   "outline-gold":
     "bg-white text-gold-700 ring-1 ring-inset ring-gold-500 hover:bg-gold-50 disabled:text-slate-400 disabled:ring-slate-200",
+  teal:
+    "bg-teal-600 text-white hover:bg-teal-700 disabled:bg-slate-300 disabled:text-slate-500",
+  brick:
+    "bg-brick-500 text-white hover:bg-brick-600 disabled:bg-slate-300 disabled:text-slate-500",
 };
 
 const tamanos: Record<Tamano, string> = {

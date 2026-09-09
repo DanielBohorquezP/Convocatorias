@@ -161,3 +161,23 @@ export function diasRestantesHasta(fechaIso: string): number {
 export function formatRating(valor: number): string {
   return valor > 0 ? valor.toFixed(1) : "Sin calificar";
 }
+
+export function agregarMeses(fechaIso: string, meses: number): string {
+  const fecha = new Date(fechaIso + "T00:00:00");
+  fecha.setMonth(fecha.getMonth() + meses);
+  return fecha.toISOString().slice(0, 10);
+}
+
+/** Formatea un monto COP en notación corta en español (mill. / mil M). */
+export function formatCOPCorto(valor: number): string {
+  if (valor >= 1_000_000_000_000) {
+    return `$${(valor / 1_000_000_000_000).toFixed(1).replace(".", ",")} billones`;
+  }
+  if (valor >= 1_000_000_000) {
+    return `$${(valor / 1_000_000_000).toFixed(1).replace(".", ",")} mil millones`;
+  }
+  if (valor >= 1_000_000) {
+    return `$${Math.round(valor / 1_000_000).toLocaleString("es-CO")} millones`;
+  }
+  return formatCOP(valor);
+}

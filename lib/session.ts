@@ -3,6 +3,7 @@ import type { ModoDemo } from "./types";
 export const MODO_DEMO_LABEL: Record<ModoDemo, string> = {
   empresa_trial: "Empresa · trial activo",
   empresa_vencida: "Empresa · suscripción vencida",
+  empresa_sin_creditos: "Empresa · sin créditos IA",
   consultor_aprobado: "Consultor · aprobado",
   consultor_revision: "Consultor · en revisión",
   admin: "Administrador",
@@ -11,6 +12,7 @@ export const MODO_DEMO_LABEL: Record<ModoDemo, string> = {
 export const MODOS_DEMO: ModoDemo[] = [
   "empresa_trial",
   "empresa_vencida",
+  "empresa_sin_creditos",
   "consultor_aprobado",
   "consultor_revision",
   "admin",
@@ -31,6 +33,8 @@ export function usuarioIdDeModo(modo: ModoDemo): string {
       return "empresa-1";
     case "empresa_vencida":
       return "empresa-2";
+    case "empresa_sin_creditos":
+      return "empresa-4";
     case "consultor_aprobado":
       return "consultor-1";
     case "consultor_revision":

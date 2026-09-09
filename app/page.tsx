@@ -6,14 +6,17 @@ import {
   ArrowRight,
   MapPin,
 } from "lucide-react";
-import { convocatorias } from "@/lib/mock-data";
+import { convocatorias, consultores } from "@/lib/mock-data";
 import { formatCOP, diasRestantes } from "@/lib/utils";
 import { LinkButton } from "@/components/ui/Button";
+import { ContadorAnimado } from "@/components/ContadorAnimado";
 
-const destacadas = convocatorias
-  .filter((c) => c.estado === "publicada")
-  .sort((a, b) => diasRestantes(a.fechaCierre) - diasRestantes(b.fechaCierre))
-  .slice(0, 3);
+const vigentes = convocatorias.filter((c) => c.estado === "publicada" && diasRestantes(c.fechaCierre) >= 0);
+const destacadas = vigentes.sort((a, b) => diasRestantes(a.fechaCierre) - diasRestantes(b.fechaCierre)).slice(0, 3);
+
+const montoTotalDisponible = vigentes.reduce((acc, c) => acc + c.montoMax, 0);
+const entidadesConvocantes = new Set(convocatorias.map((c) => c.entidadConvocante)).size;
+const consultoresAprobados = consultores.filter((c) => c.estadoPerfil === "aprobado" && !c.esEquipoInterno).length;
 
 export default function LandingPage() {
   return (
@@ -63,18 +66,22 @@ export default function LandingPage() {
                 Crear cuenta
               </LinkButton>
             </div>
-            <div className="mt-10 grid grid-cols-3 gap-6 border-t border-line pt-6">
+            <div className="mt-10 grid grid-cols-2 gap-6 border-t border-line pt-6 sm:grid-cols-4">
               <div>
-                <p className="font-tabular font-display text-2xl font-bold text-primary-800">12</p>
-                <p className="text-xs text-ink-faint">Convocatorias activas</p>
+                <ContadorAnimado valor={vigentes.length} />
+                <p className="text-xs text-ink-faint">Convocatorias vigentes</p>
               </div>
               <div>
-                <p className="font-tabular font-display text-2xl font-bold text-primary-800">7</p>
+                <ContadorAnimado valor={montoTotalDisponible} variante="cop-corto" />
+                <p className="text-xs text-ink-faint">Monto total disponible</p>
+              </div>
+              <div>
+                <ContadorAnimado valor={entidadesConvocantes} />
                 <p className="text-xs text-ink-faint">Entidades convocantes</p>
               </div>
               <div>
-                <p className="font-tabular font-display text-2xl font-bold text-primary-800">$2.965M</p>
-                <p className="text-xs text-ink-faint">Monto máximo disponible</p>
+                <ContadorAnimado valor={consultoresAprobados} />
+                <p className="text-xs text-ink-faint">Consultores aprobados</p>
               </div>
             </div>
           </div>

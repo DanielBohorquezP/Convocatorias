@@ -51,6 +51,18 @@ export interface Proyecto {
   montoBuscado: number;
   ubicacion: string;
   categorias: string[]; // Categoria ids
+
+  // Contenido (para generación de documentos con IA) — todos opcionales,
+  // determinan el indicador de completitud del proyecto.
+  problema?: string;
+  objetivoGeneral?: string;
+  objetivosEspecificos?: string[];
+  poblacionBeneficiaria?: string;
+  actividades?: string;
+  resultadosEsperados?: string;
+  duracionMeses?: number;
+  presupuestoEstimado?: number;
+  experienciaEmpresa?: string;
 }
 
 export type EstadoPostulacion =
@@ -205,6 +217,7 @@ export interface Plan {
   rol: RolPlan;
   precioMensual: number;
   precioAnual: number;
+  creditosIaMensuales: number;
 }
 
 export type ModalidadSuscripcion = "trial" | "mensual" | "anual";
@@ -226,6 +239,52 @@ export interface Suscripcion {
   estado: EstadoSuscripcion;
   fechaInicio: string; // ISO date
   fechaVencimiento: string; // ISO date
+
+  // Créditos de IA
+  creditosUsadosPeriodo: number;
+  creditosExtra: number; // paquetes comprados, no expiran
+  periodoCreditosInicio: string; // ISO date — inicio del ciclo mensual de créditos
+}
+
+// ---------------------------------------------------------------------------
+// Generación de documentos con IA
+// ---------------------------------------------------------------------------
+
+export interface SeccionDocumento {
+  id: string;
+  titulo: string;
+  contenido: string;
+}
+
+export type EstadoDocumento = "generado" | "editado" | "exportado";
+
+export interface DocumentoGenerado {
+  id: string;
+  proyectoId: string;
+  convocatoriaId: string;
+  titulo: string;
+  version: number;
+  estado: EstadoDocumento;
+  promptVersionId: string;
+  secciones: SeccionDocumento[];
+  ajustesGratisUsados: number;
+  fechaCreacion: string; // ISO date
+  fechaActualizacion: string; // ISO date
+}
+
+export interface PromptVersion {
+  id: string;
+  version: number;
+  contenido: string;
+  activa: boolean;
+  fechaCreacion: string; // ISO date
+}
+
+export interface EstadisticasIA {
+  generaciones: number;
+  ajustes: number;
+  fallidas: number;
+  costoEstimadoCOP: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -235,6 +294,7 @@ export interface Suscripcion {
 export type ModoDemo =
   | "empresa_trial"
   | "empresa_vencida"
+  | "empresa_sin_creditos"
   | "consultor_aprobado"
   | "consultor_revision"
   | "admin";

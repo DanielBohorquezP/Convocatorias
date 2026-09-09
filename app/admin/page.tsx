@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { FileStack, CheckCircle2, EyeOff, Archive, AlertTriangle, UserCheck, ClipboardList, CreditCard } from "lucide-react";
+import { FileStack, CheckCircle2, EyeOff, Archive, AlertTriangle, UserCheck, ClipboardList, CreditCard, Sparkles, XCircle, Wallet } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import {
   diasRestantes,
+  formatCOP,
   formatFecha,
   ESTADO_CONVOCATORIA_LABEL,
   ESTADO_CONVOCATORIA_ESTILO,
@@ -21,6 +22,7 @@ export default function AdminDashboardPage() {
   const consultores = useAppStore((s) => s.consultores);
   const encargos = useAppStore((s) => s.encargos);
   const suscripciones = useAppStore((s) => s.suscripciones);
+  const estadisticasIA = useAppStore((s) => s.estadisticasIA);
 
   const totales = {
     borrador: convocatorias.filter((c) => c.estado === "borrador").length,
@@ -107,6 +109,25 @@ export default function AdminDashboardPage() {
               <Badge className={ESTADO_SUSCRIPCION_ESTILO[estado]}>{ESTADO_SUSCRIPCION_LABEL[estado]}</Badge>
             </Link>
           ))}
+        </div>
+      </div>
+
+      <div className="mt-8 rounded-2xl border border-teal-100 bg-white p-6">
+        <div className="mb-4 flex items-center gap-2">
+          <Sparkles className="h-4 w-4 text-teal-600" />
+          <h2 className="font-display text-base font-semibold text-ink">Consumo de IA del periodo</h2>
+        </div>
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          <TarjetaTotal icon={Sparkles} etiqueta="Generaciones" valor={estadisticasIA.generaciones} tono="text-teal-700 bg-teal-50" />
+          <TarjetaTotal icon={ClipboardList} etiqueta="Ajustes" valor={estadisticasIA.ajustes} tono="text-teal-700 bg-teal-50" />
+          <TarjetaTotal icon={XCircle} etiqueta="Fallidas (sin costo)" valor={estadisticasIA.fallidas} tono="text-slate-500 bg-slate-100" />
+          <div className="rounded-2xl border border-line bg-white p-5">
+            <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-gold-50 text-gold-700">
+              <Wallet className="h-5 w-5" />
+            </div>
+            <p className="font-display font-tabular text-2xl font-bold text-ink">{formatCOP(estadisticasIA.costoEstimadoCOP)}</p>
+            <p className="text-xs text-ink-faint">Costo estimado acumulado</p>
+          </div>
         </div>
       </div>
 

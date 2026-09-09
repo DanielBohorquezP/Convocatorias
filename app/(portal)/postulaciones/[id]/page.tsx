@@ -2,9 +2,10 @@
 
 import { use } from "react";
 import Link from "next/link";
-import { ArrowLeft, MapPin, Wallet, CheckSquare, Square } from "lucide-react";
+import { ArrowLeft, MapPin, Wallet, CheckSquare, Square, FileText } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import type { EstadoPostulacion } from "@/lib/types";
+import { documentoParaProyectoConv, ESTADO_DOCUMENTO_LABEL, ESTADO_DOCUMENTO_ESTILO } from "@/lib/documentos";
 import {
   formatCOP,
   formatFecha,
@@ -26,6 +27,7 @@ export default function DetallePostulacionPage({ params }: { params: Promise<{ i
   );
   const toggleChecklistItem = useAppStore((s) => s.toggleChecklistItem);
   const cambiarEstadoPostulacion = useAppStore((s) => s.cambiarEstadoPostulacion);
+  const documentos = useAppStore((s) => s.documentos);
 
   if (!postulacion) {
     return (
@@ -41,6 +43,9 @@ export default function DetallePostulacionPage({ params }: { params: Promise<{ i
   const total = postulacion.checklist.length;
   const completados = postulacion.checklist.filter((i) => i.completado).length;
   const porcentaje = total ? Math.round((completados / total) * 100) : 0;
+  const documento = postulacion.proyectoId
+    ? documentoParaProyectoConv(postulacion.proyectoId, postulacion.convocatoriaId, documentos)
+    : undefined;
 
   return (
     <div className="mx-auto max-w-4xl">
@@ -131,6 +136,25 @@ export default function DetallePostulacionPage({ params }: { params: Promise<{ i
             ))}
           </ul>
         </div>
+
+        {documento && (
+          <div className="mt-8">
+            <h2 className="font-display text-base font-semibold text-ink">Documento generado con IA</h2>
+            <Link
+              href={`/documentos/${documento.id}`}
+              className="mt-3 flex items-center gap-3 rounded-lg border border-teal-100 bg-teal-50/40 px-4 py-3 transition-colors hover:bg-teal-50"
+            >
+              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-teal-100 text-teal-700">
+                <FileText className="h-4 w-4" />
+              </span>
+              <span className="flex-1">
+                <span className="block text-sm font-medium text-ink">{documento.titulo}</span>
+                <span className="block text-xs text-ink-faint">Versión {documento.version}</span>
+              </span>
+              <Badge className={ESTADO_DOCUMENTO_ESTILO[documento.estado]}>{ESTADO_DOCUMENTO_LABEL[documento.estado]}</Badge>
+            </Link>
+          </div>
+        )}
 
         <div className="mt-8">
           <h2 className="font-display text-base font-semibold text-ink">Línea de tiempo</h2>

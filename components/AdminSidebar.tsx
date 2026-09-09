@@ -14,6 +14,7 @@ import {
   ClipboardList,
   Layers,
   CreditCard,
+  Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -47,6 +48,10 @@ const grupos: Array<{
       { href: "/admin/planes", label: "Planes", icon: Layers },
       { href: "/admin/suscripciones", label: "Suscripciones", icon: CreditCard },
     ],
+  },
+  {
+    titulo: "Inteligencia artificial",
+    enlaces: [{ href: "/admin/plantillas", label: "Plantillas de generación", icon: Sparkles }],
   },
 ];
 

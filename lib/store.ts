@@ -6,20 +6,28 @@ import {
   categorias as categoriasIniciales,
   consultores as consultoresIniciales,
   convocatorias as convocatoriasIniciales,
+  documentos as documentosIniciales,
   encargos as encargosIniciales,
+  estadisticasIA as estadisticasIAIniciales,
   fuentes as fuentesIniciales,
+  PAQUETE_CREDITOS_CANTIDAD,
+  PAQUETE_CREDITOS_PRECIO,
   pagos as pagosIniciales,
   planes as planesIniciales,
   postulaciones as postulacionesIniciales,
+  promptVersiones as promptVersionesIniciales,
   proyectos as proyectosIniciales,
   suscripciones as suscripcionesIniciales,
 } from "./mock-data";
+import { componerDocumento, aplicarAjusteTexto } from "./documentos";
 import type {
   Calificacion,
   Categoria,
   ChecklistItem,
   Convocatoria,
+  DocumentoGenerado,
   Encargo,
+  EstadisticasIA,
   EstadoEncargo,
   EstadoPostulacion,
   Fuente,
@@ -30,8 +38,10 @@ import type {
   PerfilConsultor,
   Plan,
   Postulacion,
+  PromptVersion,
   Proyecto,
   RedSocial,
+  SeccionDocumento,
   Suscripcion,
 } from "./types";
 
@@ -73,6 +83,9 @@ interface AppState {
   planes: Plan[];
   suscripciones: Suscripcion[];
   pagos: Pago[];
+  documentos: DocumentoGenerado[];
+  promptVersiones: PromptVersion[];
+  estadisticasIA: EstadisticasIA;
 
   // Simulador de modo demo
   modoDemo: ModoDemo;
@@ -84,6 +97,30 @@ interface AppState {
   abrirModalSuscripcion: (motivo?: string) => void;
   cerrarModalSuscripcion: () => void;
   simularPago: (usuarioId: string, planId: string, modalidad: ModalidadSuscripcion) => void;
+
+  // Modal de créditos IA
+  modalCreditosAbierto: boolean;
+  motivoModalCreditos: string;
+  abrirModalCreditos: (motivo?: string) => void;
+  cerrarModalCreditos: () => void;
+  consumirCredito: (usuarioId: string) => void;
+  otorgarCreditosExtra: (suscripcionId: string, cantidad: number) => void;
+  comprarPaqueteCreditos: (usuarioId: string) => void;
+
+  // Generación de documentos con IA
+  proyectoParaGenerar: string | null;
+  setProyectoParaGenerar: (proyectoId: string) => void;
+  limpiarProyectoParaGenerar: () => void;
+  crearDocumento: (proyectoId: string, convocatoriaId: string) => DocumentoGenerado;
+  actualizarSeccionDocumento: (documentoId: string, seccionId: string, contenido: string) => void;
+  marcarDocumentoExportado: (documentoId: string) => void;
+  regenerarDocumento: (documentoId: string) => DocumentoGenerado | null;
+  aplicarAjusteIA: (documentoId: string, instruccion: string) => void;
+  registrarGeneracionFallida: () => void;
+
+  // Plantillas de prompt (panel admin)
+  agregarVersionPrompt: (contenido: string) => void;
+  activarVersionPrompt: (id: string) => void;
 
   // Proyectos
   agregarProyecto: (p: Omit<Proyecto, "id">) => Proyecto;
@@ -159,6 +196,9 @@ export const useAppStore = create<AppState>((set, get) => ({
   planes: planesIniciales,
   suscripciones: suscripcionesIniciales,
   pagos: pagosIniciales,
+  documentos: documentosIniciales,
+  promptVersiones: promptVersionesIniciales,
+  estadisticasIA: estadisticasIAIniciales,
 
   modoDemo: "empresa_trial",
   setModoDemo: (modo) => set({ modoDemo: modo }),
@@ -185,7 +225,16 @@ export const useAppStore = create<AppState>((set, get) => ({
         suscripcionId = existente.id;
         suscripciones = s.suscripciones.map((sub) =>
           sub.id === existente.id
-            ? { ...sub, planId, modalidad, estado: "activa", fechaInicio: hoy, fechaVencimiento: nuevaFechaVencimiento }
+            ? {
+                ...sub,
+                planId,
+                modalidad,
+                estado: "activa",
+                fechaInicio: hoy,
+                fechaVencimiento: nuevaFechaVencimiento,
+                creditosUsadosPeriodo: 0,
+                periodoCreditosInicio: hoy,
+              }
             : sub
         );
       } else {
@@ -198,6 +247,9 @@ export const useAppStore = create<AppState>((set, get) => ({
           estado: "activa",
           fechaInicio: hoy,
           fechaVencimiento: nuevaFechaVencimiento,
+          creditosUsadosPeriodo: 0,
+          creditosExtra: 0,
+          periodoCreditosInicio: hoy,
         };
         suscripciones = [...s.suscripciones, nueva];
       }
@@ -550,10 +602,195 @@ export const useAppStore = create<AppState>((set, get) => ({
         pagos: [...s.pagos, pago],
         suscripciones: s.suscripciones.map((sub) =>
           sub.id === suscripcionId
-            ? { ...sub, estado: "activa", fechaVencimiento: nuevaFechaVencimiento }
+            ? {
+                ...sub,
+                estado: "activa",
+                fechaVencimiento: nuevaFechaVencimiento,
+                creditosUsadosPeriodo: 0,
+                periodoCreditosInicio: fecha,
+              }
             : sub
         ),
       };
     });
+  },
+
+  // -------------------------------------------------------------------------
+  // Créditos de IA
+  // -------------------------------------------------------------------------
+
+  modalCreditosAbierto: false,
+  motivoModalCreditos: "",
+  abrirModalCreditos: (motivo) => set({ modalCreditosAbierto: true, motivoModalCreditos: motivo ?? "generar el documento" }),
+  cerrarModalCreditos: () => set({ modalCreditosAbierto: false }),
+
+  consumirCredito: (usuarioId) => {
+    set((s) => ({
+      suscripciones: s.suscripciones.map((sub) =>
+        sub.usuarioId === usuarioId ? { ...sub, creditosUsadosPeriodo: sub.creditosUsadosPeriodo + 1 } : sub
+      ),
+    }));
+  },
+
+  otorgarCreditosExtra: (suscripcionId, cantidad) => {
+    set((s) => ({
+      suscripciones: s.suscripciones.map((sub) =>
+        sub.id === suscripcionId ? { ...sub, creditosExtra: sub.creditosExtra + cantidad } : sub
+      ),
+    }));
+  },
+
+  comprarPaqueteCreditos: (usuarioId) => {
+    set((s) => {
+      const suscripcion = s.suscripciones.find((sub) => sub.usuarioId === usuarioId);
+      if (!suscripcion) return s;
+      const pago: Pago = { id: nuevoId("pago"), suscripcionId: suscripcion.id, monto: PAQUETE_CREDITOS_PRECIO, fecha: hoyIso() };
+      return {
+        pagos: [...s.pagos, pago],
+        suscripciones: s.suscripciones.map((sub) =>
+          sub.id === suscripcion.id ? { ...sub, creditosExtra: sub.creditosExtra + PAQUETE_CREDITOS_CANTIDAD } : sub
+        ),
+        modalCreditosAbierto: false,
+      };
+    });
+  },
+
+  // -------------------------------------------------------------------------
+  // Generación de documentos con IA
+  // -------------------------------------------------------------------------
+
+  proyectoParaGenerar: null,
+  setProyectoParaGenerar: (proyectoId) => set({ proyectoParaGenerar: proyectoId }),
+  limpiarProyectoParaGenerar: () => set({ proyectoParaGenerar: null }),
+
+  crearDocumento: (proyectoId, convocatoriaId) => {
+    const proyecto = get().proyectos.find((p) => p.id === proyectoId);
+    const convocatoria = get().convocatorias.find((c) => c.id === convocatoriaId);
+    const promptActiva = get().promptVersiones.find((p) => p.activa) ?? get().promptVersiones[get().promptVersiones.length - 1];
+    const hoy = hoyIso();
+
+    let secciones: SeccionDocumento[] = [];
+    let titulo = "Documento sin título";
+    if (proyecto && convocatoria) {
+      const resultado = componerDocumento(proyecto, convocatoria);
+      secciones = resultado.secciones;
+      titulo = resultado.secciones.find((s) => s.id === "titulo")?.contenido ?? `${proyecto.nombre} — ${convocatoria.nombre}`;
+    }
+
+    const nuevo: DocumentoGenerado = {
+      id: nuevoId("doc"),
+      proyectoId,
+      convocatoriaId,
+      titulo,
+      version: 1,
+      estado: "generado",
+      promptVersionId: promptActiva?.id ?? "",
+      secciones,
+      ajustesGratisUsados: 0,
+      fechaCreacion: hoy,
+      fechaActualizacion: hoy,
+    };
+
+    set((s) => ({
+      documentos: [...s.documentos, nuevo],
+      estadisticasIA: { ...s.estadisticasIA, generaciones: s.estadisticasIA.generaciones + 1 },
+    }));
+    return nuevo;
+  },
+
+  actualizarSeccionDocumento: (documentoId, seccionId, contenido) => {
+    set((s) => ({
+      documentos: s.documentos.map((d) =>
+        d.id === documentoId
+          ? {
+              ...d,
+              estado: "editado",
+              fechaActualizacion: hoyIso(),
+              secciones: d.secciones.map((sec) => (sec.id === seccionId ? { ...sec, contenido } : sec)),
+            }
+          : d
+      ),
+    }));
+  },
+
+  marcarDocumentoExportado: (documentoId) => {
+    set((s) => ({
+      documentos: s.documentos.map((d) => (d.id === documentoId ? { ...d, estado: "exportado" } : d)),
+    }));
+  },
+
+  regenerarDocumento: (documentoId) => {
+    const doc = get().documentos.find((d) => d.id === documentoId);
+    if (!doc) return null;
+    const proyecto = get().proyectos.find((p) => p.id === doc.proyectoId);
+    const convocatoria = get().convocatorias.find((c) => c.id === doc.convocatoriaId);
+    if (!proyecto || !convocatoria) return null;
+    const promptActiva = get().promptVersiones.find((p) => p.activa) ?? get().promptVersiones[get().promptVersiones.length - 1];
+    const resultado = componerDocumento(proyecto, convocatoria);
+    const hoy = hoyIso();
+
+    let actualizado: DocumentoGenerado | null = null;
+    set((s) => ({
+      documentos: s.documentos.map((d) => {
+        if (d.id !== documentoId) return d;
+        actualizado = {
+          ...d,
+          version: d.version + 1,
+          estado: "generado",
+          promptVersionId: promptActiva?.id ?? d.promptVersionId,
+          secciones: resultado.secciones,
+          ajustesGratisUsados: 0,
+          fechaActualizacion: hoy,
+        };
+        return actualizado;
+      }),
+      estadisticasIA: { ...s.estadisticasIA, generaciones: s.estadisticasIA.generaciones + 1 },
+    }));
+    return actualizado;
+  },
+
+  aplicarAjusteIA: (documentoId, instruccion) => {
+    set((s) => ({
+      documentos: s.documentos.map((d) =>
+        d.id === documentoId
+          ? {
+              ...d,
+              secciones: aplicarAjusteTexto(d.secciones, instruccion),
+              ajustesGratisUsados: d.ajustesGratisUsados + 1,
+              estado: "editado",
+              fechaActualizacion: hoyIso(),
+            }
+          : d
+      ),
+      estadisticasIA: { ...s.estadisticasIA, ajustes: s.estadisticasIA.ajustes + 1 },
+    }));
+  },
+
+  registrarGeneracionFallida: () => {
+    set((s) => ({ estadisticasIA: { ...s.estadisticasIA, fallidas: s.estadisticasIA.fallidas + 1 } }));
+  },
+
+  // -------------------------------------------------------------------------
+  // Plantillas de prompt (panel admin)
+  // -------------------------------------------------------------------------
+
+  agregarVersionPrompt: (contenido) => {
+    set((s) => {
+      const siguiente = Math.max(0, ...s.promptVersiones.map((p) => p.version)) + 1;
+      const nueva: PromptVersion = {
+        id: nuevoId("prompt"),
+        version: siguiente,
+        contenido,
+        activa: false,
+        fechaCreacion: hoyIso(),
+      };
+      return { promptVersiones: [...s.promptVersiones, nueva] };
+    });
+  },
+
+  activarVersionPrompt: (id) => {
+    set((s) => ({
+      promptVersiones: s.promptVersiones.map((p) => ({ ...p, activa: p.id === id })),
+    }));
   },
 }));
