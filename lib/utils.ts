@@ -4,6 +4,8 @@ import type {
   EstadoPerfilConsultor,
   EstadoPostulacion,
   EstadoSuscripcion,
+  TipoAyudaEncargo,
+  TipoEventoSeguridad,
 } from "./types";
 
 export function formatCOP(valor: number): string {
@@ -151,6 +153,42 @@ export const ESTADO_SUSCRIPCION_ESTILO: Record<EstadoSuscripcion, string> = {
   vencida: "bg-danger-bg text-danger ring-red-200",
   suspendida: "bg-slate-100 text-slate-500 ring-slate-200",
 };
+
+export const TIPO_AYUDA_LABEL: Record<TipoAyudaEncargo, string> = {
+  convocatoria_especifica: "Ayuda con una convocatoria específica",
+  buscar_convocatoria: "Ayuda para encontrar convocatoria",
+};
+
+export const TIPO_AYUDA_ESTILO: Record<TipoAyudaEncargo, string> = {
+  convocatoria_especifica: "bg-teal-50 text-teal-700 ring-teal-200",
+  buscar_convocatoria: "bg-brick-50 text-brick-700 ring-brick-100",
+};
+
+export const TIPO_EVENTO_SEGURIDAD_LABEL: Record<TipoEventoSeguridad, string> = {
+  login_fallido: "Login fallido",
+  acceso_denegado: "Acceso denegado",
+  limite_tasa: "Límite de tasa",
+  mfa_activado: "MFA activado",
+  mfa_fallido: "MFA fallido",
+};
+
+export const TIPO_EVENTO_SEGURIDAD_ESTILO: Record<TipoEventoSeguridad, string> = {
+  login_fallido: "bg-amber-50 text-amber-700 ring-amber-200",
+  acceso_denegado: "bg-danger-bg text-danger ring-red-200",
+  limite_tasa: "bg-brick-50 text-brick-700 ring-brick-100",
+  mfa_activado: "bg-emerald-50 text-emerald-700 ring-emerald-200",
+  mfa_fallido: "bg-danger-bg text-danger ring-red-200",
+};
+
+export function formatFechaHora(iso: string): string {
+  return new Intl.DateTimeFormat("es-CO", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(iso));
+}
 
 export function diasRestantesHasta(fechaIso: string): number {
   const fecha = new Date(fechaIso + "T00:00:00");

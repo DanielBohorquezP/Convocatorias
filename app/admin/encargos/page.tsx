@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { ClipboardList } from "lucide-react";
+import { ClipboardList, Target, Compass } from "lucide-react";
 import { useAppStore } from "@/lib/store";
-import { formatFecha } from "@/lib/utils";
+import { formatFecha, TIPO_AYUDA_LABEL, TIPO_AYUDA_ESTILO } from "@/lib/utils";
+import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 
@@ -11,6 +12,7 @@ export default function AdminEncargosPage() {
   const todosLosEncargos = useAppStore((s) => s.encargos);
   const encargos = todosLosEncargos.filter((e) => e.estado === "esperando_asignacion");
   const proyectos = useAppStore((s) => s.proyectos);
+  const convocatorias = useAppStore((s) => s.convocatorias);
   const todosLosConsultores = useAppStore((s) => s.consultores);
   const consultoresInternos = todosLosConsultores.filter((c) => c.esEquipoInterno && c.estadoPerfil === "aprobado");
   const asignarConsultorInterno = useAppStore((s) => s.asignarConsultorInterno);
@@ -36,11 +38,26 @@ export default function AdminEncargosPage() {
         <div className="space-y-4">
           {encargos.map((e) => {
             const proyecto = proyectos.find((p) => p.id === e.proyectoId);
+            const convocatoria = e.convocatoriaId ? convocatorias.find((c) => c.id === e.convocatoriaId) : undefined;
             return (
               <div key={e.id} className="rounded-2xl border border-line bg-white p-5">
-                <p className="text-xs text-ink-faint">
-                  Proyecto: <span className="font-medium text-ink-soft">{proyecto?.nombre ?? "No disponible"}</span> ·
-                  Creado el {formatFecha(e.fechas.creada)}
+                <Badge className={TIPO_AYUDA_ESTILO[e.tipoAyuda]}>
+                  {e.tipoAyuda === "convocatoria_especifica" ? (
+                    <Target className="h-3 w-3" />
+                  ) : (
+                    <Compass className="h-3 w-3" />
+                  )}
+                  {TIPO_AYUDA_LABEL[e.tipoAyuda]}
+                </Badge>
+                <p className="mt-2 text-xs text-ink-faint">
+                  Proyecto: <span className="font-medium text-ink-soft">{proyecto?.nombre ?? "No disponible"}</span>
+                  {convocatoria && (
+                    <>
+                      {" · Convocatoria: "}
+                      <span className="font-medium text-ink-soft">{convocatoria.nombre}</span>
+                    </>
+                  )}
+                  {" · "}Creado el {formatFecha(e.fechas.creada)}
                 </p>
                 <h3 className="mt-1 font-display text-base font-semibold text-ink">{e.tituloTarea}</h3>
                 <p className="mt-1.5 text-sm text-ink-soft">{e.descripcionTarea}</p>

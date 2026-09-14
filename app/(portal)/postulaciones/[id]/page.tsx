@@ -1,11 +1,24 @@
 "use client";
 
-import { use } from "react";
+import { use, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, MapPin, Wallet, CheckSquare, Square, FileText } from "lucide-react";
+import { useRouter } from "next/navigation";
+import {
+  ArrowLeft,
+  MapPin,
+  Wallet,
+  CheckSquare,
+  Square,
+  FileText,
+  Sparkles,
+  Pencil,
+  ExternalLink,
+  UserPlus,
+} from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import type { EstadoPostulacion } from "@/lib/types";
 import { documentoParaProyectoConv, ESTADO_DOCUMENTO_LABEL, ESTADO_DOCUMENTO_ESTILO } from "@/lib/documentos";
+import { useAccesoSuscripcion } from "@/lib/hooks";
 import {
   formatCOP,
   formatFecha,
@@ -14,10 +27,13 @@ import {
   ESTADO_POSTULACION_ORDEN,
 } from "@/lib/utils";
 import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
 import { ProgressBar } from "@/components/ui/ProgressBar";
+import { SolicitarConsultorModal } from "@/components/SolicitarConsultorModal";
 
 export default function DetallePostulacionPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
+  const router = useRouter();
   const postulacion = useAppStore((s) => s.postulaciones.find((p) => p.id === id));
   const convocatoria = useAppStore((s) =>
     postulacion ? s.convocatorias.find((c) => c.id === postulacion.convocatoriaId) : undefined
@@ -25,9 +41,15 @@ export default function DetallePostulacionPage({ params }: { params: Promise<{ i
   const proyecto = useAppStore((s) =>
     postulacion?.proyectoId ? s.proyectos.find((p) => p.id === postulacion.proyectoId) : undefined
   );
+  const proyectos = useAppStore((s) => s.proyectos);
   const toggleChecklistItem = useAppStore((s) => s.toggleChecklistItem);
   const cambiarEstadoPostulacion = useAppStore((s) => s.cambiarEstadoPostulacion);
+  const vincularProyectoAPostulacion = useAppStore((s) => s.vincularProyectoAPostulacion);
+  const setProyectoParaGenerar = useAppStore((s) => s.setProyectoParaGenerar);
   const documentos = useAppStore((s) => s.documentos);
+  const { requerirAcceso } = useAccesoSuscripcion();
+  const [proyectoParaVincular, setProyectoParaVincular] = useState("");
+  const [modalConsultorAbierto, setModalConsultorAbierto] = useState(false);
 
   if (!postulacion) {
     return (
@@ -46,6 +68,37 @@ export default function DetallePostulacionPage({ params }: { params: Promise<{ i
   const documento = postulacion.proyectoId
     ? documentoParaProyectoConv(postulacion.proyectoId, postulacion.convocatoriaId, documentos)
     : undefined;
+
+  const irAGenerarOEditar = () => {
+    if (documento) {
+      router.push(`/documentos/${documento.id}`);
+      return;
+    }
+    if (!postulacion.proyectoId) return; // el botón de abajo pide vincular uno primero
+    if (!requerirAcceso("generar un documento con IA")) return;
+    setProyectoParaGenerar(postulacion.proyectoId);
+    router.push(`/convocatorias/${postulacion.convocatoriaId}/generar`);
+  };
+
+  const vincularYContinuar = () => {
+    if (!proyectoParaVincular) return;
+    vincularProyectoAPostulacion(postulacion.id, proyectoParaVincular);
+    if (!requerirAcceso("generar un documento con IA")) return;
+    setProyectoParaGenerar(proyectoParaVincular);
+    router.push(`/convocatorias/${postulacion.convocatoriaId}/generar`);
+  };
+
+  const abrirSolicitudConsultor = () => {
+    if (!requerirAcceso("solicitar un consultor")) return;
+    setModalConsultorAbierto(true);
+  };
+
+  const vincularYSolicitarConsultor = () => {
+    if (!proyectoParaVincular) return;
+    vincularProyectoAPostulacion(postulacion.id, proyectoParaVincular);
+    if (!requerirAcceso("solicitar un consultor")) return;
+    setModalConsultorAbierto(true);
+  };
 
   return (
     <div className="mx-auto max-w-4xl">
@@ -70,23 +123,41 @@ export default function DetallePostulacionPage({ params }: { params: Promise<{ i
             </p>
           </div>
 
-          <div className="w-full sm:w-56">
-            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-ink-faint">
-              Cambiar estado
-            </label>
-            <select
-              value={postulacion.estado}
-              onChange={(e) => cambiarEstadoPostulacion(postulacion.id, e.target.value as EstadoPostulacion)}
-              className="w-full rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-primary-500"
-            >
-              {ESTADO_POSTULACION_ORDEN.map((estado) => (
-                <option key={estado} value={estado}>
-                  {ESTADO_POSTULACION_LABEL[estado]}
-                </option>
-              ))}
-            </select>
+          <div className="flex w-full flex-col gap-2 sm:w-56">
+            {convocatoria?.urlPostulacion && (
+              <a href={convocatoria.urlPostulacion} target="_blank" rel="noreferrer" className="w-full">
+                <Button variant="secondary" className="w-full">
+                  <ExternalLink className="h-4 w-4" /> Ir al portal de la entidad
+                </Button>
+              </a>
+            )}
+            {proyecto && (
+              <Button variant="brick" className="w-full" onClick={abrirSolicitudConsultor}>
+                <UserPlus className="h-4 w-4" /> Solicitar consultor
+              </Button>
+            )}
+            <div>
+              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-ink-faint">
+                Cambiar estado
+              </label>
+              <select
+                value={postulacion.estado}
+                onChange={(e) => cambiarEstadoPostulacion(postulacion.id, e.target.value as EstadoPostulacion)}
+                className="w-full rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-primary-500"
+              >
+                {ESTADO_POSTULACION_ORDEN.map((estado) => (
+                  <option key={estado} value={estado}>
+                    {ESTADO_POSTULACION_LABEL[estado]}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
+
+        <p className="mt-3 flex items-start gap-2 rounded-lg border border-dashed border-line px-4 py-2.5 text-xs text-ink-faint">
+          La postulación se radica en el portal de la entidad convocante, no en esta plataforma (RN-19).
+        </p>
 
         {convocatoria && (
           <div className="mt-6 flex flex-wrap gap-6 border-y border-line-soft py-4 text-sm text-ink-soft">
@@ -137,12 +208,13 @@ export default function DetallePostulacionPage({ params }: { params: Promise<{ i
           </ul>
         </div>
 
-        {documento && (
-          <div className="mt-8">
-            <h2 className="font-display text-base font-semibold text-ink">Documento generado con IA</h2>
-            <Link
-              href={`/documentos/${documento.id}`}
-              className="mt-3 flex items-center gap-3 rounded-lg border border-teal-100 bg-teal-50/40 px-4 py-3 transition-colors hover:bg-teal-50"
+        <div className="mt-8">
+          <h2 className="font-display text-base font-semibold text-ink">Documento generado con IA</h2>
+
+          {documento ? (
+            <button
+              onClick={irAGenerarOEditar}
+              className="mt-3 flex w-full items-center gap-3 rounded-lg border border-teal-100 bg-teal-50/40 px-4 py-3 text-left transition-colors hover:bg-teal-50"
             >
               <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-teal-100 text-teal-700">
                 <FileText className="h-4 w-4" />
@@ -152,9 +224,47 @@ export default function DetallePostulacionPage({ params }: { params: Promise<{ i
                 <span className="block text-xs text-ink-faint">Versión {documento.version}</span>
               </span>
               <Badge className={ESTADO_DOCUMENTO_ESTILO[documento.estado]}>{ESTADO_DOCUMENTO_LABEL[documento.estado]}</Badge>
-            </Link>
-          </div>
-        )}
+              <Pencil className="h-4 w-4 shrink-0 text-teal-700" />
+            </button>
+          ) : postulacion.proyectoId ? (
+            <button
+              onClick={irAGenerarOEditar}
+              className="mt-3 flex w-full items-center gap-3 rounded-lg border border-dashed border-teal-200 bg-teal-50/20 px-4 py-3 text-left transition-colors hover:bg-teal-50/40"
+            >
+              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-teal-100 text-teal-700">
+                <Sparkles className="h-4 w-4" />
+              </span>
+              <span className="flex-1 text-sm font-medium text-teal-800">Generar documento con IA para esta postulación</span>
+            </button>
+          ) : (
+            <div className="mt-3 rounded-lg border border-dashed border-line px-4 py-3">
+              <p className="text-sm text-ink-soft">
+                Vincula un proyecto para poder generar el documento con IA o solicitar un consultor (CU-13, flujos
+                3a/5a).
+              </p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                <select
+                  value={proyectoParaVincular}
+                  onChange={(e) => setProyectoParaVincular(e.target.value)}
+                  className="flex-1 rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-primary-500"
+                >
+                  <option value="">Selecciona un proyecto...</option>
+                  {proyectos.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.nombre}
+                    </option>
+                  ))}
+                </select>
+                <Button variant="teal" size="sm" onClick={vincularYContinuar} disabled={!proyectoParaVincular}>
+                  Vincular y generar
+                </Button>
+                <Button variant="brick" size="sm" onClick={vincularYSolicitarConsultor} disabled={!proyectoParaVincular}>
+                  Vincular y solicitar consultor
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
 
         <div className="mt-8">
           <h2 className="font-display text-base font-semibold text-ink">Línea de tiempo</h2>
@@ -182,6 +292,15 @@ export default function DetallePostulacionPage({ params }: { params: Promise<{ i
           </ol>
         </div>
       </div>
+
+      {proyecto && (
+        <SolicitarConsultorModal
+          proyecto={proyecto}
+          open={modalConsultorAbierto}
+          onClose={() => setModalConsultorAbierto(false)}
+          convocatoriaFijaId={postulacion.convocatoriaId}
+        />
+      )}
     </div>
   );
 }

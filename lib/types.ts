@@ -42,6 +42,8 @@ export interface Convocatoria {
   categorias: string[]; // Categoria ids
   documentos: Documento[];
   requisitos: Requisito[];
+  // Enlace oficial de postulación (RF-05, RF-09, RF-73) — obligatorio para publicar (RN-01).
+  urlPostulacion?: string;
 }
 
 export interface Proyecto {
@@ -111,6 +113,8 @@ export interface Fuente {
 export interface Empresa {
   id: string;
   nombre: string;
+  // Revelado al consultor solo cuando el encargo pasa a en_curso (RF-70, RN-26).
+  correo: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -156,6 +160,9 @@ export interface PerfilConsultor {
   esEquipoInterno: boolean;
   ratingPromedio: number;
   totalEncargosCompletados: number;
+  // Correo de contacto — visible a empresas solo con solicitud activa (RN-12, ampliado en v5);
+  // sitioWeb/redes/cvNombre ya existían pero ahora se ocultan con la misma regla en la UI.
+  correo: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -173,6 +180,9 @@ export type EstadoEncargo =
   | "calificado"
   | "cancelado";
 
+// Tipo de ayuda elegido al solicitar consultor (CU-19, RF-28 mod. v5).
+export type TipoAyudaEncargo = "convocatoria_especifica" | "buscar_convocatoria";
+
 export interface AvanceEncargo {
   id: string;
   nota: string;
@@ -188,12 +198,19 @@ export interface Encargo {
   descripcionTarea: string;
   via: ViaEncargo;
   estado: EstadoEncargo;
+  // Se completa solo cuando estado = "cancelado" (suspensión del consultor o
+  // vencimiento de su suscripción, RN-29, nuevo v5).
+  motivoCancelacion?: string;
   avances: AvanceEncargo[];
   fechas: {
     creada: string;
     aceptado: string | null;
     completado: string | null;
   };
+  // Contexto adjuntado automáticamente al solicitar (RF-68/69, nuevo v5).
+  tipoAyuda: TipoAyudaEncargo;
+  convocatoriaId: string | null; // solo si tipoAyuda = convocatoria_especifica
+  postulacionId: string | null; // autovinculado si ya existía una postulación en curso
 }
 
 export interface Calificacion {
@@ -270,6 +287,10 @@ export interface DocumentoGenerado {
   ajustesGratisUsados: number;
   fechaCreacion: string; // ISO date
   fechaActualizacion: string; // ISO date
+  // Consultor autorizado a leer/editar (nunca descargar) — RN-22, RN-27, RF-71.
+  compartidoConConsultorId: string | null;
+  // Quién hizo el último cambio, para auditoría (RNF-11, nuevo v5).
+  ultimaEdicionPor: "empresa" | "consultor" | null;
 }
 
 export interface PromptVersion {
@@ -285,6 +306,29 @@ export interface EstadisticasIA {
   ajustes: number;
   fallidas: number;
   costoEstimadoCOP: number;
+}
+
+// ---------------------------------------------------------------------------
+// Seguridad y auditoría (CU-38..40, RNF-25..28, nuevo v5)
+// ---------------------------------------------------------------------------
+
+export type TipoEventoSeguridad =
+  | "login_fallido"
+  | "acceso_denegado"
+  | "limite_tasa"
+  | "mfa_activado"
+  | "mfa_fallido";
+
+export interface EventoSeguridad {
+  id: string;
+  tipo: TipoEventoSeguridad;
+  usuarioNombre: string | null;
+  ip: string;
+  ruta: string;
+  detalle: string;
+  // Solo para tipo === "limite_tasa": bloqueo activo si esta fecha es futura.
+  bloqueadoHasta: string | null; // ISO datetime
+  fecha: string; // ISO datetime
 }
 
 // ---------------------------------------------------------------------------

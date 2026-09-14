@@ -7,8 +7,10 @@ import {
   consultores as consultoresIniciales,
   convocatorias as convocatoriasIniciales,
   documentos as documentosIniciales,
+  empresas as empresasIniciales,
   encargos as encargosIniciales,
   estadisticasIA as estadisticasIAIniciales,
+  eventosSeguridad as eventosSeguridadIniciales,
   fuentes as fuentesIniciales,
   PAQUETE_CREDITOS_CANTIDAD,
   PAQUETE_CREDITOS_PRECIO,
@@ -19,17 +21,19 @@ import {
   proyectos as proyectosIniciales,
   suscripciones as suscripcionesIniciales,
 } from "./mock-data";
-import { componerDocumento, aplicarAjusteTexto } from "./documentos";
+import { componerDocumento, aplicarAjusteTexto, postulacionParaProyectoConv } from "./documentos";
 import type {
   Calificacion,
   Categoria,
   ChecklistItem,
   Convocatoria,
   DocumentoGenerado,
+  Empresa,
   Encargo,
   EstadisticasIA,
   EstadoEncargo,
   EstadoPostulacion,
+  EventoSeguridad,
   Fuente,
   ItemPortafolio,
   ModalidadSuscripcion,
@@ -43,6 +47,7 @@ import type {
   RedSocial,
   SeccionDocumento,
   Suscripcion,
+  TipoAyudaEncargo,
 } from "./types";
 
 let contador = 1000;
@@ -69,6 +74,9 @@ interface SolicitudConsultor {
   proyectoId: string;
   tituloTarea: string;
   descripcionTarea: string;
+  // Elegido en el paso 1 del flujo (CU-19, RF-28 mod. v5).
+  tipoAyuda: TipoAyudaEncargo;
+  convocatoriaId: string | null; // solo si tipoAyuda = convocatoria_especifica
 }
 
 interface AppState {
@@ -77,6 +85,7 @@ interface AppState {
   proyectos: Proyecto[];
   postulaciones: Postulacion[];
   fuentes: Fuente[];
+  empresas: Empresa[];
   consultores: PerfilConsultor[];
   encargos: Encargo[];
   calificaciones: Calificacion[];
@@ -86,10 +95,16 @@ interface AppState {
   documentos: DocumentoGenerado[];
   promptVersiones: PromptVersion[];
   estadisticasIA: EstadisticasIA;
+  eventosSeguridad: EventoSeguridad[];
 
   // Simulador de modo demo
   modoDemo: ModoDemo;
   setModoDemo: (modo: ModoDemo) => void;
+
+  // Seguridad y auditoría (CU-38..40, RNF-25..28, nuevo v5)
+  mfaVerificado: boolean;
+  verificarMFA: () => void;
+  liberarBloqueoSeguridad: (eventoId: string) => void;
 
   // Modal de suscripción
   modalSuscripcionAbierto: boolean;
@@ -112,11 +127,20 @@ interface AppState {
   setProyectoParaGenerar: (proyectoId: string) => void;
   limpiarProyectoParaGenerar: () => void;
   crearDocumento: (proyectoId: string, convocatoriaId: string) => DocumentoGenerado;
-  actualizarSeccionDocumento: (documentoId: string, seccionId: string, contenido: string) => void;
+  actualizarSeccionDocumento: (
+    documentoId: string,
+    seccionId: string,
+    contenido: string,
+    autor?: "empresa" | "consultor"
+  ) => void;
   marcarDocumentoExportado: (documentoId: string) => void;
   regenerarDocumento: (documentoId: string) => DocumentoGenerado | null;
-  aplicarAjusteIA: (documentoId: string, instruccion: string) => void;
+  aplicarAjusteIA: (documentoId: string, instruccion: string, autor?: "empresa" | "consultor") => void;
   registrarGeneracionFallida: () => void;
+
+  // Compartir documento con el consultor (RN-22, RN-27, RF-71/72, nuevo v5)
+  compartirDocumento: (documentoId: string, consultorId: string) => void;
+  revocarCompartirDocumento: (documentoId: string) => void;
 
   // Plantillas de prompt (panel admin)
   agregarVersionPrompt: (contenido: string) => void;
@@ -131,6 +155,7 @@ interface AppState {
   crearPostulacion: (convocatoriaId: string, proyectoId: string | null) => Postulacion;
   toggleChecklistItem: (postulacionId: string, itemId: string) => void;
   cambiarEstadoPostulacion: (postulacionId: string, nuevoEstado: EstadoPostulacion) => void;
+  vincularProyectoAPostulacion: (postulacionId: string, proyectoId: string) => void;
 
   // Fuentes
   agregarFuente: (f: Omit<Fuente, "id">) => void;
@@ -190,6 +215,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   proyectos: proyectosIniciales,
   postulaciones: postulacionesIniciales,
   fuentes: fuentesIniciales,
+  empresas: empresasIniciales,
   consultores: consultoresIniciales,
   encargos: encargosIniciales,
   calificaciones: calificacionesIniciales,
@@ -199,9 +225,41 @@ export const useAppStore = create<AppState>((set, get) => ({
   documentos: documentosIniciales,
   promptVersiones: promptVersionesIniciales,
   estadisticasIA: estadisticasIAIniciales,
+  eventosSeguridad: eventosSeguridadIniciales,
 
   modoDemo: "empresa_trial",
   setModoDemo: (modo) => set({ modoDemo: modo }),
+
+  // -------------------------------------------------------------------------
+  // Seguridad y auditoría (CU-38..40, RNF-25..28)
+  // -------------------------------------------------------------------------
+
+  mfaVerificado: false,
+  verificarMFA: () => {
+    set((s) => ({
+      mfaVerificado: true,
+      eventosSeguridad: [
+        {
+          id: nuevoId("evt"),
+          tipo: "mfa_activado",
+          usuarioNombre: "admin-1",
+          ip: "192.168.1.20",
+          ruta: "/admin/seguridad",
+          detalle: "Verificación en dos pasos activada correctamente.",
+          bloqueadoHasta: null,
+          fecha: new Date().toISOString(),
+        },
+        ...s.eventosSeguridad,
+      ],
+    }));
+  },
+  liberarBloqueoSeguridad: (eventoId) => {
+    set((s) => ({
+      eventosSeguridad: s.eventosSeguridad.map((e) =>
+        e.id === eventoId ? { ...e, bloqueadoHasta: new Date(0).toISOString() } : e
+      ),
+    }));
+  },
 
   modalSuscripcionAbierto: false,
   motivoModalSuscripcion: "",
@@ -332,6 +390,12 @@ export const useAppStore = create<AppState>((set, get) => ({
     }));
   },
 
+  vincularProyectoAPostulacion: (postulacionId, proyectoId) => {
+    set((s) => ({
+      postulaciones: s.postulaciones.map((p) => (p.id === postulacionId ? { ...p, proyectoId } : p)),
+    }));
+  },
+
   agregarFuente: (f) => {
     set((s) => ({ fuentes: [...s.fuentes, { ...f, id: nuevoId("fuente") }] }));
   },
@@ -374,6 +438,9 @@ export const useAppStore = create<AppState>((set, get) => ({
   crearEncargoEsperandoAsignacion: () => {
     const solicitud = get().solicitudConsultorEnCurso;
     if (!solicitud) return null;
+    const postulacion = solicitud.convocatoriaId
+      ? postulacionParaProyectoConv(solicitud.proyectoId, solicitud.convocatoriaId, get().postulaciones)
+      : undefined;
     const nuevo: Encargo = {
       id: nuevoId("encargo"),
       proyectoId: solicitud.proyectoId,
@@ -385,6 +452,9 @@ export const useAppStore = create<AppState>((set, get) => ({
       estado: "esperando_asignacion",
       avances: [],
       fechas: { creada: hoyIso(), aceptado: null, completado: null },
+      tipoAyuda: solicitud.tipoAyuda,
+      convocatoriaId: solicitud.convocatoriaId,
+      postulacionId: postulacion?.id ?? null,
     };
     set((s) => ({ encargos: [...s.encargos, nuevo], solicitudConsultorEnCurso: null }));
     return nuevo;
@@ -393,6 +463,9 @@ export const useAppStore = create<AppState>((set, get) => ({
   crearEncargoDesdeDirectorio: (consultorId) => {
     const solicitud = get().solicitudConsultorEnCurso;
     if (!solicitud) return null;
+    const postulacion = solicitud.convocatoriaId
+      ? postulacionParaProyectoConv(solicitud.proyectoId, solicitud.convocatoriaId, get().postulaciones)
+      : undefined;
     const nuevo: Encargo = {
       id: nuevoId("encargo"),
       proyectoId: solicitud.proyectoId,
@@ -404,6 +477,9 @@ export const useAppStore = create<AppState>((set, get) => ({
       estado: "pendiente",
       avances: [],
       fechas: { creada: hoyIso(), aceptado: null, completado: null },
+      tipoAyuda: solicitud.tipoAyuda,
+      convocatoriaId: solicitud.convocatoriaId,
+      postulacionId: postulacion?.id ?? null,
     };
     set((s) => ({ encargos: [...s.encargos, nuevo], solicitudConsultorEnCurso: null }));
     return nuevo;
@@ -517,8 +593,16 @@ export const useAppStore = create<AppState>((set, get) => ({
     }));
   },
   suspenderConsultor: (consultorId) => {
+    // RN-29 (nuevo v5): al suspender, sus encargos en_curso se cancelan de
+    // inmediato con motivo registrado — el historial y calificaciones ya
+    // emitidas no se tocan.
     set((s) => ({
       consultores: s.consultores.map((c) => (c.id === consultorId ? { ...c, estadoPerfil: "suspendido" } : c)),
+      encargos: s.encargos.map((e) =>
+        e.consultorId === consultorId && e.estado === "en_curso"
+          ? { ...e, estado: "cancelado" as EstadoEncargo, motivoCancelacion: "Consultor suspendido por el administrador" }
+          : e
+      ),
     }));
   },
   reactivarConsultor: (consultorId) => {
@@ -689,6 +773,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       ajustesGratisUsados: 0,
       fechaCreacion: hoy,
       fechaActualizacion: hoy,
+      compartidoConConsultorId: null,
+      ultimaEdicionPor: null,
     };
 
     set((s) => ({
@@ -698,7 +784,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     return nuevo;
   },
 
-  actualizarSeccionDocumento: (documentoId, seccionId, contenido) => {
+  actualizarSeccionDocumento: (documentoId, seccionId, contenido, autor = "empresa") => {
     set((s) => ({
       documentos: s.documentos.map((d) =>
         d.id === documentoId
@@ -706,6 +792,7 @@ export const useAppStore = create<AppState>((set, get) => ({
               ...d,
               estado: "editado",
               fechaActualizacion: hoyIso(),
+              ultimaEdicionPor: autor,
               secciones: d.secciones.map((sec) => (sec.id === seccionId ? { ...sec, contenido } : sec)),
             }
           : d
@@ -749,7 +836,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     return actualizado;
   },
 
-  aplicarAjusteIA: (documentoId, instruccion) => {
+  aplicarAjusteIA: (documentoId, instruccion, autor = "empresa") => {
     set((s) => ({
       documentos: s.documentos.map((d) =>
         d.id === documentoId
@@ -759,6 +846,7 @@ export const useAppStore = create<AppState>((set, get) => ({
               ajustesGratisUsados: d.ajustesGratisUsados + 1,
               estado: "editado",
               fechaActualizacion: hoyIso(),
+              ultimaEdicionPor: autor,
             }
           : d
       ),
@@ -768,6 +856,25 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   registrarGeneracionFallida: () => {
     set((s) => ({ estadisticasIA: { ...s.estadisticasIA, fallidas: s.estadisticasIA.fallidas + 1 } }));
+  },
+
+  // -------------------------------------------------------------------------
+  // Compartir documento con el consultor (RN-22, RN-27, RF-71/72)
+  // -------------------------------------------------------------------------
+
+  compartirDocumento: (documentoId, consultorId) => {
+    set((s) => ({
+      documentos: s.documentos.map((d) =>
+        d.id === documentoId ? { ...d, compartidoConConsultorId: consultorId } : d
+      ),
+    }));
+  },
+  revocarCompartirDocumento: (documentoId) => {
+    set((s) => ({
+      documentos: s.documentos.map((d) =>
+        d.id === documentoId ? { ...d, compartidoConConsultorId: null } : d
+      ),
+    }));
   },
 
   // -------------------------------------------------------------------------

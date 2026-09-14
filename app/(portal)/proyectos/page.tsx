@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FolderKanban, Plus, Pencil, Trash2, MapPin, Wallet, Sparkles, X } from "lucide-react";
+import { FolderKanban, Plus, Pencil, Trash2, MapPin, Wallet, Sparkles, UserPlus, X } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import { categorias, categoriaPorId } from "@/lib/mock-data";
 import type { Proyecto } from "@/lib/types";
@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { CompletitudBadge } from "@/components/CompletitudProyecto";
+import { SolicitarConsultorModal } from "@/components/SolicitarConsultorModal";
 
 type FormularioProyecto = {
   nombre: string;
@@ -65,6 +66,13 @@ export default function ProyectosPage() {
   const [modalAbierto, setModalAbierto] = useState(false);
   const [editandoId, setEditandoId] = useState<string | null>(null);
   const [form, setForm] = useState<FormularioProyecto>(formularioVacio);
+  const [proyectoConsultorId, setProyectoConsultorId] = useState<string | null>(null);
+  const proyectoParaConsultor = proyectos.find((p) => p.id === proyectoConsultorId) ?? null;
+
+  const solicitarConsultor = (proyectoId: string) => {
+    if (!requerirAcceso("solicitar un consultor")) return;
+    setProyectoConsultorId(proyectoId);
+  };
 
   const abrirCrear = () => {
     setEditandoId(null);
@@ -192,6 +200,16 @@ export default function ProyectosPage() {
               <div className="mt-4 flex items-center gap-2">
                 <Button variant="secondary" size="sm" className="flex-1" onClick={() => verSugerencias(p.id)}>
                   <Sparkles className="h-3.5 w-3.5" /> Ver sugerencias
+                </Button>
+              </div>
+              <div className="mt-2 flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="flex-1 text-brick-600 hover:bg-brick-50"
+                  onClick={() => solicitarConsultor(p.id)}
+                >
+                  <UserPlus className="h-3.5 w-3.5" /> Solicitar consultor
                 </Button>
                 <Button variant="ghost" size="sm" onClick={() => abrirEditar(p)} aria-label="Editar proyecto">
                   <Pencil className="h-3.5 w-3.5" />
@@ -394,6 +412,14 @@ export default function ProyectosPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {proyectoParaConsultor && (
+        <SolicitarConsultorModal
+          proyecto={proyectoParaConsultor}
+          open={!!proyectoConsultorId}
+          onClose={() => setProyectoConsultorId(null)}
+        />
       )}
     </div>
   );

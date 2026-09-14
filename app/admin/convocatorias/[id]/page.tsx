@@ -60,6 +60,7 @@ function EditorForm({
   const [entidadConvocante, setEntidadConvocante] = useState(convocatoria.entidadConvocante);
   const [descripcion, setDescripcion] = useState(convocatoria.descripcion);
   const [ubicacion, setUbicacion] = useState(convocatoria.ubicacion);
+  const [urlPostulacion, setUrlPostulacion] = useState(convocatoria.urlPostulacion ?? "");
   const [montoMin, setMontoMin] = useState(convocatoria.montoMin ? String(convocatoria.montoMin) : "");
   const [montoMax, setMontoMax] = useState(convocatoria.montoMax ? String(convocatoria.montoMax) : "");
   const [fechaApertura, setFechaApertura] = useState(convocatoria.fechaApertura);
@@ -78,6 +79,7 @@ function EditorForm({
       ubicacion: ubicacion.trim(),
       montoMin: Number(montoMin) || 0,
       montoMax: Number(montoMax) || 0,
+      urlPostulacion: urlPostulacion.trim(),
       fechaApertura,
       fechaCierre,
       categorias: categoriasSel,
@@ -146,12 +148,23 @@ function EditorForm({
     });
   };
 
+  const esUrlValida = (valor: string): boolean => {
+    try {
+      const url = new URL(valor);
+      return url.protocol === "http:" || url.protocol === "https:";
+    } catch {
+      return false;
+    }
+  };
+
   const validarYPublicar = () => {
     const problemas: string[] = [];
     if (!nombre.trim()) problemas.push("Falta el nombre de la convocatoria");
     if (!entidadConvocante.trim()) problemas.push("Falta la entidad convocante");
     if (!descripcion.trim()) problemas.push("Falta la descripción");
     if (!ubicacion.trim()) problemas.push("Falta la ubicación");
+    if (!urlPostulacion.trim() || !esUrlValida(urlPostulacion.trim()))
+      problemas.push("Falta un enlace oficial de postulación válido (http/https) — RNF-29");
     if (!fechaApertura || !fechaCierre) problemas.push("Faltan las fechas de apertura o cierre");
     if (fechaApertura && fechaCierre && fechaApertura > fechaCierre)
       problemas.push("La fecha de apertura debe ser anterior a la de cierre");
@@ -237,6 +250,18 @@ function EditorForm({
                 onChange={(e) => setUbicacion(e.target.value)}
                 className="w-full rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-primary-500"
               />
+            </Campo>
+            <Campo etiqueta="Enlace oficial de postulación (URL del portal de la entidad)" span2>
+              <input
+                type="url"
+                value={urlPostulacion}
+                onChange={(e) => setUrlPostulacion(e.target.value)}
+                placeholder="https://entidad.gov.co/convocatoria"
+                className="w-full rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-primary-500"
+              />
+              <p className="mt-1 text-xs text-ink-faint">
+                Obligatorio para publicar (RN-01): es donde la empresa radica su postulación, no en esta plataforma.
+              </p>
             </Campo>
             <Campo etiqueta="Descripción" span2>
               <textarea

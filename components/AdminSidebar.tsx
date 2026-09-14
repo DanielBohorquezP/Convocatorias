@@ -15,6 +15,7 @@ import {
   Layers,
   CreditCard,
   Sparkles,
+  ShieldAlert,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -52,6 +53,10 @@ const grupos: Array<{
   {
     titulo: "Inteligencia artificial",
     enlaces: [{ href: "/admin/plantillas", label: "Plantillas de generación", icon: Sparkles }],
+  },
+  {
+    titulo: "Seguridad",
+    enlaces: [{ href: "/admin/seguridad", label: "Eventos y bloqueos", icon: ShieldAlert }],
   },
 ];
 

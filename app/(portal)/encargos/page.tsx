@@ -2,18 +2,28 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ClipboardList, Star, X, User } from "lucide-react";
+import { ClipboardList, Star, X, User, Mail, Target, Compass, Ban } from "lucide-react";
 import { useAppStore } from "@/lib/store";
-import { formatFecha, ESTADO_ENCARGO_LABEL, ESTADO_ENCARGO_ESTILO, cn } from "@/lib/utils";
+import {
+  formatFecha,
+  ESTADO_ENCARGO_LABEL,
+  ESTADO_ENCARGO_ESTILO,
+  TIPO_AYUDA_LABEL,
+  TIPO_AYUDA_ESTILO,
+  cn,
+} from "@/lib/utils";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { RatingStars } from "@/components/RatingStars";
 
+const CONTACTO_VISIBLE = new Set(["en_curso", "completado", "calificado"]);
+
 export default function EncargosPage() {
   const encargos = useAppStore((s) => s.encargos);
   const proyectos = useAppStore((s) => s.proyectos);
   const consultores = useAppStore((s) => s.consultores);
+  const convocatorias = useAppStore((s) => s.convocatorias);
   const calificaciones = useAppStore((s) => s.calificaciones);
   const calificarEncargo = useAppStore((s) => s.calificarEncargo);
 
@@ -51,12 +61,21 @@ export default function EncargosPage() {
           {encargos.map((e) => {
             const proyecto = proyectos.find((p) => p.id === e.proyectoId);
             const consultor = e.consultorId ? consultores.find((c) => c.id === e.consultorId) : undefined;
+            const convocatoria = e.convocatoriaId ? convocatorias.find((c) => c.id === e.convocatoriaId) : undefined;
             const calificacion = calificaciones.find((c) => c.encargoId === e.id);
 
             return (
               <div key={e.id} className="flex flex-col rounded-2xl border border-line p-5">
-                <div className="flex items-start justify-between gap-2">
+                <div className="flex flex-wrap items-start justify-between gap-2">
                   <Badge className={ESTADO_ENCARGO_ESTILO[e.estado]}>{ESTADO_ENCARGO_LABEL[e.estado]}</Badge>
+                  <Badge className={TIPO_AYUDA_ESTILO[e.tipoAyuda]}>
+                    {e.tipoAyuda === "convocatoria_especifica" ? (
+                      <Target className="h-3 w-3" />
+                    ) : (
+                      <Compass className="h-3 w-3" />
+                    )}
+                    {TIPO_AYUDA_LABEL[e.tipoAyuda]}
+                  </Badge>
                 </div>
 
                 <h3 className="mt-3 font-display text-base font-semibold leading-snug text-ink">{e.tituloTarea}</h3>
@@ -65,6 +84,14 @@ export default function EncargosPage() {
                   <Link href={`/proyectos/${e.proyectoId}`} className="font-medium text-primary-700 hover:underline">
                     {proyecto?.nombre ?? "Proyecto no disponible"}
                   </Link>
+                  {convocatoria && (
+                    <>
+                      {" · "}
+                      <Link href={`/convocatorias/${convocatoria.id}`} className="font-medium text-teal-700 hover:underline">
+                        {convocatoria.nombre}
+                      </Link>
+                    </>
+                  )}
                 </p>
                 <p className="mt-2 line-clamp-2 text-sm text-ink-soft">{e.descripcionTarea}</p>
 
@@ -81,12 +108,27 @@ export default function EncargosPage() {
                   )}
                 </div>
 
+                {consultor && CONTACTO_VISIBLE.has(e.estado) && (
+                  <p className="mt-2 flex items-center gap-1.5 text-xs text-ink-soft">
+                    <Mail className="h-3.5 w-3.5 text-primary-700" />
+                    <a href={`mailto:${consultor.correo}`} className="font-medium text-primary-700 hover:underline">
+                      {consultor.correo}
+                    </a>
+                  </p>
+                )}
+
                 {(e.estado === "en_curso" || e.estado === "completado" || e.estado === "calificado") && (
                   <ul className="mt-3 space-y-0.5 text-xs text-ink-faint">
                     {e.fechas.aceptado && <li>Aceptado: {formatFecha(e.fechas.aceptado)}</li>}
                     {e.fechas.completado && <li>Completado: {formatFecha(e.fechas.completado)}</li>}
                     {e.avances.length > 0 && <li>{e.avances.length} nota(s) de avance registradas</li>}
                   </ul>
+                )}
+
+                {e.estado === "cancelado" && e.motivoCancelacion && (
+                  <p className="mt-3 flex items-start gap-1.5 rounded-lg bg-slate-50 px-3 py-2 text-xs text-ink-faint">
+                    <Ban className="mt-0.5 h-3.5 w-3.5 shrink-0" /> {e.motivoCancelacion}
+                  </p>
                 )}
 
                 {e.estado === "completado" && (

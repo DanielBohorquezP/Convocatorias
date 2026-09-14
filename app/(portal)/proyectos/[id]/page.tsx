@@ -3,7 +3,7 @@
 import { use, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, MapPin, Wallet, Sparkles, UserPlus, Search, Users, CheckCircle2, X, FileStack } from "lucide-react";
+import { ArrowLeft, MapPin, Wallet, Sparkles, UserPlus, FileStack, Users, X } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import { categoriaPorId } from "@/lib/mock-data";
 import { useAccesoSuscripcion } from "@/lib/hooks";
@@ -11,6 +11,7 @@ import { diasRestantes, formatCOP } from "@/lib/utils";
 import { Chip } from "@/components/ui/Chip";
 import { Button, LinkButton } from "@/components/ui/Button";
 import { CompletitudDetalle } from "@/components/CompletitudProyecto";
+import { SolicitarConsultorModal } from "@/components/SolicitarConsultorModal";
 
 export default function DetalleProyectoPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -18,18 +19,11 @@ export default function DetalleProyectoPage({ params }: { params: Promise<{ id: 
   const proyecto = useAppStore((s) => s.proyectos.find((p) => p.id === id));
   const todosLosEncargos = useAppStore((s) => s.encargos);
   const encargos = todosLosEncargos.filter((e) => e.proyectoId === id);
-  const consultores = useAppStore((s) => s.consultores);
   const todasLasConvocatorias = useAppStore((s) => s.convocatorias);
-  const iniciarSolicitudConsultor = useAppStore((s) => s.iniciarSolicitudConsultor);
-  const crearEncargoEsperandoAsignacion = useAppStore((s) => s.crearEncargoEsperandoAsignacion);
   const setProyectoParaGenerar = useAppStore((s) => s.setProyectoParaGenerar);
   const { requerirAcceso } = useAccesoSuscripcion();
 
-  const [modalAbierto, setModalAbierto] = useState(false);
-  const [paso, setPaso] = useState<1 | 2>(1);
-  const [titulo, setTitulo] = useState("");
-  const [descripcion, setDescripcion] = useState("");
-  const [confirmacion, setConfirmacion] = useState(false);
+  const [modalConsultorAbierto, setModalConsultorAbierto] = useState(false);
   const [modalGenerarAbierto, setModalGenerarAbierto] = useState(false);
 
   const convocatoriasVigentes = useMemo(
@@ -48,34 +42,9 @@ export default function DetalleProyectoPage({ params }: { params: Promise<{ id: 
     );
   }
 
-  const hayConsultoresAprobados = consultores.some(
-    (c) => c.estadoPerfil === "aprobado" && !c.esEquipoInterno
-  );
-
   const abrirFlujo = () => {
     if (!requerirAcceso("solicitar un consultor")) return;
-    setPaso(1);
-    setTitulo("");
-    setDescripcion("");
-    setConfirmacion(false);
-    setModalAbierto(true);
-  };
-
-  const irAlPaso2 = () => {
-    if (!titulo.trim() || !descripcion.trim()) return;
-    setPaso(2);
-  };
-
-  const buscarEnDirectorio = () => {
-    iniciarSolicitudConsultor({ proyectoId: proyecto.id, tituloTarea: titulo.trim(), descripcionTarea: descripcion.trim() });
-    setModalAbierto(false);
-    router.push("/consultores");
-  };
-
-  const pedirAsignacion = () => {
-    iniciarSolicitudConsultor({ proyectoId: proyecto.id, tituloTarea: titulo.trim(), descripcionTarea: descripcion.trim() });
-    crearEncargoEsperandoAsignacion();
-    setConfirmacion(true);
+    setModalConsultorAbierto(true);
   };
 
   const abrirSelectorGenerar = () => {
@@ -172,109 +141,11 @@ export default function DetalleProyectoPage({ params }: { params: Promise<{ id: 
         </div>
       )}
 
-      {modalAbierto && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-primary-950/40 p-4">
-          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
-            <div className="mb-4 flex items-center justify-between">
-              <h3 className="font-display text-lg font-semibold text-ink">
-                {confirmacion ? "Solicitud enviada" : `Solicitar consultor · Paso ${paso} de 2`}
-              </h3>
-              <button onClick={() => setModalAbierto(false)} className="text-ink-faint hover:text-ink">
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            {confirmacion ? (
-              <div className="py-4 text-center">
-                <CheckCircle2 className="mx-auto h-10 w-10 text-success" />
-                <p className="mt-3 text-sm text-ink-soft">
-                  Nuestro equipo te asignará un consultor para <strong>{titulo}</strong>. Podrás ver el avance en{" "}
-                  <Link href="/encargos" className="font-semibold text-primary-700 hover:underline">
-                    Encargos
-                  </Link>
-                  .
-                </p>
-                <Button variant="primary" className="mt-5" onClick={() => setModalAbierto(false)}>
-                  Entendido
-                </Button>
-              </div>
-            ) : paso === 1 ? (
-              <div className="space-y-4">
-                <div>
-                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-ink-faint">
-                    Título de la tarea
-                  </label>
-                  <input
-                    value={titulo}
-                    onChange={(e) => setTitulo(e.target.value)}
-                    placeholder="Ej. Estructuración financiera de la postulación"
-                    className="w-full rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-primary-500"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-ink-faint">
-                    Descripción de la tarea
-                  </label>
-                  <textarea
-                    value={descripcion}
-                    onChange={(e) => setDescripcion(e.target.value)}
-                    rows={4}
-                    placeholder="Cuéntanos qué necesitas resolver para este proyecto"
-                    className="w-full resize-none rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-primary-500"
-                  />
-                </div>
-                <div className="flex justify-end gap-3">
-                  <Button variant="ghost" onClick={() => setModalAbierto(false)}>
-                    Cancelar
-                  </Button>
-                  <Button variant="primary" onClick={irAlPaso2} disabled={!titulo.trim() || !descripcion.trim()}>
-                    Continuar
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                <p className="text-sm text-ink-soft">Elige cómo quieres encontrar un consultor para esta tarea.</p>
-                {hayConsultoresAprobados && (
-                  <button
-                    onClick={buscarEnDirectorio}
-                    className="flex w-full items-center gap-4 rounded-xl border border-line p-4 text-left transition-colors hover:border-brick-500 hover:bg-brick-50/40"
-                  >
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brick-50 text-brick-600">
-                      <Search className="h-5 w-5" />
-                    </span>
-                    <span>
-                      <span className="block text-sm font-semibold text-ink">Buscar en el directorio</span>
-                      <span className="block text-xs text-ink-faint">
-                        Elige tú mismo un consultor aprobado por su experiencia y calificación.
-                      </span>
-                    </span>
-                  </button>
-                )}
-                <button
-                  onClick={pedirAsignacion}
-                  className="flex w-full items-center gap-4 rounded-xl border border-line p-4 text-left transition-colors hover:border-primary-500 hover:bg-primary-50/40"
-                >
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary-50 text-primary-700">
-                    <Users className="h-5 w-5" />
-                  </span>
-                  <span>
-                    <span className="block text-sm font-semibold text-ink">Pedir que me asignen un consultor</span>
-                    <span className="block text-xs text-ink-faint">
-                      Nuestro equipo interno elegirá y asignará un consultor disponible por ti.
-                    </span>
-                  </span>
-                </button>
-                <div className="flex justify-start pt-1">
-                  <Button variant="ghost" size="sm" onClick={() => setPaso(1)}>
-                    <ArrowLeft className="h-3.5 w-3.5" /> Volver
-                  </Button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      <SolicitarConsultorModal
+        proyecto={proyecto}
+        open={modalConsultorAbierto}
+        onClose={() => setModalConsultorAbierto(false)}
+      />
 
       {modalGenerarAbierto && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-primary-950/40 p-4">

@@ -13,6 +13,9 @@ import {
   AlertTriangle,
   ClipboardList,
   FileCheck2,
+  Share2,
+  ShieldOff,
+  Lock,
 } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import {
@@ -24,11 +27,12 @@ import {
   ESTADO_DOCUMENTO_ESTILO,
   EJEMPLOS_AJUSTE,
 } from "@/lib/documentos";
-import { useAccesoSuscripcion, useCreditos } from "@/lib/hooks";
+import { useAccesoSuscripcion, useCreditos, useConsultorActual } from "@/lib/hooks";
 import { cn } from "@/lib/utils";
 import type { SeccionDocumento } from "@/lib/types";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 export default function DocumentoPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -37,6 +41,8 @@ export default function DocumentoPage({ params }: { params: Promise<{ id: string
   const convocatoria = useAppStore((s) => (documento ? s.convocatorias.find((c) => c.id === documento.convocatoriaId) : undefined));
   const postulaciones = useAppStore((s) => s.postulaciones);
   const promptVersiones = useAppStore((s) => s.promptVersiones);
+  const encargos = useAppStore((s) => s.encargos);
+  const consultores = useAppStore((s) => s.consultores);
 
   const actualizarSeccionDocumento = useAppStore((s) => s.actualizarSeccionDocumento);
   const marcarDocumentoExportado = useAppStore((s) => s.marcarDocumentoExportado);
@@ -44,8 +50,11 @@ export default function DocumentoPage({ params }: { params: Promise<{ id: string
   const aplicarAjusteIA = useAppStore((s) => s.aplicarAjusteIA);
   const consumirCredito = useAppStore((s) => s.consumirCredito);
   const abrirModalCreditos = useAppStore((s) => s.abrirModalCreditos);
-  const { requerirAcceso } = useAccesoSuscripcion();
+  const compartirDocumento = useAppStore((s) => s.compartirDocumento);
+  const revocarCompartirDocumento = useAppStore((s) => s.revocarCompartirDocumento);
+  const { requerirAcceso, rol } = useAccesoSuscripcion();
   const { disponibles, usuarioId } = useCreditos();
+  const { consultorId } = useConsultorActual();
 
   const [seccionActivaId, setSeccionActivaId] = useState<string | null>(null);
   const [seccionEditandoId, setSeccionEditandoId] = useState<string | null>(null);
@@ -63,6 +72,36 @@ export default function DocumentoPage({ params }: { params: Promise<{ id: string
       </div>
     );
   }
+
+  // RN-22/RN-27 (v5): un consultor solo ve este documento si está autorizado
+  // explícitamente por la empresa — el encargo activo no es suficiente.
+  const esConsultor = rol === "consultor";
+  const autorizado = !esConsultor || (!!consultorId && documento.compartidoConConsultorId === consultorId);
+  const autor: "empresa" | "consultor" = esConsultor ? "consultor" : "empresa";
+
+  if (esConsultor && !autorizado) {
+    return (
+      <div className="mx-auto max-w-2xl py-16">
+        <EmptyState
+          icon={Lock}
+          titulo="No tienes acceso a este documento"
+          descripcion="La empresa no ha autorizado tu acceso a este documento generado (RN-22). Pídele que active el acceso desde la vista del documento."
+        />
+      </div>
+    );
+  }
+
+  // Encargo en curso sobre este proyecto — usado para el interruptor de compartir
+  // (empresa) y para saber a qué cupo de créditos cargar los ajustes del consultor.
+  const encargoRelacionado = encargos.find(
+    (e) => e.proyectoId === documento.proyectoId && e.estado === "en_curso" && e.consultorId
+  );
+  const consultorDelEncargo = encargoRelacionado?.consultorId
+    ? consultores.find((c) => c.id === encargoRelacionado.consultorId)
+    : undefined;
+  // Cuando el ajuste lo pide el consultor, el crédito sale del cupo de la
+  // empresa dueña, nunca del propio del consultor (RN-28).
+  const usuarioIdCredito = esConsultor ? encargoRelacionado?.empresaId ?? usuarioId : usuarioId;
 
   const pendientes = extraerPendientes(documento.secciones);
   const postulacion = postulacionParaProyectoConv(documento.proyectoId, documento.convocatoriaId, postulaciones);
@@ -94,7 +133,7 @@ export default function DocumentoPage({ params }: { params: Promise<{ id: string
 
   const enviarAjuste = () => {
     if (!instruccion.trim()) return;
-    if (ajustesGratisRestantes === 0) {
+    if (ajustesGratisRestantes === 0 && !esConsultor) {
       if (!requerirAcceso("pedir un ajuste a la IA")) return;
       if (disponibles <= 0) {
         abrirModalCreditos("pedir un ajuste a la IA");
@@ -103,11 +142,19 @@ export default function DocumentoPage({ params }: { params: Promise<{ id: string
     }
     setAjustando(true);
     setTimeout(() => {
-      if (ajustesGratisRestantes === 0) consumirCredito(usuarioId);
-      aplicarAjusteIA(documento.id, instruccion.trim());
+      if (ajustesGratisRestantes === 0) consumirCredito(usuarioIdCredito);
+      aplicarAjusteIA(documento.id, instruccion.trim(), autor);
       setInstruccion("");
       setAjustando(false);
     }, 2000);
+  };
+
+  const alternarCompartir = () => {
+    if (documento.compartidoConConsultorId) {
+      revocarCompartirDocumento(documento.id);
+    } else if (encargoRelacionado?.consultorId) {
+      compartirDocumento(documento.id, encargoRelacionado.consultorId);
+    }
   };
 
   return (
@@ -142,15 +189,46 @@ export default function DocumentoPage({ params }: { params: Promise<{ id: string
             </Link>
           )}
         </div>
-        <div className="flex gap-2">
-          <Button variant="secondary" onClick={exportar}>
-            <Download className="h-4 w-4" /> Exportar a Word
-          </Button>
-          <Button variant="ghost" onClick={() => setConfirmandoRegenerar(true)}>
-            <RotateCcw className="h-4 w-4" /> Regenerar
-          </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          {esConsultor ? (
+            <span className="flex items-center gap-1.5 rounded-lg bg-slate-50 px-3 py-2 text-xs text-ink-faint ring-1 ring-inset ring-line">
+              <Lock className="h-3.5 w-3.5" /> Puedes editar, pero no descargar ni regenerar (RF-71/72)
+            </span>
+          ) : (
+            <>
+              {encargoRelacionado?.consultorId && (
+                <Button
+                  variant={documento.compartidoConConsultorId ? "outline-gold" : "secondary"}
+                  onClick={alternarCompartir}
+                >
+                  {documento.compartidoConConsultorId ? (
+                    <>
+                      <ShieldOff className="h-4 w-4" /> Dejar de compartir
+                    </>
+                  ) : (
+                    <>
+                      <Share2 className="h-4 w-4" /> Compartir con {consultorDelEncargo?.nombreProfesional ?? "el consultor"}
+                    </>
+                  )}
+                </Button>
+              )}
+              <Button variant="secondary" onClick={exportar}>
+                <Download className="h-4 w-4" /> Exportar a Word
+              </Button>
+              <Button variant="ghost" onClick={() => setConfirmandoRegenerar(true)}>
+                <RotateCcw className="h-4 w-4" /> Regenerar
+              </Button>
+            </>
+          )}
         </div>
       </div>
+
+      {!esConsultor && documento.compartidoConConsultorId && consultorDelEncargo && (
+        <p className="mb-4 flex items-center gap-1.5 rounded-lg bg-gold-50 px-3 py-2 text-xs text-gold-700 ring-1 ring-inset ring-gold-200">
+          <Share2 className="h-3.5 w-3.5" /> Compartido con {consultorDelEncargo.nombreProfesional}: puede leer, editar
+          y pedir ajustes con IA, pero no descargarlo ni regenerarlo (RN-22, RN-27).
+        </p>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-[1fr_260px]">
         <div className="space-y-5">
@@ -163,7 +241,7 @@ export default function DocumentoPage({ params }: { params: Promise<{ id: string
               onIniciarEdicion={() => setSeccionEditandoId(seccion.id)}
               onCancelar={() => setSeccionEditandoId(null)}
               onGuardar={(contenido) => {
-                actualizarSeccionDocumento(documento.id, seccion.id, contenido);
+                actualizarSeccionDocumento(documento.id, seccion.id, contenido, autor);
                 setSeccionEditandoId(null);
                 if (seccionActivaId === seccion.id) setSeccionActivaId(null);
               }}

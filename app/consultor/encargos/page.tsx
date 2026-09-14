@@ -2,10 +2,17 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { AlertTriangle, Check, X as XIcon, ClipboardList } from "lucide-react";
+import { AlertTriangle, Check, X as XIcon, ClipboardList, Mail, Target, Compass, Ban } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import { useConsultorActual, useAccesoSuscripcion } from "@/lib/hooks";
-import { cn, formatFecha, ESTADO_ENCARGO_LABEL, ESTADO_ENCARGO_ESTILO } from "@/lib/utils";
+import {
+  cn,
+  formatFecha,
+  ESTADO_ENCARGO_LABEL,
+  ESTADO_ENCARGO_ESTILO,
+  TIPO_AYUDA_LABEL,
+  TIPO_AYUDA_ESTILO,
+} from "@/lib/utils";
 import { GuardaConsultor } from "@/components/GuardaConsultor";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -28,6 +35,8 @@ function ContenidoEncargos() {
   const todosLosEncargos = useAppStore((s) => s.encargos);
   const encargos = todosLosEncargos.filter((e) => e.consultorId === consultorId);
   const proyectos = useAppStore((s) => s.proyectos);
+  const convocatorias = useAppStore((s) => s.convocatorias);
+  const empresas = useAppStore((s) => s.empresas);
   const calificaciones = useAppStore((s) => s.calificaciones);
   const aceptarEncargo = useAppStore((s) => s.aceptarEncargo);
   const rechazarEncargoConsultor = useAppStore((s) => s.rechazarEncargoConsultor);
@@ -87,11 +96,31 @@ function ContenidoEncargos() {
           <div className="space-y-4">
             {solicitudes.map((e) => {
               const proyecto = proyectos.find((p) => p.id === e.proyectoId);
+              const convocatoria = e.convocatoriaId ? convocatorias.find((c) => c.id === e.convocatoriaId) : undefined;
               return (
                 <div key={e.id} className="rounded-2xl border border-line p-5">
-                  <p className="text-xs text-ink-faint">
+                  <Badge className={TIPO_AYUDA_ESTILO[e.tipoAyuda]}>
+                    {e.tipoAyuda === "convocatoria_especifica" ? (
+                      <Target className="h-3 w-3" />
+                    ) : (
+                      <Compass className="h-3 w-3" />
+                    )}
+                    {TIPO_AYUDA_LABEL[e.tipoAyuda]}
+                  </Badge>
+                  <p className="mt-2 text-xs text-ink-faint">
                     Proyecto: <span className="font-medium text-ink-soft">{proyecto?.nombre ?? "No disponible"}</span>
+                    {convocatoria && (
+                      <>
+                        {" · Convocatoria: "}
+                        <span className="font-medium text-ink-soft">{convocatoria.nombre}</span>
+                      </>
+                    )}
                   </p>
+                  {proyecto && (
+                    <p className="mt-1 text-xs text-ink-faint">
+                      {proyecto.problema && <>Problema: {proyecto.problema}</>}
+                    </p>
+                  )}
                   <h3 className="mt-1 font-display text-base font-semibold text-ink">{e.tituloTarea}</h3>
                   <p className="mt-1.5 text-sm text-ink-soft">{e.descripcionTarea}</p>
                   <div className="mt-4 flex gap-2">
@@ -120,13 +149,48 @@ function ContenidoEncargos() {
           <div className="space-y-4">
             {enCurso.map((e) => {
               const proyecto = proyectos.find((p) => p.id === e.proyectoId);
+              const convocatoria = e.convocatoriaId ? convocatorias.find((c) => c.id === e.convocatoriaId) : undefined;
+              const empresa = empresas.find((emp) => emp.id === e.empresaId);
               return (
                 <div key={e.id} className="rounded-2xl border border-line p-5">
-                  <p className="text-xs text-ink-faint">
-                    Proyecto: <span className="font-medium text-ink-soft">{proyecto?.nombre ?? "No disponible"}</span>
+                  <Badge className={TIPO_AYUDA_ESTILO[e.tipoAyuda]}>
+                    {e.tipoAyuda === "convocatoria_especifica" ? (
+                      <Target className="h-3 w-3" />
+                    ) : (
+                      <Compass className="h-3 w-3" />
+                    )}
+                    {TIPO_AYUDA_LABEL[e.tipoAyuda]}
+                  </Badge>
+                  <p className="mt-2 text-xs text-ink-faint">
+                    Proyecto:{" "}
+                    <Link href={`/proyectos/${e.proyectoId}`} className="font-medium text-primary-700 hover:underline">
+                      {proyecto?.nombre ?? "No disponible"}
+                    </Link>
+                    {convocatoria && (
+                      <>
+                        {" · "}
+                        <Link href={`/convocatorias/${convocatoria.id}`} className="font-medium text-teal-700 hover:underline">
+                          {convocatoria.nombre}
+                        </Link>
+                      </>
+                    )}
                   </p>
-                  <h3 className="mt-1 font-display text-base font-semibold text-ink">{e.tituloTarea}</h3>
+                  {empresa && (
+                    <p className="mt-1.5 flex items-center gap-1.5 text-xs text-ink-soft">
+                      <Mail className="h-3.5 w-3.5 text-primary-700" />
+                      <a href={`mailto:${empresa.correo}`} className="font-medium text-primary-700 hover:underline">
+                        {empresa.correo}
+                      </a>
+                    </p>
+                  )}
+                  <h3 className="mt-2 font-display text-base font-semibold text-ink">{e.tituloTarea}</h3>
                   <p className="mt-1.5 text-sm text-ink-soft">{e.descripcionTarea}</p>
+                  {e.tipoAyuda === "buscar_convocatoria" && (
+                    <p className="mt-2 flex items-center gap-1.5 rounded-lg bg-brick-50/60 px-3 py-2 text-xs text-brick-700">
+                      <Compass className="h-3.5 w-3.5 shrink-0" />
+                      Reporta las convocatorias candidatas que encuentres como notas de avance (RF-69).
+                    </p>
+                  )}
 
                   {e.avances.length > 0 && (
                     <ul className="mt-3 space-y-1.5 border-t border-line-soft pt-3">
@@ -193,6 +257,11 @@ function ContenidoEncargos() {
                       <RatingStars valor={calificacion.estrellas} />
                       {calificacion.comentario && <p className="mt-1.5 text-xs text-ink-soft">{calificacion.comentario}</p>}
                     </div>
+                  )}
+                  {e.estado === "cancelado" && e.motivoCancelacion && (
+                    <p className="mt-3 flex items-start gap-1.5 rounded-lg bg-slate-50 px-3 py-2 text-xs text-ink-faint">
+                      <Ban className="mt-0.5 h-3.5 w-3.5 shrink-0" /> {e.motivoCancelacion}
+                    </p>
                   )}
                 </div>
               );

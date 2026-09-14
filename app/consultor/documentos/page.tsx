@@ -5,6 +5,7 @@ import { FileText, Sparkles } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import { extraerPendientes, ESTADO_DOCUMENTO_LABEL, ESTADO_DOCUMENTO_ESTILO } from "@/lib/documentos";
 import { formatFecha } from "@/lib/utils";
+import { useConsultorActual } from "@/lib/hooks";
 import { GuardaConsultor } from "@/components/GuardaConsultor";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -18,9 +19,12 @@ export default function DocumentosConsultorPage() {
 }
 
 function ContenidoDocumentos() {
-  const documentos = useAppStore((s) => s.documentos);
+  const todosLosDocumentos = useAppStore((s) => s.documentos);
   const proyectos = useAppStore((s) => s.proyectos);
   const convocatorias = useAppStore((s) => s.convocatorias);
+  const { consultorId } = useConsultorActual();
+  // RN-22/RN-27 (v5): solo los documentos que la empresa autorizó explícitamente.
+  const documentos = todosLosDocumentos.filter((d) => d.compartidoConConsultorId === consultorId);
   const ordenados = [...documentos].sort((a, b) => (a.fechaActualizacion < b.fechaActualizacion ? 1 : -1));
 
   return (
@@ -31,16 +35,16 @@ function ContenidoDocumentos() {
         </p>
         <h1 className="mt-1 font-display text-2xl font-bold text-ink">Documentos</h1>
         <p className="text-sm text-ink-soft">
-          Borradores generados con IA para los proyectos de las empresas con las que trabajas. Los documentos se
-          inician desde el portal de empresa; aquí puedes revisarlos, editarlos y ajustarlos.
+          Borradores generados con IA que la empresa autorizó explícitamente para ti (RN-22). Puedes leerlos, editarlos
+          y pedir ajustes con IA, pero no descargarlos.
         </p>
       </div>
 
       {ordenados.length === 0 ? (
         <EmptyState
           icon={FileText}
-          titulo="Aún no hay documentos"
-          descripcion="Cuando una empresa genere un documento con IA para uno de sus proyectos, aparecerá aquí."
+          titulo="Aún no tienes documentos compartidos"
+          descripcion="Cuando una empresa autorice tu acceso a un documento generado con IA, aparecerá aquí."
         />
       ) : (
         <div className="grid gap-5 sm:grid-cols-2">

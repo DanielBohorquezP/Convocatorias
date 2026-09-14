@@ -6,6 +6,7 @@ import type {
   Empresa,
   Encargo,
   EstadisticasIA,
+  EventoSeguridad,
   Fuente,
   Pago,
   PerfilConsultor,
@@ -64,6 +65,7 @@ export const convocatorias: Convocatoria[] = [
     id: "conv-1",
     nombre: "Fortalecimiento de la I+D+i Empresarial 2026",
     entidadConvocante: "Ministerio de Ciencia, Tecnología e Innovación (Minciencias)",
+    urlPostulacion: "https://minciencias.gov.co/convocatorias/idi-empresarial-2026",
     descripcion:
       "Cofinanciación no reembolsable para proyectos de investigación, desarrollo tecnológico e innovación liderados por empresas colombianas, orientados a fortalecer capacidades de I+D+i y generar nuevos productos, procesos o servicios con potencial de mercado.",
     montoMin: 80_000_000,
@@ -91,6 +93,7 @@ export const convocatorias: Convocatoria[] = [
     id: "conv-2",
     nombre: "Bogotá Reactiva: Fondo de Apoyo a Mipymes",
     entidadConvocante: "Cámara de Comercio de Bogotá",
+    urlPostulacion: "https://www.ccb.org.co/bogota-reactiva",
     descripcion:
       "Apoyo económico y de acompañamiento técnico para micro, pequeñas y medianas empresas de Bogotá que buscan fortalecer sus procesos administrativos, comerciales y financieros tras periodos de contracción económica.",
     montoMin: 10_000_000,
@@ -115,6 +118,7 @@ export const convocatorias: Convocatoria[] = [
     id: "conv-3",
     nombre: "Aldea: Escala tu Negocio de Base Tecnológica",
     entidadConvocante: "iNNpulsa Colombia",
+    urlPostulacion: "https://innpulsacolombia.com/aldea-2026",
     descripcion:
       "Programa de aceleración y cofinanciación para startups colombianas de base tecnológica en etapa de escalamiento, con acompañamiento en levantamiento de capital, modelo de negocio y entrada a nuevos mercados.",
     montoMin: 50_000_000,
@@ -141,6 +145,7 @@ export const convocatorias: Convocatoria[] = [
     id: "conv-4",
     nombre: "Fondo de Economía Circular para Pymes",
     entidadConvocante: "Cooperación Alemana GIZ",
+    urlPostulacion: "https://www.giz.de/en/worldwide/378.html?convocatoria=economia-circular",
     descripcion:
       "Cofinanciación de proyectos piloto que reduzcan el uso de materiales vírgenes, promuevan el reciclaje industrial o el reaprovechamiento de residuos en cadenas productivas de manufactura y agroindustria.",
     montoMin: 30_000_000,
@@ -164,6 +169,7 @@ export const convocatorias: Convocatoria[] = [
     id: "conv-5",
     nombre: "Programa de Apoyo a la Competitividad Rural (ADEL)",
     entidadConvocante: "Delegación de la Unión Europea en Colombia",
+    urlPostulacion: "https://www.eeas.europa.eu/colombia_es/adel-rural",
     descripcion:
       "Financiación de iniciativas productivas rurales que fortalezcan cadenas de valor agropecuarias, generen empleo formal y promuevan la sustitución de cultivos de uso ilícito en zonas priorizadas de posconflicto.",
     montoMin: 60_000_000,
@@ -189,6 +195,7 @@ export const convocatorias: Convocatoria[] = [
     id: "conv-6",
     nombre: "Medellín Exporta",
     entidadConvocante: "Cámara de Comercio de Medellín para Antioquia",
+    urlPostulacion: "https://www.camaramedellin.com.co/medellin-exporta",
     descripcion:
       "Programa de internacionalización que cofinancia diagnósticos de exportación, participación en ruedas de negocios y adecuación de producto para empresas antioqueñas con vocación exportadora.",
     montoMin: 15_000_000,
@@ -212,6 +219,7 @@ export const convocatorias: Convocatoria[] = [
     id: "conv-7",
     nombre: "Capital Semilla para Emprendimientos Innovadores",
     entidadConvocante: "Fondo Emprender - SENA",
+    urlPostulacion: "https://www.fondoemprender.com/convocatorias/capital-semilla-2026",
     descripcion:
       "Recursos de capital semilla no reembolsable para emprendedores que deseen poner en marcha una empresa a partir de una idea de negocio innovadora, validada en el marco de la formación SENA o afines.",
     montoMin: 20_000_000,
@@ -237,6 +245,7 @@ export const convocatorias: Convocatoria[] = [
     id: "conv-8",
     nombre: "Bancóldex Innova: Crédito para Transformación Digital",
     entidadConvocante: "Bancóldex",
+    urlPostulacion: "https://www.bancoldex.com/lineas-de-credito/bancoldex-innova",
     descripcion:
       "Línea de crédito blando con tasa preferencial y periodo de gracia, destinada a financiar la adopción de tecnologías digitales, automatización de procesos y comercio electrónico en empresas colombianas.",
     montoMin: 40_000_000,
@@ -260,6 +269,7 @@ export const convocatorias: Convocatoria[] = [
     id: "conv-9",
     nombre: "Convocatoria CTeI para Startups de Base Tecnológica",
     entidadConvocante: "Ruta N Medellín",
+    urlPostulacion: "https://rutan.co/convocatorias/ctei-startups-2026",
     descripcion:
       "Financiación de proyectos de ciencia, tecnología e innovación desarrollados por startups con sede en Medellín, orientados a la creación de soluciones tecnológicas en salud digital, software e inteligencia artificial.",
     montoMin: 25_000_000,
@@ -284,6 +294,7 @@ export const convocatorias: Convocatoria[] = [
     id: "conv-10",
     nombre: "Fortalecimiento de Cadenas de Valor Agroindustriales",
     entidadConvocante: "USAID Colombia",
+    urlPostulacion: "https://www.usaid.gov/colombia/cadenas-de-valor-agroindustriales",
     descripcion:
       "Apoyo técnico y financiero a empresas agroindustriales para fortalecer eslabones de producción, transformación y comercialización, con énfasis en generación de empleo rural formal.",
     montoMin: 100_000_000,
@@ -307,6 +318,7 @@ export const convocatorias: Convocatoria[] = [
     id: "conv-11",
     nombre: "Valle Innova",
     entidadConvocante: "Cámara de Comercio de Cali",
+    urlPostulacion: "https://www.ccc.org.co/valle-innova",
     descripcion:
       "Cofinanciación de proyectos de innovación tecnológica y turística para empresas del Valle del Cauca, con acompañamiento en propiedad intelectual y validación de mercado.",
     montoMin: 12_000_000,
@@ -327,6 +339,7 @@ export const convocatorias: Convocatoria[] = [
     id: "conv-12",
     nombre: "Reto Social: Innovación con Impacto",
     entidadConvocante: "Fundación Bolívar Davivienda",
+    urlPostulacion: "https://www.fundacionbolivardavivienda.org/reto-social",
     descripcion:
       "Fondo concursable para soluciones innovadoras que mejoren el acceso a educación y salud en comunidades vulnerables, con apoyo de mentoría y visibilidad ante inversionistas de impacto.",
     montoMin: 20_000_000,
@@ -349,6 +362,7 @@ export const convocatorias: Convocatoria[] = [
     id: "conv-13",
     nombre: "Antioquia Agroinnova",
     entidadConvocante: "Gobernación de Antioquia",
+    urlPostulacion: "https://www.antioquia.gov.co/agroinnova",
     descripcion:
       "Cofinanciación de proyectos de innovación agroindustrial para mipymes del departamento de Antioquia, con énfasis en tecnificación de procesos productivos rurales.",
     montoMin: 18_000_000,
@@ -543,10 +557,10 @@ export const fuentes: Fuente[] = [
 // ---------------------------------------------------------------------------
 
 export const empresas: Empresa[] = [
-  { id: "empresa-1", nombre: "EcoEmpaques Andinos S.A.S." },
-  { id: "empresa-2", nombre: "Manufacturas del Cauca S.A.S." },
-  { id: "empresa-3", nombre: "Ruta Textil Caribe Ltda." },
-  { id: "empresa-4", nombre: "Café de la Sierra S.A.S." },
+  { id: "empresa-1", nombre: "EcoEmpaques Andinos S.A.S.", correo: "contacto@ecoempaques.co" },
+  { id: "empresa-2", nombre: "Manufacturas del Cauca S.A.S.", correo: "contacto@manufacturascauca.co" },
+  { id: "empresa-3", nombre: "Ruta Textil Caribe Ltda.", correo: "contacto@rutatextilcaribe.co" },
+  { id: "empresa-4", nombre: "Café de la Sierra S.A.S.", correo: "contacto@cafedelasierra.co" },
 ];
 
 export function empresaPorId(id: string): Empresa | undefined {
@@ -589,6 +603,7 @@ export const consultores: PerfilConsultor[] = [
       },
     ],
     cvNombre: "hoja-de-vida-andres-rojas.pdf",
+    correo: "andres.rojas@consultores.co",
     estadoPerfil: "aprobado",
     esEquipoInterno: false,
     ratingPromedio: 4.8,
@@ -614,6 +629,7 @@ export const consultores: PerfilConsultor[] = [
       },
     ],
     cvNombre: "hoja-de-vida-mariana-cifuentes.pdf",
+    correo: "mariana.cifuentes@consultores.co",
     estadoPerfil: "aprobado",
     esEquipoInterno: false,
     ratingPromedio: 4.3,
@@ -639,6 +655,7 @@ export const consultores: PerfilConsultor[] = [
       },
     ],
     cvNombre: "hoja-de-vida-jorge-salcedo.pdf",
+    correo: "jorge.salcedo@consultores.co",
     estadoPerfil: "aprobado",
     esEquipoInterno: false,
     ratingPromedio: 3.5,
@@ -667,6 +684,7 @@ export const consultores: PerfilConsultor[] = [
       },
     ],
     cvNombre: "hoja-de-vida-valentina-duarte.pdf",
+    correo: "valentina.duarte@consultores.co",
     estadoPerfil: "aprobado",
     esEquipoInterno: false,
     ratingPromedio: 5.0,
@@ -692,6 +710,7 @@ export const consultores: PerfilConsultor[] = [
       },
     ],
     cvNombre: "hoja-de-vida-camilo-restrepo.pdf",
+    correo: "camilo.restrepo@consultores.co",
     estadoPerfil: "en_revision",
     esEquipoInterno: false,
     ratingPromedio: 0,
@@ -708,6 +727,7 @@ export const consultores: PerfilConsultor[] = [
     especialidades: ["tp-fortalecimiento", "sec-servicios"],
     portafolio: [],
     cvNombre: "hoja-de-vida-patricia-gomez.pdf",
+    correo: "patricia.gomez@consultores.co",
     estadoPerfil: "rechazado",
     motivoRechazo:
       "La hoja de vida no evidencia experiencia verificable en los últimos 3 años. Por favor actualiza tu portafolio con proyectos recientes y referencias de contacto.",
@@ -726,6 +746,7 @@ export const consultores: PerfilConsultor[] = [
     especialidades: ["tp-fortalecimiento", "tp-emprendimiento", "sec-servicios"],
     portafolio: [],
     cvNombre: "hoja-de-vida-laura-jimenez.pdf",
+    correo: "laura.jimenez@equipo-interno.co",
     estadoPerfil: "aprobado",
     esEquipoInterno: true,
     ratingPromedio: 4.6,
@@ -742,6 +763,7 @@ export const consultores: PerfilConsultor[] = [
     especialidades: ["sec-agro", "tp-fortalecimiento"],
     portafolio: [],
     cvNombre: "hoja-de-vida-david-otalora.pdf",
+    correo: "david.otalora@equipo-interno.co",
     estadoPerfil: "aprobado",
     esEquipoInterno: true,
     ratingPromedio: 4.4,
@@ -786,6 +808,9 @@ export const encargos: Encargo[] = [
     estado: "pendiente",
     avances: [],
     fechas: { creada: "2026-08-20", aceptado: null, completado: null },
+    tipoAyuda: "convocatoria_especifica",
+    convocatoriaId: "conv-1",
+    postulacionId: "post-2",
   },
   {
     id: "encargo-2",
@@ -802,6 +827,9 @@ export const encargos: Encargo[] = [
       { id: "avance-2-2", nota: "Entregué el primer borrador del plan de mejora a AgroDatos para retroalimentación.", fecha: "2026-08-22" },
     ],
     fechas: { creada: "2026-08-10", aceptado: "2026-08-12", completado: null },
+    tipoAyuda: "convocatoria_especifica",
+    convocatoriaId: "conv-3",
+    postulacionId: "post-1",
   },
   {
     id: "encargo-3",
@@ -817,6 +845,9 @@ export const encargos: Encargo[] = [
       { id: "avance-3-1", nota: "Ajustamos el modelo de ingresos y la propuesta de valor con base en la validación de mercado.", fecha: "2026-07-05" },
     ],
     fechas: { creada: "2026-06-20", aceptado: "2026-06-21", completado: "2026-07-08" },
+    tipoAyuda: "convocatoria_especifica",
+    convocatoriaId: "conv-7",
+    postulacionId: "post-3",
   },
   {
     id: "encargo-4",
@@ -830,6 +861,9 @@ export const encargos: Encargo[] = [
     estado: "esperando_asignacion",
     avances: [],
     fechas: { creada: "2026-08-23", aceptado: null, completado: null },
+    tipoAyuda: "convocatoria_especifica",
+    convocatoriaId: "conv-7",
+    postulacionId: "post-3",
   },
   {
     id: "encargo-5",
@@ -845,6 +879,25 @@ export const encargos: Encargo[] = [
       { id: "avance-5-1", nota: "Diagnóstico ambiental entregado con indicadores de reducción de material virgen.", fecha: "2026-08-05" },
     ],
     fechas: { creada: "2026-07-15", aceptado: "2026-07-16", completado: "2026-08-06" },
+    tipoAyuda: "convocatoria_especifica",
+    convocatoriaId: "conv-4",
+    postulacionId: null,
+  },
+  {
+    id: "encargo-6",
+    proyectoId: "proy-3",
+    empresaId: "empresa-1",
+    consultorId: "consultor-3",
+    tituloTarea: "Buscar nueva convocatoria de turismo comunitario",
+    descripcionTarea:
+      "Aún no sabemos a qué convocatoria aplicar con TurismoVivo este semestre. Necesitamos que nos ayudes a identificar opciones vigentes que encajen con el proyecto.",
+    via: "directorio",
+    estado: "pendiente",
+    avances: [],
+    fechas: { creada: "2026-08-24", aceptado: null, completado: null },
+    tipoAyuda: "buscar_convocatoria",
+    convocatoriaId: null,
+    postulacionId: null,
   },
 ];
 
@@ -1034,6 +1087,9 @@ export const documentos: DocumentoGenerado[] = [
     ajustesGratisUsados: 1,
     fechaCreacion: "2026-08-18",
     fechaActualizacion: "2026-08-20",
+    // Compartido con consultor-1: tiene el encargo-2 en_curso sobre este mismo par proyecto-convocatoria.
+    compartidoConConsultorId: "consultor-1",
+    ultimaEdicionPor: "empresa",
     secciones: [
       {
         id: "titulo",
@@ -1110,3 +1166,60 @@ export const estadisticasIA: EstadisticasIA = {
   fallidas: 6,
   costoEstimadoCOP: 612_000,
 };
+
+// ---------------------------------------------------------------------------
+// Eventos de seguridad y auditoría (CU-39, CU-40, RNF-25..27, nuevo v5)
+// ---------------------------------------------------------------------------
+
+export const eventosSeguridad: EventoSeguridad[] = [
+  {
+    id: "evt-1",
+    tipo: "login_fallido",
+    usuarioNombre: null,
+    ip: "190.85.12.44",
+    ruta: "/admin",
+    detalle: "Contraseña incorrecta, intento 2 de 5.",
+    bloqueadoHasta: null,
+    fecha: "2026-09-13T09:12:00",
+  },
+  {
+    id: "evt-2",
+    tipo: "acceso_denegado",
+    usuarioNombre: "empresa-2",
+    ip: "201.244.78.10",
+    ruta: "/api/admin/convocatorias",
+    detalle: "Cuenta con rol empresa intentó acceder a un endpoint administrativo.",
+    bloqueadoHasta: null,
+    fecha: "2026-09-12T16:40:00",
+  },
+  {
+    id: "evt-3",
+    tipo: "limite_tasa",
+    usuarioNombre: "empresa-4",
+    ip: "186.30.201.5",
+    ruta: "/api/documentos/generar",
+    detalle: "27 solicitudes de generación en 60 segundos — supera el límite por usuario.",
+    bloqueadoHasta: "2026-09-14T23:59:00",
+    fecha: "2026-09-13T22:05:00",
+  },
+  {
+    id: "evt-4",
+    tipo: "limite_tasa",
+    usuarioNombre: null,
+    ip: "45.90.12.201",
+    ruta: "/api/convocatorias",
+    detalle: "Ráfaga de 400 solicitudes/minuto al catálogo público desde una sola IP.",
+    bloqueadoHasta: "2026-09-12T10:00:00",
+    fecha: "2026-09-12T08:30:00",
+  },
+  {
+    id: "evt-5",
+    tipo: "mfa_activado",
+    usuarioNombre: "admin-1",
+    ip: "192.168.1.20",
+    ruta: "/admin/seguridad",
+    detalle: "Verificación en dos pasos activada correctamente.",
+    bloqueadoHasta: null,
+    fecha: "2026-08-01T08:00:00",
+  },
+];

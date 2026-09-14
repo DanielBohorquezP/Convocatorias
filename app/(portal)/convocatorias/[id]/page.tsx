@@ -16,6 +16,7 @@ import {
   Info,
   Sparkles,
   X,
+  ExternalLink,
 } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import { categoriaPorId } from "@/lib/mock-data";
@@ -181,6 +182,13 @@ export default function DetalleConvocatoriaPage({
               : "Al postularte crearás un expediente de seguimiento para esta convocatoria."}
           </div>
           <div className="flex flex-wrap items-center gap-2">
+            {convocatoria.urlPostulacion && (
+              <a href={convocatoria.urlPostulacion} target="_blank" rel="noreferrer">
+                <Button variant="ghost" size="lg">
+                  <ExternalLink className="h-4 w-4" /> Ir al portal de la entidad
+                </Button>
+              </a>
+            )}
             <Button
               variant="teal"
               size="lg"
