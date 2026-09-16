@@ -17,6 +17,8 @@ Product Owner (fundador/socio) · Scrum Master (líder técnico) · 2 desarrolla
 
 ### 11.3 Cronograma v4 (18 semanas, 9 sprints)
 
+> **El plan en ejecución es otro:** [`10-plan-de-desarrollo.md`](10-plan-de-desarrollo.md), 30 días y cinco sprints, con una persona y un agente de IA. Es viable porque el prototipo ya cubre la interfaz y las reglas de lo que aquí ocupan los sprints 1 a 7. Este cronograma se conserva como referencia de cómo se construiría con el equipo completo de §11.2.
+
 | Sprint | Semanas | Contenido | Hito |
 |---|---|---|---|
 | 0 | 1–2 | Setup Vercel + Supabase, esquema completo (24 tablas), RLS, auth con 3 roles, CI/CD | H0: entorno y modelo desplegados |

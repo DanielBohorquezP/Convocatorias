@@ -1,0 +1,239 @@
+# Avance por requerimiento
+
+> Parte de la especificación del MVP **v6** · Plataforma de Gestión de Convocatorias.
+> Plan de sprints en [`10-plan-de-desarrollo.md`](10-plan-de-desarrollo.md). Estado vivo en [`ESTADO.md`](../ESTADO.md).
+
+**Se actualiza en cada sesión que cambie el estado de algún requerimiento.** Es la respuesta detallada a "¿qué falta?"; `ESTADO.md` es la respuesta corta.
+
+---
+
+## 21. Cómo leer esta tabla
+
+Cada requerimiento tiene **un** estado:
+
+| Estado | Significa |
+|---|---|
+| `pendiente` | No existe todavía, ni en el prototipo |
+| `prototipo` | Funciona en la interfaz contra datos simulados. **No cuenta como hecho**: la regla vive en el cliente y `lib/store.ts`, no en el servidor |
+| `servidor` | Implementado contra Supabase, con la regla aplicada en la capa de aplicación y en RLS donde corresponda |
+| `verificado` | Además, su criterio de verificación se ejecutó y pasó, con evidencia en la bitácora |
+
+Solo `verificado` cierra un requerimiento. La distinción entre `prototipo` y `servidor` es la que este proyecto no puede permitirse difuminar: es exactamente el vacío que encontró la auditoría v6 (RNF-20, RN-30).
+
+**Estado inicial · día 0.** La mayoría está en `prototipo`: el modelo v6 está construido en la interfaz, pero no hay backend. Los requerimientos nacidos de la auditoría v6 (RF-76..83, RNF-30..34, RN-30) están `pendiente` salvo los de usabilidad, que ya se implementaron.
+
+---
+
+## 22. Requerimientos funcionales
+
+### 4.1 Gestión de usuarios y acceso
+
+| RF | Estado | Nota |
+|---|---|---|
+| RF-01 Registro con rol y trial | prototipo | `ModoDemo` sustituye al registro real |
+| RF-02 Restringir funciones administrativas | pendiente | Hoy `/admin` es alcanzable desde cualquier rol |
+| RF-03 Recuperación de contraseña | pendiente | — |
+
+### 4.2 Fuentes y convocatorias (administrador)
+
+| RF | Estado | Nota |
+|---|---|---|
+| RF-04 Fuentes | prototipo | |
+| RF-05 Crear convocatoria con enlace oficial | prototipo | |
+| RF-06 Categorías | prototipo | |
+| RF-07 Adjuntar documentos | prototipo | Sin Storage real |
+| RF-08 Requisitos | prototipo | |
+| RF-09 Publicar validado | prototipo | Validación solo en cliente; RNF-29 exige servidor |
+| RF-10 Cierre automático | pendiente | Requiere `pg_cron` |
+
+### 4.3 Búsqueda y descubrimiento
+
+| RF | Estado | Nota |
+|---|---|---|
+| RF-11 Catálogo, cerradas bajo filtro | prototipo | Filtro explícito ya implementado |
+| RF-12 Filtros combinables | prototipo | |
+| RF-13 Ficha de detalle | prototipo | |
+| RF-14 Registrar proyectos | prototipo | Sin columna de propietario |
+| RF-15 Sugerencias, solo vigentes | prototipo | |
+| RF-16 Porcentaje de compatibilidad | prototipo | |
+| RF-43 Chips sugeridos | prototipo | |
+| RF-44 Indicadores de la landing | prototipo | Cifra correcta en el primer fotograma |
+
+### 4.4 Proyectos enriquecidos
+
+| RF | Estado | Nota |
+|---|---|---|
+| RF-45 Datos de contenido | prototipo | |
+| RF-46 Indicador de completitud accionable | prototipo | |
+| RF-47 Generar sobre proyecto incompleto | prototipo | |
+
+### 4.5 Postulación y seguimiento
+
+| RF | Estado | Nota |
+|---|---|---|
+| RF-17 Iniciar postulación con checklist | prototipo | |
+| RF-18 Marcar checklist y avance | prototipo | |
+| RF-19 Estados con historial | prototipo | |
+| RF-20 Panel de postulaciones | prototipo | |
+| RF-21 Impedir sobre cerradas | prototipo | Solo deshabilita el botón; ver RF-78 |
+
+### 4.6 Perfil del consultor
+
+| RF | Estado | Nota |
+|---|---|---|
+| RF-22 Registro en perfil incompleto | prototipo | |
+| RF-23 Perfil completo con CV | prototipo | Sin Storage real |
+| RF-24 Envío a revisión | prototipo | |
+| RF-25 Motivo de rechazo y reenvío | prototipo | |
+
+### 4.7 Directorio y encargos
+
+| RF | Estado | Nota |
+|---|---|---|
+| RF-26 Directorio filtrado | prototipo | |
+| RF-27 Visibilidad del perfil | prototipo | Ver RF-80 |
+| RF-28 Solicitar consultor | prototipo | |
+| RF-29 Ciclo de estados del encargo | prototipo | |
+| RF-30 Aceptar o rechazar | prototipo | |
+| RF-31 Asignación interna | prototipo | |
+| RF-32 Avances y finalización | prototipo | |
+| RF-33 Calificación única | prototipo | Contador corregido al completar |
+| RF-68 Contexto del proyecto en el encargo | prototipo | |
+| RF-69 Ayuda para encontrar convocatoria | prototipo | |
+| RF-70 Revelar contacto al aceptar | prototipo | |
+| RF-71 Autorizar documento al consultor | prototipo | |
+| RF-72 Bloquear exportación en servidor | pendiente | Hoy solo se oculta el botón |
+| RF-73 Ir al portal como acción primaria | prototipo | |
+| RF-74 Solicitud directa desde el perfil | prototipo | |
+| RF-75 Buscador de convocatorias en el selector | prototipo | |
+
+### 4.8 Gestión de consultores (administrador)
+
+| RF | Estado | Nota |
+|---|---|---|
+| RF-34 Aprobar/rechazar perfiles | prototipo | |
+| RF-35 Suspender y reactivar | prototipo | |
+
+### 4.9 Suscripciones y créditos
+
+| RF | Estado | Nota |
+|---|---|---|
+| RF-36 Planes administrables por rol | prototipo | |
+| RF-37 Trial de empresa | prototipo | Dato de ejemplo incoherente: `consultor-5` tiene trial |
+| RF-38 Activación manual | prototipo | |
+| RF-39 Job de vencimientos | pendiente | Requiere `pg_cron` |
+| RF-40 Verificación en acciones restringidas | prototipo | |
+| RF-41 Vista del suscriptor | prototipo | |
+| RF-42 Tablero admin de suscripciones | prototipo | |
+| RF-48 Un crédito por generación exitosa | prototipo | |
+| RF-49 Reinicio mensual del cupo | pendiente | Requiere `pg_cron` |
+| RF-50 Bloquear sin cupo | prototipo | |
+| RF-51 Paquetes adicionales | prototipo | |
+| RF-52 Registrar consumo con tokens y costo | pendiente | `EstadisticasIA` no guarda tokens ni costo |
+
+### 4.10 Generación documental con IA
+
+| RF | Estado | Nota |
+|---|---|---|
+| RF-53 Acción de generar/editar | prototipo | |
+| RF-54 Lista de proyectos con completitud y cupo | prototipo | |
+| RF-55 Construcción del contexto | pendiente | Hoy se compone con plantillas, sin TDR |
+| RF-56 Estructura según requisitos | prototipo | Estructura fija, no derivada |
+| RF-57 Marcar pendientes | prototipo | `[COMPLETAR: ...]` funcionando |
+| RF-58 Vista previa editable | prototipo | |
+| RF-59 Tres ajustes gratis | prototipo | |
+| RF-60 Exportar a Word | prototipo | Genera HTML con extensión `.doc`, no `.docx` |
+| RF-61 Documento ligado a proyecto-convocatoria | prototipo | |
+| RF-62 Progreso y fallo controlado | prototipo | Sin tope de 120 s (RNF-21) |
+| RF-63 Plantilla del prompt versionada | prototipo | Falta cargar el prompt real |
+
+### 4.11 Seguridad administrativa
+
+| RF | Estado | Nota |
+|---|---|---|
+| RF-64 MFA para administradores | prototipo | La guarda tiene la condición invertida |
+| RF-65 Registrar eventos de seguridad | prototipo | |
+| RF-66 Límite de tasa | pendiente | |
+| RF-67 Liberar bloqueo | prototipo | |
+
+### 4.12 Autorización y aislamiento *(v6)*
+
+| RF | Estado | Nota |
+|---|---|---|
+| RF-76 Revocación automática en cascada | pendiente | Sprint 5 |
+| RF-77 Validar cupo de la empresa dueña | pendiente | Sprint 4 |
+| RF-78 Vigencia verificada en servidor | pendiente | Sprint 2 |
+| RF-79 Traza de lectura | pendiente | Sprint 5 |
+| RF-80 Contacto por pareja empresa-consultor | pendiente | Sprint 5 |
+
+### 4.13 Usabilidad de los flujos *(v6)*
+
+| RF | Estado | Nota |
+|---|---|---|
+| RF-81 Completitud accionable | prototipo | Implementado y verificado en navegador |
+| RF-82 Comparador con atributos reales | prototipo | Implementado y verificado en navegador |
+| RF-83 Grafo de transiciones | prototipo | Validado en store; falta en servidor |
+
+---
+
+## 23. Requerimientos no funcionales
+
+| RNF | Estado | Sprint | Nota |
+|---|---|---|---|
+| RNF-01 Autenticación y acceso | pendiente | 1 | |
+| RNF-02 Cifrado | pendiente | 1 | Lo da Supabase + Vercel |
+| RNF-03 Aislamiento de datos | pendiente | 1 | Depende de RN-30 |
+| RNF-04 Rendimiento del catálogo | pendiente | 2 | |
+| RNF-05 Rendimiento de sugerencias | pendiente | 3 | |
+| RNF-06 Documentos | pendiente | 2 | |
+| RNF-07 Idioma y simplicidad | prototipo | — | Plurales corregidos |
+| RNF-08 Responsivo | prototipo | — | Barra pública corregida |
+| RNF-09 Disponibilidad | pendiente | 5 | |
+| RNF-10 Respaldos | pendiente | 5 | |
+| RNF-11 Trazabilidad | pendiente | 5 | Incluye RF-79 |
+| RNF-12 Consistencia | pendiente | 1 | |
+| RNF-13 Evolución | — | — | Atributo de diseño, ya satisfecho |
+| RNF-14 Catálogos administrables | prototipo | 4 | RF-82 ya lo respeta |
+| RNF-15 Portabilidad | — | — | Atributo de diseño |
+| RNF-16 Datos personales | pendiente | 1 | URLs firmadas de 15 min |
+| RNF-17 Integridad del rating | prototipo | 5 | |
+| RNF-18 Archivos de perfil | pendiente | 1 | |
+| RNF-19 Rendimiento del directorio | pendiente | 5 | |
+| RNF-20 Enforcement en servidor | pendiente | 1–5 | Transversal |
+| RNF-21 Generación con IA hasta 120 s | pendiente | 4 | |
+| RNF-22 Independencia del proveedor de IA | pendiente | 4 | |
+| RNF-23 Veracidad del contenido | prototipo | 4 | El principio está bien implementado |
+| RNF-24 Transparencia del uso de IA | pendiente | 4 | |
+| RNF-25 Cobertura de RLS | pendiente | 1 | |
+| RNF-26 Credenciales elevadas | pendiente | 1 | |
+| RNF-27 Límite de tasa | pendiente | 5 | |
+| RNF-28 MFA de administradores | prototipo | 1 | Guarda con condición invertida |
+| RNF-29 Validación del enlace | prototipo | 2 | Solo en cliente |
+| RNF-30 Autorización por rol | pendiente | 1 | **Causa raíz de la auditoría** |
+| RNF-31 Inyección en el TDR | pendiente | 4 | |
+| RNF-32 Retención y eliminación | pendiente | 5 | |
+| RNF-33 Degradación fail-closed | pendiente | 5 | |
+| RNF-34 Lenguaje sin identificadores | prototipo | — | Verificado: 0 en texto renderizado |
+
+---
+
+## 24. Reglas de negocio con implementación pendiente
+
+Las 30 reglas están documentadas; estas son las que todavía no se hacen cumplir donde deben:
+
+| RN | Estado | Sprint |
+|---|---|---|
+| RN-01 Publicación con datos mínimos | prototipo (cliente) | 2 |
+| RN-02 Cerrada sale de catálogo y sugerencias | prototipo | 2 |
+| RN-03 No postular ni generar sobre cerradas | prototipo (solo UI) | 2 |
+| RN-17 Un crédito por generación exitosa | prototipo | 4 |
+| RN-18 Reinicio mensual, sin acumular | pendiente | 4 |
+| RN-23 Saneamiento del TDR | pendiente | 4 |
+| RN-24 RLS desde el Sprint 0 | pendiente | 1 |
+| RN-26 Contacto solo en `en_curso` | prototipo | 5 |
+| RN-27 Autorización derivada | pendiente | 5 |
+| RN-28 Sin cupo propio del consultor | prototipo | 4 |
+| RN-29 Suspender cancela encargos | prototipo | 5 |
+| **RN-30 Propiedad explícita del dato** | pendiente | **1** |
+
+---

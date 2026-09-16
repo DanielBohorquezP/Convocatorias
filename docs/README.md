@@ -16,9 +16,14 @@ Especificación funcional y técnica del MVP **v6** (septiembre 2026). Es la fue
 | [`07-modelo-de-negocio.md`](07-modelo-de-negocio.md) | Planes, precios en COP, créditos de IA (solo planes de empresa), benchmark y análisis competitivo | Pantallas de suscripción y cupos |
 | [`08-roadmap.md`](08-roadmap.md) | Scrum, cronograma de 18 semanas con hitos, y las fases E1–E10 posteriores al MVP | Planeación y para no construir cosas de fases futuras |
 | [`09-trazabilidad.md`](09-trazabilidad.md) | Matriz CU ↔ RF ↔ RNF/RN | Para verificar cobertura |
-| [`99-especificacion-completa.md`](99-especificacion-completa.md) | Todo lo anterior en un solo archivo | Solo si necesitas leerlo de corrido o exportarlo |
+| [`10-plan-de-desarrollo.md`](10-plan-de-desarrollo.md) | **Plan de 30 días**: Scrum adaptado a una persona y un agente, ritual de sesión, definición de terminado y los cinco sprints con sus hitos | Al empezar un sprint, o si hay dudas sobre qué toca |
+| [`11-avance-por-requerimiento.md`](11-avance-por-requerimiento.md) | Estado de implementación de los 83 RF, 34 RNF y las reglas pendientes: `pendiente` · `prototipo` · `servidor` · `verificado` | Para saber qué está hecho de verdad y qué falta |
+| [`bitacora/`](bitacora/) | Una entrada por sesión: qué se hizo, cómo se verificó, qué se decidió y qué quedó abierto | Al abrir sesión, la última entrada |
+| [`99-especificacion-completa.md`](99-especificacion-completa.md) | Todo lo anterior en un solo archivo, **salvo `10`, `11` y `bitacora/`**, que son registros vivos del desarrollo y no parte de la especificación | Solo si necesitas leerlo de corrido o exportarlo |
 
-`diagramas/` contiene las versiones en PNG de la arquitectura y del modelo de datos.
+`diagramas/` contiene las versiones en PNG de la arquitectura y del modelo de datos (todavía de v4).
+
+El **estado vivo del trabajo** no está en esta carpeta sino en [`../ESTADO.md`](../ESTADO.md), en la raíz del repositorio.
 
 [`INSTRUCCIONES-INSTALACION.md`](INSTRUCCIONES-INSTALACION.md) explica cómo levantar el proyecto en local.
 

@@ -6,6 +6,29 @@ Aplicación web que ayuda a empresas colombianas a **encontrar convocatorias de 
 
 ---
 
+## Lo primero de cada sesión
+
+El proyecto está en desarrollo activo con un plan de 30 días. **Antes de tocar nada:**
+
+1. Lee **[`ESTADO.md`](ESTADO.md)** — sprint actual, qué está hecho, qué está en curso, qué bloquea y cuál es el siguiente paso.
+2. Lee la **última entrada de [`docs/bitacora/`](docs/bitacora/)** — qué se decidió y qué quedó abierto.
+
+**Antes de cerrar la sesión, siempre —aunque haya sido corta:**
+
+3. Actualiza `docs/11-avance-por-requerimiento.md` con los requerimientos que cambiaron de estado.
+4. Actualiza `ESTADO.md`.
+5. Escribe la entrada de bitácora con la plantilla de `docs/bitacora/PLANTILLA.md`.
+6. Haz commit citando los `RF-xx`/`RNF-xx` tocados.
+
+El ritual completo y la definición de terminado están en `docs/10-plan-de-desarrollo.md §17`. **Sin ese cierre, la siguiente sesión empieza a ciegas y repite trabajo.**
+
+Dos reglas que se rompen con facilidad:
+
+- **Un requerimiento no está hecho porque funcione en pantalla.** Si la regla vive en `lib/store.ts` y no en el servidor, su estado es `prototipo`, no `servidor` (RNF-20).
+- **Lo que aparece de paso no se arregla de paso.** Se anota en "Hallazgos no planificados" de `ESTADO.md` y se planifica.
+
+---
+
 ## Reglas de producto que nunca se rompen
 
 1. **La plataforma NO radica postulaciones.** La presentación se hace en el portal de la entidad convocante. Aquí se *prepara*: buscar, evaluar compatibilidad, generar el documento base, organizar el checklist y hacer seguimiento. (RN-19)
@@ -58,13 +81,16 @@ Next.js (App Router) + TypeScript + Tailwind, desplegado en **Vercel**. Backend 
 |---|---|
 | Alcance, actores, métricas de éxito | `docs/00-contexto-y-alcance.md` |
 | Flujos paso a paso, precondiciones, alternos | `docs/01-casos-de-uso.md` |
-| Qué debe hacer el sistema (RF-01..63) | `docs/02-requerimientos-funcionales.md` |
+| Qué debe hacer el sistema (RF-01..83) | `docs/02-requerimientos-funcionales.md` |
 | Rendimiento, seguridad, veracidad, reglas de negocio | `docs/03-requerimientos-no-funcionales.md` |
 | Capas, rutas de pantallas, endpoints, servicios | `docs/04-arquitectura.md` |
 | **Tablas, columnas, RLS, índices, SQL** | `docs/05-modelo-de-datos.md` |
 | Procesos core vs. tercerizables | `docs/06-procesos-de-negocio.md` |
 | Planes, precios, créditos, competencia | `docs/07-modelo-de-negocio.md` |
-| Sprints, hitos, qué viene después del MVP | `docs/08-roadmap.md` |
+| Sprints, hitos, qué viene después del MVP | `docs/08-roadmap.md` (cronograma original de 18 semanas) |
+| **El plan de 30 días en curso, ceremonias y definición de terminado** | `docs/10-plan-de-desarrollo.md` |
+| **Qué requerimiento está hecho y cuál falta** | `docs/11-avance-por-requerimiento.md` |
+| **Qué se hizo en cada sesión y por qué** | `docs/bitacora/` |
 | Qué RF/RNF cubre cada caso de uso | `docs/09-trazabilidad.md` |
 | Todo junto (solo si hace falta) | `docs/99-especificacion-completa.md` |
 | Cómo levantar el proyecto localmente | `docs/INSTRUCCIONES-INSTALACION.md` |
@@ -81,7 +107,7 @@ Este proyecto documenta primero y programa después (ver regla de `docs/README.m
 
 | El cambio afecta… | Edita primero | Formato a seguir |
 |---|---|---|
-| Un flujo de pantalla, un actor, precondiciones/postcondiciones | `docs/01-casos-de-uso.md` | Sigue la numeración `CU-xx`; si es nuevo, usa el siguiente número libre y márcalo `(nuevo v5)`; si modificas uno existente, márcalo `(mod. v5)` |
+| Un flujo de pantalla, un actor, precondiciones/postcondiciones | `docs/01-casos-de-uso.md` | Sigue la numeración `CU-xx`; si es nuevo, usa el siguiente número libre y márcalo con la versión vigente —hoy `(nuevo v6)`—; si modificas uno existente, `(mod. v6)` |
 | Qué debe hacer el sistema (un comportamiento concreto) | `docs/02-requerimientos-funcionales.md` | Numeración `RF-xx` continua, con prioridad MoSCoW (Must/Should) y el `CU` al que pertenece |
 | Seguridad, rendimiento, disponibilidad, veracidad de IA | `docs/03-requerimientos-no-funcionales.md` | Numeración `RNF-xx`, con criterio de verificación medible |
 | Una regla de negocio transversal (no un flujo, una restricción) | `docs/03-requerimientos-no-funcionales.md` §6 | Numeración `RN-xx` |
@@ -89,7 +115,7 @@ Este proyecto documenta primero y programa después (ver regla de `docs/README.m
 | Tablas, columnas, índices, RLS | `docs/05-modelo-de-datos.md` | Agrega la columna/tabla con tipo y restricción; revisa si necesita índice o política RLS nueva |
 | Qué se terceriza o no | `docs/06-procesos-de-negocio.md` | — |
 | Precio, plan, créditos, competencia | `docs/07-modelo-de-negocio.md` | — |
-| Fecha, sprint, fase posterior al MVP | `docs/08-roadmap.md` | — |
+| Fecha, sprint, fase posterior al MVP | `docs/10-plan-de-desarrollo.md` (plan en curso) y `docs/08-roadmap.md` (fases E1–E10) | Si cambia el plan de sprints, refléjalo también en `ESTADO.md` |
 
 Si el cambio es amplio (por ejemplo, un módulo nuevo), es normal que toque varios de estos documentos a la vez — ese es justo el caso de "generación documental con IA" en v4, que tocó CU, RF, RNF, arquitectura y modelo de datos juntos.
 
@@ -124,13 +150,16 @@ app/admin/             → Panel Administrador: fuentes, convocatorias, categor�
                           consultores/revision, encargos, planes, plantillas, suscripciones
 components/            → Componentes compartidos (Navbar, cards, modales, badges)
 components/ui/         → Primitivas de UI (Button, Chip, Badge, ProgressBar, EmptyState)
-lib/types.ts           → Todos los tipos — reflejan 1:1 las tablas de docs/05-modelo-de-datos.md
+lib/types.ts           → Todos los tipos. Siguen el esquema de docs/05-modelo-de-datos.md
+                          SALVO las columnas de propietario (RN-30), que faltan en
+                          Proyecto, Postulacion y DocumentoGenerado — Sprint 1
 lib/mock-data.ts       → Datos semilla (reemplazar por Supabase en la fase de backend)
 lib/store.ts           → Estado global con Zustand: toda la lógica de negocio del
                           prototipo vive aquí (crear proyecto, generar documento,
                           consumir crédito, cambiar estado de postulación, etc.)
 lib/documentos.ts       → Composición del documento generado y aplicación de ajustes de IA
 lib/proyectos.ts        → Cálculo del indicador de completitud del proyecto (RF-46)
+lib/planes.ts           → Beneficios de cada plan derivados del dato del plan (RF-82)
 lib/session.ts          → Simulador de sesión/rol: **no hay auth real todavía**.
                           `ModoDemo` (empresa_trial, empresa_vencida, empresa_sin_creditos,
                           consultor_aprobado, consultor_revision, admin) sustituye a
@@ -141,22 +170,10 @@ lib/session.ts          → Simulador de sesión/rol: **no hay auth real todaví
 
 ## Estado actual
 
-Frontend de prototipo funcional con datos mock (Zustand + `ModoDemo`, sin autenticación real ni backend). La UI, los tipos y las reglas de negocio del store ya implementan el modelo v4 completo: créditos de IA, completitud de proyecto, generación y ajustes de documentos, versiones de plantilla.
+**El estado del trabajo no se mantiene en este archivo: vive en [`ESTADO.md`](ESTADO.md)**, que se actualiza al cierre de cada sesión. Tener el estado en dos sitios es la forma más rápida de que uno de los dos mienta.
 
-**La especificación v6 va por delante del código**: los requerimientos de autorización, aislamiento y usabilidad (RF-76..83, RNF-30..34, RN-30) están escritos y aprobados, pero **ninguno está implementado todavía** — se construyen en la fase de desarrollo, junto con el backend. Al abrir cualquiera de esos frentes, el documento manda.
+Lo único estable que conviene saber de entrada:
 
-Pendientes conocidos antes de producción:
-
-- **Implementar RF-76..83 y RNF-30..34.** Ninguna guarda de rol existe hoy: `/admin` y el grupo `(portal)` son alcanzables desde cualquier modo demo, y los listados no filtran por propietario porque `Proyecto`, `Postulacion` y `DocumentoGenerado` aún no declaran `usuarioId` (RN-30). Es el primer trabajo del Sprint 0.
-- Cargar el **prompt propio de generación** en la plantilla versionada (RF-63, tabla `plantillas_generacion` / `lib/mock-data.ts: promptVersiones`).
-- Medir el costo real de IA sobre 20 generaciones con TDR colombianos antes de fijar cupos y precios definitivos (RNF-21, sección 10.3 de `docs/07-modelo-de-negocio.md`).
-- Conectar Supabase (Auth + Postgres + RLS + Storage) reemplazando `mock-data.ts`, `store.ts` y `session.ts`; los tipos del prototipo ya siguen el esquema de `docs/05-modelo-de-datos.md`, así que la migración es de origen de datos, no de forma.
-- Integrar Claude API aislada tras la interfaz propia de generación (RNF-22), en vez de la composición simulada de `lib/documentos.ts`.
-
-Deuda del prototipo detectada en las auditorías de v6 (no bloquea la especificación, sí el piloto):
-
-- **`lib/utils.ts: HOY` está congelado en `2026-08-24`.** Las convocatorias "vigentes" de la demo ya cerraron y la ficha anuncia "Cierra en 1 día" sobre fechas pasadas. Generar las fechas de `mock-data.ts` como desplazamientos relativos a `new Date()` y eliminar la constante.
-- **`consultor-5` tiene una suscripción en estado `trial`** (`lib/mock-data.ts: sub-6`) con el perfil aún en revisión, lo que contradice RF-37 ("consultores sin trial") y RN-11.
-- **`components/ui/SearchableSelect.tsx:23` cita "(RF-76)"** para el selector con buscador, pero ese requerimiento es **RF-75**; desde v6, RF-76 designa la revocación en cascada, así que el comentario induce a error.
-- **`EstadisticasIA` no registra tokens ni costo estimado**, que es lo que RF-52 exige y lo que la medición de precios de `docs/07 §10.3` necesita sobre 20 generaciones reales.
-- **La generación no contempla el vencimiento por tope de 120 s** que RNF-21 describe como fallo controlado sin consumo de crédito: el temporizador simulado es fijo.
+- El prototipo implementa el modelo **v6** en la interfaz, contra datos simulados (Zustand + `ModoDemo`). **No hay backend ni autenticación real.**
+- La especificación va **por delante** del código: RF-76..80 y RNF-30..33 están escritos y sin construir. Hasta que un requerimiento no figure como `servidor` o `verificado` en `docs/11-avance-por-requerimiento.md`, no está hecho, aunque funcione en pantalla.
+- El desarrollo sigue el plan de 30 días de `docs/10-plan-de-desarrollo.md`, en cinco sprints de seis días. A partir del Sprint 1 las reglas dejan de implementarse en `lib/store.ts` y pasan a API routes, migraciones y políticas RLS.
