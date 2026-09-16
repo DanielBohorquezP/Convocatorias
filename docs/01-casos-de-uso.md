@@ -1,6 +1,6 @@
 # Casos de uso (CU-01 a CU-40)
 
-> Parte de la especificación del MVP v4 · Plataforma de Gestión de Convocatorias.
+> Parte de la especificación del MVP **v6** · Plataforma de Gestión de Convocatorias.
 > Índice general en `docs/README.md`. Contexto rápido en `CLAUDE.md`.
 
 ---
@@ -90,7 +90,7 @@
 | **Descripción** | El proyecto deja de ser solo un conjunto de atributos de filtrado y pasa a ser **el insumo de contenido de la generación con IA**. Se llena una vez y se reutiliza en todas las postulaciones |
 | **Flujo principal** | 1. **Datos de clasificación** (los que alimentan filtros y sugerencias): nombre, monto buscado, ubicación, categorías (tipo de proyecto, sector, tipo de entidad). 2. **Datos de contenido** (los que alimentan la IA): problema que resuelve, objetivo general, objetivos específicos, población beneficiaria, actividades principales, resultados esperados, duración en meses, presupuesto estimado y experiencia o trayectoria de la empresa. 3. El sistema calcula y muestra un **indicador de completitud del proyecto**, advirtiendo que a mayor completitud, mejor el documento generado |
 | **Flujos alternos** | 1a. Guardar con solo los datos de clasificación: sirve para buscar, pero al generar documento el sistema avisa qué falta. 2a. Editar o eliminar un proyecto propio |
-| **Postcondiciones** | Proyecto disponible para sugerencias (CU-10), generación con IA (CU-33) y solicitud de consultor (CU-19) |
+| **Postcondiciones** | Proyecto disponible para sugerencias (CU-10), generación con IA (CU-33) y solicitud de consultor (CU-19). **Los campos que el indicador de completitud señala como faltantes se pueden diligenciar desde la propia ficha, sin volver al listado (RF-81)** *(ampliado en v6)* |
 
 #### CU-10 · Obtener convocatorias sugeridas *(mod. v4 — porcentaje)*
 
@@ -131,7 +131,7 @@
 
 | Campo | Contenido |
 |---|---|
-| **Flujo principal** | 1. Cambia el estado: en preparación → presentada → en evaluación → aprobada/rechazada → cerrada. 2. Cada transición queda en el historial con quién y cuándo. **3. El detalle de la postulación ofrece "Generar documento con IA" (CU-33) si aún no existe un documento para ese proyecto-convocatoria, o "Editar documento" (CU-34) si ya existe. 4. Botón "Ir al portal de la entidad", que abre el enlace oficial de postulación en una pestaña nueva — refuerza que la radicación se hace ahí, no en la plataforma (RN-19). 5. Botón "Solicitar consultor" (CU-19), con el proyecto y la convocatoria de la postulación ya preseleccionados (tipo de ayuda fijo en "convocatoria específica") (RF-28)** |
+| **Flujo principal** | 1. Cambia el estado siguiendo el grafo declarado (RF-83): en preparación → presentada → en evaluación → aprobada/rechazada → cerrada; **solo se ofrecen los estados alcanzables desde el actual, y las transiciones terminales piden confirmación**. 2. Cada transición queda en el historial con quién y cuándo. **3. El detalle de la postulación ofrece "Generar documento con IA" (CU-33) si aún no existe un documento para ese proyecto-convocatoria, o "Editar documento" (CU-34) si ya existe. 4. Botón "Ir al portal de la entidad", que abre el enlace oficial de postulación en una pestaña nueva — refuerza que la radicación se hace ahí, no en la plataforma (RN-19). 5. Botón "Solicitar consultor" (CU-19), con el proyecto y la convocatoria de la postulación ya preseleccionados (tipo de ayuda fijo en "convocatoria específica") (RF-28)** |
 | **Flujos alternos** | 1a. Panel con todas las postulaciones activas, avance y fechas. **3a. Si la postulación no tiene un proyecto vinculado (CU-11, flujo 2), el botón primero pide elegir o vincular uno antes de continuar a la generación. 5a. Igual restricción aplica a "Solicitar consultor": sin proyecto vinculado, primero pide elegir o vincularlo** |
 
 ### Módulo D — Cuenta
@@ -197,7 +197,7 @@
 
 | Campo | Contenido |
 |---|---|
-| **Flujo principal** | 1. Rating con reseñas, descripción, portafolio. **2. Sitio web, redes y hoja de vida solo si existe una solicitud activa entre ambos (RN-12) — sin solicitud, esos campos aparecen ocultos con una nota de por qué. 3. Botón "Solicitar a este consultor": elige un proyecto propio (y, si aplica, el tipo de ayuda y la convocatoria — con buscador por nombre, RF-75 — igual que CU-19) o una postulación propia ya vinculada a un proyecto — la postulación resuelve proyecto y convocatoria en un solo paso. 4. Describe la tarea y confirma: crea el encargo `pendiente` vía directorio, el mismo resultado que CU-22, sin pasar antes por CU-19/CU-20 (RF-74, nuevo v5)** |
+| **Flujo principal** | 1. Rating con reseñas, descripción, portafolio. **2. Sitio web, redes y hoja de vida solo si existe una solicitud activa entre ese consultor y la empresa que está mirando (RN-12, RF-80) — que otra empresa tenga una solicitud abierta con él no habilita a las demás; sin solicitud propia, esos campos aparecen ocultos con una nota de por qué. 3. Botón "Solicitar a este consultor": elige un proyecto propio (y, si aplica, el tipo de ayuda y la convocatoria — con buscador por nombre, RF-75 — igual que CU-19) o una postulación propia ya vinculada a un proyecto — la postulación resuelve proyecto y convocatoria en un solo paso. 4. Describe la tarea y confirma: crea el encargo `pendiente` vía directorio, el mismo resultado que CU-22, sin pasar antes por CU-19/CU-20 (RF-74, nuevo v5)** |
 | **Flujos alternos** | **3a.** Si ya trae una solicitud iniciada desde su proyecto (CU-19 → CU-20), el botón pasa a ser "Solicitar para mi tarea" y usa esos datos en vez de abrir el selector. **3b.** Sin proyectos ni postulaciones propias → invita a crear un proyecto primero |
 | **Nota** | La restricción de redes protege el sentido de la suscripción del consultor: si fueran públicas desde el perfil, la empresa podría contactarlo por fuera sin pasar nunca por la plataforma |
 
@@ -240,7 +240,7 @@
 
 | Campo | Contenido |
 |---|---|
-| **Flujo principal** | 1. Lista con estado, rating y encargos. 2. **Suspende** (sale del directorio, conserva historial) o **reactiva**. **3. Al suspender, sus encargos `en_curso` pasan a `cancelado` de inmediato, con un motivo registrado ("Consultor suspendido por el administrador"); el historial y las calificaciones ya emitidas no se alteran (RN-29)** |
+| **Flujo principal** | 1. Lista con estado, rating y encargos. 2. **Suspende** (sale del directorio, conserva historial) o **reactiva**. **3. Al suspender, sus encargos `en_curso` pasan a `cancelado` de inmediato, con un motivo registrado ("Consultor suspendido por el administrador"); el historial y las calificaciones ya emitidas no se alteran (RN-29). 4. La misma acción revoca en cascada las autorizaciones de documento que tuviera sobre esos encargos, de modo que pierde el acceso al instante sin que la empresa tenga que intervenir (RF-76, RN-27)** |
 | **Flujos alternos** | **3a.** Reactivar el perfil no revive los encargos cancelados — la empresa debe solicitar de nuevo si quiere retomar el trabajo con ese consultor |
 
 ### Módulo H — Suscripciones y créditos
@@ -276,7 +276,7 @@
 
 | Campo | Contenido |
 |---|---|
-| **Flujo principal** | 1. Verificación en cada acción restringida, **en servidor y en RLS**. 2. Empresa sin suscripción: no postula, no ve sugerencias, no solicita consultor, no genera documentos (catálogo sí navegable). 3. Consultor sin suscripción: no aparece en directorio ni acepta nuevos encargos. 4. Job diario: `activa → en_gracia → vencida` |
+| **Flujo principal** | 1. Verificación en cada acción restringida, **en servidor y en RLS**. 2. Empresa sin suscripción: no postula, no ve sugerencias, no solicita consultor, no genera documentos (catálogo sí navegable). 3. Consultor sin suscripción: no aparece en directorio ni acepta nuevos encargos. 4. Job diario: `activa → en_gracia → vencida`. **5. Al pasar a `vencida`, los encargos `en_curso` del consultor se cancelan (RN-29) y con ellos se revocan en cascada sus autorizaciones de documento (RF-76) — mismo efecto que CU-27, con el job como disparador en vez del administrador** *(ampliado en v6)* |
 
 #### CU-35 · Gestionar cupo de créditos de IA (Sistema) *(nuevo v4)*
 
@@ -290,26 +290,26 @@
 
 ### Módulo I — Generación documental con IA *(nuevo v4)*
 
-#### CU-33 · Generar documento base con IA
+#### CU-33 · Generar documento base con IA *(mod. v6)*
 
 | Campo | Contenido |
 |---|---|
-| **Actor** | Usuario Empresa (también Consultor), con apoyo del Servicio de IA |
+| **Actor** | Usuario Empresa, con apoyo del Servicio de IA. **El consultor no genera documentos**: no tiene proyectos propios (los proyectos son de la empresa, CU-09) y su plan no incluye cupo de créditos (RN-28). Su intervención sobre un documento se limita a CU-34, previa autorización explícita *(precisado en v6 — hasta v5 la línea de actor lo incluía sin darle flujo ni precondición viable)* |
 | **Descripción** | Producir el borrador del documento de postulación adaptando un proyecto de la empresa a la convocatoria elegida |
-| **Precondiciones** | Convocatoria publicada y vigente · al menos un proyecto registrado · suscripción activa o trial · **cupo de créditos disponible** (CU-35) |
+| **Precondiciones** | Convocatoria publicada y vigente —**verificado en el servidor al generar, no solo al pintar el botón (RF-78)**— · al menos un proyecto propio registrado · suscripción activa o trial · **cupo de créditos disponible** (CU-35) |
 | **Flujo principal** | 1. Desde la ficha de la convocatoria pulsa **"Generar documento con IA"**. 2. El sistema muestra la lista de sus proyectos con su indicador de completitud y el **cupo de créditos restante**. 3. Selecciona el proyecto con el que quiere aplicar. 4. El sistema arma el contexto: datos de contenido del proyecto + datos estructurados de la convocatoria + requisitos definidos por el admin (CU-04) + texto del TDR adjunto (CU-03). 5. Confirma la generación (se le advierte que consumirá un crédito). 6. El servicio de IA redacta el documento con la estructura derivada de los requisitos de la convocatoria; los datos sin fuente se marcan como pendientes. 7. Se descuenta el crédito, se guarda el documento y se muestra la vista previa (CU-34) |
 | **Flujos alternos** | 1a. **Entrada simétrica:** desde la ficha del proyecto → "Generar documento para..." → selecciona convocatoria. 2a. Proyecto con baja completitud → advertencia de que el resultado será pobre y ofrecimiento de completarlo antes. 2b. Sin proyectos → invitación a crear uno. 3a. Sin cupo → bloqueo con opciones de mejora de plan o paquete adicional. 6a. **Falla la generación** (timeout o error del servicio) → mensaje claro, **sin descontar crédito**, con opción de reintentar. 7a. Si ya existe una postulación de ese proyecto a esa convocatoria, el documento queda vinculado a ella |
 | **Postcondiciones** | Documento base guardado, asociado al par proyecto-convocatoria, con su lista de pendientes y su consumo registrado |
 
-#### CU-34 · Revisar, ajustar y exportar el documento generado *(mod. v5)*
+#### CU-34 · Revisar, ajustar y exportar el documento generado *(mod. v5; ampliado en v6)*
 
 | Campo | Contenido |
 |---|---|
 | **Actor** | Usuario Empresa (dueña) / **Consultor autorizado, con permisos restringidos** |
-| **Precondiciones** | Documento generado (CU-33). Para el consultor: encargo `en_curso` **y** autorización explícita de la empresa para ese documento (RN-22, RF-71) |
+| **Precondiciones** | Documento generado (CU-33). Para el consultor: encargo `en_curso` **y** autorización explícita de la empresa para ese documento (RN-22, RF-71). **Ambas condiciones se reevalúan en cada petición: el permiso guardado por sí solo no da acceso (RN-27)** |
 | **Flujo principal** | 1. Ve el documento en pantalla por secciones, con los **pendientes resaltados** y su conteo. 2. Edita libremente el texto (sin costo). 3. Puede pedir **ajustes a la IA** en lenguaje natural ("más breve", "enfatiza el componente ambiental"): hasta 3 ajustes por documento sin consumir crédito. 4. Guarda los cambios. 5. **(Solo la empresa) Descarga el documento en Word** para completarlo y radicarlo en el portal de la entidad |
-| **Flujos alternos** | 3a. Cuarto ajuste en adelante → cuenta como nueva generación (consume crédito **del cupo de la empresa**, sin importar si quien lo pidió fue la empresa o el consultor autorizado — RN-28). 5a. Regenerar desde cero → consume un crédito y crea una nueva versión, conservando la anterior (**solo la empresa** puede regenerar). 5b. Acceder después al documento desde el proyecto, la convocatoria o la postulación asociada. **5c. El consultor autorizado ve los pasos 1-4, pero no tiene el botón de descarga/exportar ni de regenerar; si la empresa revoca la autorización, pierde el acceso de inmediato (RN-27)** |
-| **Postcondiciones** | Documento editado y exportado; el usuario es responsable de verificar y completar antes de radicar (RN-19, RN-22). Cada edición registra si la hizo la empresa o el consultor |
+| **Flujos alternos** | 3a. Cuarto ajuste en adelante → cuenta como nueva generación (consume crédito **del cupo de la empresa**, sin importar si quien lo pidió fue la empresa o el consultor autorizado — RN-28). **3b. Si la empresa dueña no tiene cupo, el ajuste se rechaza sin consumir nada y sin tocar el documento; al consultor se le indica que debe avisarle (RF-77) — nunca se recurre al cupo de quien pidió el ajuste.** 5a. Regenerar desde cero → consume un crédito y crea una nueva versión, conservando la anterior (**solo la empresa** puede regenerar). 5b. Acceder después al documento desde el proyecto, la convocatoria o la postulación asociada. **5c. El consultor autorizado ve los pasos 1-4, pero no tiene el botón de descarga/exportar ni de regenerar. Pierde el acceso de inmediato tanto si la empresa revoca la autorización como si el encargo deja de estar `en_curso` — al completarse, cancelarse o rechazarse, al suspenderse su perfil o al vencer su suscripción: la revocación es automática y en cascada, no requiere que la empresa haga nada (RN-27, RF-76)** |
+| **Postcondiciones** | Documento editado y exportado; el usuario es responsable de verificar y completar antes de radicar (RN-19, RN-22). Cada edición registra si la hizo la empresa o el consultor, **y cada acceso de lectura del consultor queda registrado, de modo que tras revocar la autorización pueda reconstruirse qué consultó mientras estuvo activa (RF-79, RNF-11)** |
 
 #### CU-37 · Gestionar la plantilla de generación (Administrador) *(nuevo v4)*
 

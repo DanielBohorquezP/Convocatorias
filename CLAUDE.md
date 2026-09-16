@@ -1,8 +1,8 @@
 # Plataforma de Gestión de Convocatorias
 
-Aplicación web que ayuda a empresas colombianas a **encontrar convocatorias de financiación, generar con IA el documento base de postulación, preparar la postulación y contratar consultores**. Monetiza con suscripción mensual/anual por rol, diferenciada por créditos de IA.
+Aplicación web que ayuda a empresas colombianas a **encontrar convocatorias de financiación, generar con IA el documento base de postulación, preparar la postulación y contratar consultores**. Monetiza con suscripción mensual/anual por rol; los planes de **empresa** se diferencian por créditos de IA, el de **consultor** por acceso al directorio y a los encargos.
 
-**Especificación vigente: v4.** Este archivo es el contexto mínimo. El detalle vive en `docs/` y se lee **bajo demanda**, no completo.
+**Especificación vigente: v6.** Este archivo es el contexto mínimo. El detalle vive en `docs/` y se lee **bajo demanda**, no completo.
 
 ---
 
@@ -16,6 +16,8 @@ Aplicación web que ayuda a empresas colombianas a **encontrar convocatorias de 
 6. **Suscripción y cupo se validan en el servidor y en RLS**, nunca solo en la interfaz. (RNF-20)
 7. **La plataforma no intermedia el pago de los encargos** entre empresa y consultor. Los ingresos vienen de las suscripciones. (RN-14)
 8. **Ninguna tabla se despliega sin RLS con política explícita, y ninguna sesión administrativa opera sin MFA verificado.** Ambos son requisitos de diseño desde el Sprint 0, no revisiones posteriores. (RN-24, RNF-25, RNF-28)
+9. **Toda entidad de usuario declara su propietario y ningún listado se sirve sin filtrar por él** (RN-30), y **toda ruta y endpoint declara los roles que admite** (RNF-30). Ocultar un botón no es autorizar: el control vive en el servidor. También son requisitos de Sprint 0.
+10. **El consultor no tiene cupo propio de créditos de IA.** No genera documentos; los ajustes que pide sobre un documento autorizado los paga siempre la empresa dueña, y no existe caso de respaldo que cargue el consumo a quien dispara la acción. (RN-28)
 
 ---
 
@@ -24,7 +26,7 @@ Aplicación web que ayuda a empresas colombianas a **encontrar convocatorias de 
 | Rol | Qué hace | Acceso |
 |---|---|---|
 | **Empresa** | Busca convocatorias, registra proyectos, genera documentos con IA, postula, contrata consultores | Registro libre + trial 14 días con 3 créditos |
-| **Consultor** | Perfil con portafolio/CV/redes, recibe y ejecuta encargos, recibe calificaciones | Requiere **aprobación de un administrador** antes de operar |
+| **Consultor** | Perfil con portafolio/CV/redes, recibe y ejecuta encargos, recibe calificaciones. **No genera documentos ni tiene cupo propio de IA** (RN-28) | Requiere **aprobación de un administrador** antes de operar |
 | **Administrador** | Fuentes, convocatorias, requisitos, aprobación de consultores, planes y créditos, plantilla del prompt, seguridad y auditoría | Asignación manual del rol + **MFA obligatorio** (RNF-28) |
 
 ## Flujos centrales
@@ -67,7 +69,7 @@ Next.js (App Router) + TypeScript + Tailwind, desplegado en **Vercel**. Backend 
 | Todo junto (solo si hace falta) | `docs/99-especificacion-completa.md` |
 | Cómo levantar el proyecto localmente | `docs/INSTRUCCIONES-INSTALACION.md` |
 
-Diagramas en `docs/diagramas/`: arquitectura v4, modelo de datos base, módulo de consultores y módulo de IA.
+Diagramas en `docs/diagramas/`: arquitectura v4 (pendiente de actualizar a v6), modelo de datos base, módulo de consultores y módulo de IA.
 
 **Antes de implementar una pantalla o endpoint, lee el caso de uso correspondiente y su requerimiento.** No infieras el comportamiento: está escrito. Al agregar un CU o RF nuevo, continúa la numeración y añádelo también a `docs/09-trazabilidad.md`.
 
@@ -141,9 +143,20 @@ lib/session.ts          → Simulador de sesión/rol: **no hay auth real todaví
 
 Frontend de prototipo funcional con datos mock (Zustand + `ModoDemo`, sin autenticación real ni backend). La UI, los tipos y las reglas de negocio del store ya implementan el modelo v4 completo: créditos de IA, completitud de proyecto, generación y ajustes de documentos, versiones de plantilla.
 
+**La especificación v6 va por delante del código**: los requerimientos de autorización, aislamiento y usabilidad (RF-76..83, RNF-30..34, RN-30) están escritos y aprobados, pero **ninguno está implementado todavía** — se construyen en la fase de desarrollo, junto con el backend. Al abrir cualquiera de esos frentes, el documento manda.
+
 Pendientes conocidos antes de producción:
 
+- **Implementar RF-76..83 y RNF-30..34.** Ninguna guarda de rol existe hoy: `/admin` y el grupo `(portal)` son alcanzables desde cualquier modo demo, y los listados no filtran por propietario porque `Proyecto`, `Postulacion` y `DocumentoGenerado` aún no declaran `usuarioId` (RN-30). Es el primer trabajo del Sprint 0.
 - Cargar el **prompt propio de generación** en la plantilla versionada (RF-63, tabla `plantillas_generacion` / `lib/mock-data.ts: promptVersiones`).
 - Medir el costo real de IA sobre 20 generaciones con TDR colombianos antes de fijar cupos y precios definitivos (RNF-21, sección 10.3 de `docs/07-modelo-de-negocio.md`).
 - Conectar Supabase (Auth + Postgres + RLS + Storage) reemplazando `mock-data.ts`, `store.ts` y `session.ts`; los tipos del prototipo ya siguen el esquema de `docs/05-modelo-de-datos.md`, así que la migración es de origen de datos, no de forma.
 - Integrar Claude API aislada tras la interfaz propia de generación (RNF-22), en vez de la composición simulada de `lib/documentos.ts`.
+
+Deuda del prototipo detectada en las auditorías de v6 (no bloquea la especificación, sí el piloto):
+
+- **`lib/utils.ts: HOY` está congelado en `2026-08-24`.** Las convocatorias "vigentes" de la demo ya cerraron y la ficha anuncia "Cierra en 1 día" sobre fechas pasadas. Generar las fechas de `mock-data.ts` como desplazamientos relativos a `new Date()` y eliminar la constante.
+- **`consultor-5` tiene una suscripción en estado `trial`** (`lib/mock-data.ts: sub-6`) con el perfil aún en revisión, lo que contradice RF-37 ("consultores sin trial") y RN-11.
+- **`components/ui/SearchableSelect.tsx:23` cita "(RF-76)"** para el selector con buscador, pero ese requerimiento es **RF-75**; desde v6, RF-76 designa la revocación en cascada, así que el comentario induce a error.
+- **`EstadisticasIA` no registra tokens ni costo estimado**, que es lo que RF-52 exige y lo que la medición de precios de `docs/07 §10.3` necesita sobre 20 generaciones reales.
+- **La generación no contempla el vencimiento por tope de 120 s** que RNF-21 describe como fallo controlado sin consumo de crédito: el temporizador simulado es fijo.

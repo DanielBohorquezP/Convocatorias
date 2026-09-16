@@ -1,6 +1,6 @@
-# Plataforma de Gestión de Convocatorias — Especificación completa del MVP (versión 4)
+# Plataforma de Gestión de Convocatorias — Especificación completa del MVP (versión 6)
 
-**Alcance:** Colombia · carga manual de convocatorias · **generación documental con IA** · red de consultores · suscripciones por rol con créditos
+**Alcance:** Colombia · carga manual de convocatorias · **generación documental con IA** · red de consultores · suscripciones por rol (créditos de IA solo en los planes de empresa)
 **Stack:** Next.js en Vercel + Supabase (PostgreSQL, Auth, Storage, pg_cron) + Claude API
 **Fecha:** Septiembre 2026 · **Estado:** especificación de trabajo
 
@@ -48,7 +48,7 @@ El MVP valida tres hipótesis: (1) que una empresa encuentra la convocatoria cor
 | **Búsqueda sin IA** | Catálogo con filtros por categorías + sugerencias por cruce de atributos, presentadas como **porcentaje de compatibilidad** con desglose por criterio |
 | **La plataforma no presenta la postulación** | La radicación se hace en el portal de la entidad convocante. La plataforma acompaña la **preparación**: encontrar, evaluar compatibilidad, generar el documento base, organizar el checklist y hacer seguimiento |
 | **Red de consultores** | Tercer rol: perfil con portafolio, hoja de vida y redes; ingreso aprobado por administradores; encargos por tarea desde el proyecto (directorio o asignación interna); rating por encargo completado |
-| **Modelo de ingresos** | Suscripción mensual o anual para empresas y consultores, **diferenciada por volumen de créditos de IA**. Trial de 14 días con 3 créditos, solo empresas. Piloto: activación manual; pasarela (Wompi) como primera evolución. La plataforma **no** intermedia el pago de los encargos (RN-14) |
+| **Modelo de ingresos** | Suscripción mensual o anual para empresas y consultores. Los planes de **empresa** se diferencian entre sí **por volumen de créditos de IA**; el plan de **consultor** no lleva cupo —no existe operación que pueda consumirlo (RN-28)— y se vende por presencia en el directorio y recepción de encargos *(precisado en v6)*. Trial de 14 días con 3 créditos, solo empresas. Piloto: activación manual; pasarela (Wompi) como primera evolución. La plataforma **no** intermedia el pago de los encargos (RN-14) |
 | **Fuera del MVP** | Alertas por correo, extracción de TDR para poblar el esquema, matching semántico, scraping, pasarela en línea, comisión por encargo, marketplace de aliados, LATAM/Brasil, bóveda de documentos de la empresa (backlog — ver 14) |
 
 ### 1.2 Principio rector: veracidad del contenido generado
@@ -62,7 +62,7 @@ Heredado de la sección 6 del alcance inicial y ahora **operativo**: el document
 | Actor | Descripción | Casos de uso |
 |---|---|---|
 | **Usuario Empresa / Consultora** | Suscriptor. Explora el catálogo, registra proyectos, genera documentos con IA, postula, hace seguimiento y contrata consultores | CU-07..14, CU-19..24, CU-28..30, CU-33..34 |
-| **Consultor** | Suscriptor. Perfil aprobado por administrador; recibe y ejecuta encargos; también dispone de créditos de IA | CU-14..18, CU-28..30, CU-33..34 |
+| **Consultor** | Suscriptor. Perfil aprobado por administrador; recibe y ejecuta encargos. **No genera documentos ni dispone de cupo propio de créditos de IA**: solo interviene sobre documentos que la empresa le autorice explícitamente (CU-34, RF-71), y esos ajustes los paga la empresa dueña (RN-28) *(precisado en v6)* | CU-14..18, CU-28..30, CU-34 |
 | **Administrador de Contenido** | Fuentes y convocatorias; revisión y aprobación de consultores; asignaciones internas; planes, precios y suscripciones; **seguridad y auditoría** *(v5)* | CU-01..05, CU-25..27, CU-31, CU-37, **CU-38..40** |
 | **Reloj del sistema** | pg_cron: cierre de convocatorias, vencimiento de suscripciones, reinicio mensual de créditos | CU-06, CU-32, CU-35 |
 | **Servicio de IA (Claude API)** | Actor externo. Recibe el contexto de generación y devuelve el documento base | CU-33 |
@@ -155,7 +155,7 @@ Heredado de la sección 6 del alcance inicial y ahora **operativo**: el document
 | **Descripción** | El proyecto deja de ser solo un conjunto de atributos de filtrado y pasa a ser **el insumo de contenido de la generación con IA**. Se llena una vez y se reutiliza en todas las postulaciones |
 | **Flujo principal** | 1. **Datos de clasificación** (los que alimentan filtros y sugerencias): nombre, monto buscado, ubicación, categorías (tipo de proyecto, sector, tipo de entidad). 2. **Datos de contenido** (los que alimentan la IA): problema que resuelve, objetivo general, objetivos específicos, población beneficiaria, actividades principales, resultados esperados, duración en meses, presupuesto estimado y experiencia o trayectoria de la empresa. 3. El sistema calcula y muestra un **indicador de completitud del proyecto**, advirtiendo que a mayor completitud, mejor el documento generado |
 | **Flujos alternos** | 1a. Guardar con solo los datos de clasificación: sirve para buscar, pero al generar documento el sistema avisa qué falta. 2a. Editar o eliminar un proyecto propio |
-| **Postcondiciones** | Proyecto disponible para sugerencias (CU-10), generación con IA (CU-33) y solicitud de consultor (CU-19) |
+| **Postcondiciones** | Proyecto disponible para sugerencias (CU-10), generación con IA (CU-33) y solicitud de consultor (CU-19). **Los campos que el indicador de completitud señala como faltantes se pueden diligenciar desde la propia ficha, sin volver al listado (RF-81)** *(ampliado en v6)* |
 
 #### CU-10 · Obtener convocatorias sugeridas *(mod. v4 — porcentaje)*
 
@@ -196,7 +196,7 @@ Heredado de la sección 6 del alcance inicial y ahora **operativo**: el document
 
 | Campo | Contenido |
 |---|---|
-| **Flujo principal** | 1. Cambia el estado: en preparación → presentada → en evaluación → aprobada/rechazada → cerrada. 2. Cada transición queda en el historial con quién y cuándo. **3. El detalle de la postulación ofrece "Generar documento con IA" (CU-33) si aún no existe un documento para ese proyecto-convocatoria, o "Editar documento" (CU-34) si ya existe. 4. Botón "Ir al portal de la entidad", que abre el enlace oficial de postulación en una pestaña nueva — refuerza que la radicación se hace ahí, no en la plataforma (RN-19). 5. Botón "Solicitar consultor" (CU-19), con el proyecto y la convocatoria de la postulación ya preseleccionados (tipo de ayuda fijo en "convocatoria específica") (RF-28)** |
+| **Flujo principal** | 1. Cambia el estado siguiendo el grafo declarado (RF-83): en preparación → presentada → en evaluación → aprobada/rechazada → cerrada; **solo se ofrecen los estados alcanzables desde el actual, y las transiciones terminales piden confirmación**. 2. Cada transición queda en el historial con quién y cuándo. **3. El detalle de la postulación ofrece "Generar documento con IA" (CU-33) si aún no existe un documento para ese proyecto-convocatoria, o "Editar documento" (CU-34) si ya existe. 4. Botón "Ir al portal de la entidad", que abre el enlace oficial de postulación en una pestaña nueva — refuerza que la radicación se hace ahí, no en la plataforma (RN-19). 5. Botón "Solicitar consultor" (CU-19), con el proyecto y la convocatoria de la postulación ya preseleccionados (tipo de ayuda fijo en "convocatoria específica") (RF-28)** |
 | **Flujos alternos** | 1a. Panel con todas las postulaciones activas, avance y fechas. **3a. Si la postulación no tiene un proyecto vinculado (CU-11, flujo 2), el botón primero pide elegir o vincular uno antes de continuar a la generación. 5a. Igual restricción aplica a "Solicitar consultor": sin proyecto vinculado, primero pide elegir o vincularlo** |
 
 ### Módulo D — Cuenta
@@ -262,7 +262,7 @@ Heredado de la sección 6 del alcance inicial y ahora **operativo**: el document
 
 | Campo | Contenido |
 |---|---|
-| **Flujo principal** | 1. Rating con reseñas, descripción, portafolio. **2. Sitio web, redes y hoja de vida solo si existe una solicitud activa entre ambos (RN-12) — sin solicitud, esos campos aparecen ocultos con una nota de por qué. 3. Botón "Solicitar a este consultor": elige un proyecto propio (y, si aplica, el tipo de ayuda y la convocatoria — con buscador por nombre, RF-75 — igual que CU-19) o una postulación propia ya vinculada a un proyecto — la postulación resuelve proyecto y convocatoria en un solo paso. 4. Describe la tarea y confirma: crea el encargo `pendiente` vía directorio, el mismo resultado que CU-22, sin pasar antes por CU-19/CU-20 (RF-74, nuevo v5)** |
+| **Flujo principal** | 1. Rating con reseñas, descripción, portafolio. **2. Sitio web, redes y hoja de vida solo si existe una solicitud activa entre ese consultor y la empresa que está mirando (RN-12, RF-80) — que otra empresa tenga una solicitud abierta con él no habilita a las demás; sin solicitud propia, esos campos aparecen ocultos con una nota de por qué. 3. Botón "Solicitar a este consultor": elige un proyecto propio (y, si aplica, el tipo de ayuda y la convocatoria — con buscador por nombre, RF-75 — igual que CU-19) o una postulación propia ya vinculada a un proyecto — la postulación resuelve proyecto y convocatoria en un solo paso. 4. Describe la tarea y confirma: crea el encargo `pendiente` vía directorio, el mismo resultado que CU-22, sin pasar antes por CU-19/CU-20 (RF-74, nuevo v5)** |
 | **Flujos alternos** | **3a.** Si ya trae una solicitud iniciada desde su proyecto (CU-19 → CU-20), el botón pasa a ser "Solicitar para mi tarea" y usa esos datos en vez de abrir el selector. **3b.** Sin proyectos ni postulaciones propias → invita a crear un proyecto primero |
 | **Nota** | La restricción de redes protege el sentido de la suscripción del consultor: si fueran públicas desde el perfil, la empresa podría contactarlo por fuera sin pasar nunca por la plataforma |
 
@@ -305,7 +305,7 @@ Heredado de la sección 6 del alcance inicial y ahora **operativo**: el document
 
 | Campo | Contenido |
 |---|---|
-| **Flujo principal** | 1. Lista con estado, rating y encargos. 2. **Suspende** (sale del directorio, conserva historial) o **reactiva**. **3. Al suspender, sus encargos `en_curso` pasan a `cancelado` de inmediato, con un motivo registrado ("Consultor suspendido por el administrador"); el historial y las calificaciones ya emitidas no se alteran (RN-29)** |
+| **Flujo principal** | 1. Lista con estado, rating y encargos. 2. **Suspende** (sale del directorio, conserva historial) o **reactiva**. **3. Al suspender, sus encargos `en_curso` pasan a `cancelado` de inmediato, con un motivo registrado ("Consultor suspendido por el administrador"); el historial y las calificaciones ya emitidas no se alteran (RN-29). 4. La misma acción revoca en cascada las autorizaciones de documento que tuviera sobre esos encargos, de modo que pierde el acceso al instante sin que la empresa tenga que intervenir (RF-76, RN-27)** |
 | **Flujos alternos** | **3a.** Reactivar el perfil no revive los encargos cancelados — la empresa debe solicitar de nuevo si quiere retomar el trabajo con ese consultor |
 
 ### Módulo H — Suscripciones y créditos
@@ -341,7 +341,7 @@ Heredado de la sección 6 del alcance inicial y ahora **operativo**: el document
 
 | Campo | Contenido |
 |---|---|
-| **Flujo principal** | 1. Verificación en cada acción restringida, **en servidor y en RLS**. 2. Empresa sin suscripción: no postula, no ve sugerencias, no solicita consultor, no genera documentos (catálogo sí navegable). 3. Consultor sin suscripción: no aparece en directorio ni acepta nuevos encargos. 4. Job diario: `activa → en_gracia → vencida` |
+| **Flujo principal** | 1. Verificación en cada acción restringida, **en servidor y en RLS**. 2. Empresa sin suscripción: no postula, no ve sugerencias, no solicita consultor, no genera documentos (catálogo sí navegable). 3. Consultor sin suscripción: no aparece en directorio ni acepta nuevos encargos. 4. Job diario: `activa → en_gracia → vencida`. **5. Al pasar a `vencida`, los encargos `en_curso` del consultor se cancelan (RN-29) y con ellos se revocan en cascada sus autorizaciones de documento (RF-76) — mismo efecto que CU-27, con el job como disparador en vez del administrador** *(ampliado en v6)* |
 
 #### CU-35 · Gestionar cupo de créditos de IA (Sistema) *(nuevo v4)*
 
@@ -355,26 +355,26 @@ Heredado de la sección 6 del alcance inicial y ahora **operativo**: el document
 
 ### Módulo I — Generación documental con IA *(nuevo v4)*
 
-#### CU-33 · Generar documento base con IA
+#### CU-33 · Generar documento base con IA *(mod. v6)*
 
 | Campo | Contenido |
 |---|---|
-| **Actor** | Usuario Empresa (también Consultor), con apoyo del Servicio de IA |
+| **Actor** | Usuario Empresa, con apoyo del Servicio de IA. **El consultor no genera documentos**: no tiene proyectos propios (los proyectos son de la empresa, CU-09) y su plan no incluye cupo de créditos (RN-28). Su intervención sobre un documento se limita a CU-34, previa autorización explícita *(precisado en v6 — hasta v5 la línea de actor lo incluía sin darle flujo ni precondición viable)* |
 | **Descripción** | Producir el borrador del documento de postulación adaptando un proyecto de la empresa a la convocatoria elegida |
-| **Precondiciones** | Convocatoria publicada y vigente · al menos un proyecto registrado · suscripción activa o trial · **cupo de créditos disponible** (CU-35) |
+| **Precondiciones** | Convocatoria publicada y vigente —**verificado en el servidor al generar, no solo al pintar el botón (RF-78)**— · al menos un proyecto propio registrado · suscripción activa o trial · **cupo de créditos disponible** (CU-35) |
 | **Flujo principal** | 1. Desde la ficha de la convocatoria pulsa **"Generar documento con IA"**. 2. El sistema muestra la lista de sus proyectos con su indicador de completitud y el **cupo de créditos restante**. 3. Selecciona el proyecto con el que quiere aplicar. 4. El sistema arma el contexto: datos de contenido del proyecto + datos estructurados de la convocatoria + requisitos definidos por el admin (CU-04) + texto del TDR adjunto (CU-03). 5. Confirma la generación (se le advierte que consumirá un crédito). 6. El servicio de IA redacta el documento con la estructura derivada de los requisitos de la convocatoria; los datos sin fuente se marcan como pendientes. 7. Se descuenta el crédito, se guarda el documento y se muestra la vista previa (CU-34) |
 | **Flujos alternos** | 1a. **Entrada simétrica:** desde la ficha del proyecto → "Generar documento para..." → selecciona convocatoria. 2a. Proyecto con baja completitud → advertencia de que el resultado será pobre y ofrecimiento de completarlo antes. 2b. Sin proyectos → invitación a crear uno. 3a. Sin cupo → bloqueo con opciones de mejora de plan o paquete adicional. 6a. **Falla la generación** (timeout o error del servicio) → mensaje claro, **sin descontar crédito**, con opción de reintentar. 7a. Si ya existe una postulación de ese proyecto a esa convocatoria, el documento queda vinculado a ella |
 | **Postcondiciones** | Documento base guardado, asociado al par proyecto-convocatoria, con su lista de pendientes y su consumo registrado |
 
-#### CU-34 · Revisar, ajustar y exportar el documento generado *(mod. v5)*
+#### CU-34 · Revisar, ajustar y exportar el documento generado *(mod. v5; ampliado en v6)*
 
 | Campo | Contenido |
 |---|---|
 | **Actor** | Usuario Empresa (dueña) / **Consultor autorizado, con permisos restringidos** |
-| **Precondiciones** | Documento generado (CU-33). Para el consultor: encargo `en_curso` **y** autorización explícita de la empresa para ese documento (RN-22, RF-71) |
+| **Precondiciones** | Documento generado (CU-33). Para el consultor: encargo `en_curso` **y** autorización explícita de la empresa para ese documento (RN-22, RF-71). **Ambas condiciones se reevalúan en cada petición: el permiso guardado por sí solo no da acceso (RN-27)** |
 | **Flujo principal** | 1. Ve el documento en pantalla por secciones, con los **pendientes resaltados** y su conteo. 2. Edita libremente el texto (sin costo). 3. Puede pedir **ajustes a la IA** en lenguaje natural ("más breve", "enfatiza el componente ambiental"): hasta 3 ajustes por documento sin consumir crédito. 4. Guarda los cambios. 5. **(Solo la empresa) Descarga el documento en Word** para completarlo y radicarlo en el portal de la entidad |
-| **Flujos alternos** | 3a. Cuarto ajuste en adelante → cuenta como nueva generación (consume crédito **del cupo de la empresa**, sin importar si quien lo pidió fue la empresa o el consultor autorizado — RN-28). 5a. Regenerar desde cero → consume un crédito y crea una nueva versión, conservando la anterior (**solo la empresa** puede regenerar). 5b. Acceder después al documento desde el proyecto, la convocatoria o la postulación asociada. **5c. El consultor autorizado ve los pasos 1-4, pero no tiene el botón de descarga/exportar ni de regenerar; si la empresa revoca la autorización, pierde el acceso de inmediato (RN-27)** |
-| **Postcondiciones** | Documento editado y exportado; el usuario es responsable de verificar y completar antes de radicar (RN-19, RN-22). Cada edición registra si la hizo la empresa o el consultor |
+| **Flujos alternos** | 3a. Cuarto ajuste en adelante → cuenta como nueva generación (consume crédito **del cupo de la empresa**, sin importar si quien lo pidió fue la empresa o el consultor autorizado — RN-28). **3b. Si la empresa dueña no tiene cupo, el ajuste se rechaza sin consumir nada y sin tocar el documento; al consultor se le indica que debe avisarle (RF-77) — nunca se recurre al cupo de quien pidió el ajuste.** 5a. Regenerar desde cero → consume un crédito y crea una nueva versión, conservando la anterior (**solo la empresa** puede regenerar). 5b. Acceder después al documento desde el proyecto, la convocatoria o la postulación asociada. **5c. El consultor autorizado ve los pasos 1-4, pero no tiene el botón de descarga/exportar ni de regenerar. Pierde el acceso de inmediato tanto si la empresa revoca la autorización como si el encargo deja de estar `en_curso` — al completarse, cancelarse o rechazarse, al suspenderse su perfil o al vencer su suscripción: la revocación es automática y en cascada, no requiere que la empresa haga nada (RN-27, RF-76)** |
+| **Postcondiciones** | Documento editado y exportado; el usuario es responsable de verificar y completar antes de radicar (RN-19, RN-22). Cada edición registra si la hizo la empresa o el consultor, **y cada acceso de lectura del consultor queda registrado, de modo que tras revocar la autorización pueda reconstruirse qué consultó mientras estuvo activa (RF-79, RNF-11)** |
 
 #### CU-37 · Gestionar la plantilla de generación (Administrador) *(nuevo v4)*
 
@@ -449,7 +449,7 @@ Heredado de la sección 6 del alcance inicial y ahora **operativo**: el document
 
 ## 4. Requerimientos funcionales
 
-**75 requerimientos** (61 Must, 14 Should).
+**83 requerimientos** (68 Must, 15 Should).
 
 ### 4.1 Gestión de usuarios y acceso
 
@@ -475,21 +475,21 @@ Heredado de la sección 6 del alcance inicial y ahora **operativo**: el document
 
 | ID | Requerimiento | CU | Prioridad |
 |---|---|---|---|
-| RF-11 | Catálogo de publicadas vigentes con búsqueda por texto libre | CU-07 | Must |
+| RF-11 | Catálogo de publicadas vigentes con búsqueda por texto libre. **Las cerradas quedan fuera del listado por defecto (RN-02); pueden consultarse activando el filtro explícito "incluir convocatorias cerradas", que las marca como tales y mantiene deshabilitadas sus acciones** *(mod. v6)* | CU-07 | Must |
 | RF-12 | Filtros combinables: tipo de proyecto, sector, entidad, monto, ubicación, cierre | CU-07 | Must |
 | RF-13 | Ficha de detalle con datos, requisitos y descarga de documentos | CU-08 | Must |
 | RF-14 | Registrar proyectos con sus datos de clasificación | CU-09 | Must |
-| RF-15 | Sugerencias desde un proyecto ordenadas por coincidencias. Requiere suscripción | CU-10 | Must |
+| RF-15 | Sugerencias desde un proyecto ordenadas por coincidencias. Requiere suscripción. **Solo se incluyen convocatorias publicadas y vigentes a la fecha: una convocatoria cuya fecha de cierre ya pasó queda excluida aunque el job diario de cierre (CU-06) todavía no la haya marcado** *(mod. v6)* | CU-10 | Must |
 | RF-16 | Mostrar cada sugerencia con **porcentaje de compatibilidad** y desglose de criterios que coinciden y que no *(mod. v4)* | CU-10 | Must |
 | RF-43 | **Chips de búsqueda sugerida** clickeables en el buscador y en el estado sin resultados, que precargan combinaciones de filtros *(nuevo v4)* | CU-07 | Should |
-| RF-44 | **Indicadores públicos del catálogo** en la landing (convocatorias vigentes, monto total disponible en COP, entidades convocantes, consultores aprobados), calculados en vivo con caché de 1 hora *(nuevo v4)* | CU-36 | Should |
+| RF-44 | **Indicadores públicos del catálogo** en la landing (convocatorias vigentes, monto total disponible en COP, entidades convocantes, consultores aprobados), calculados en vivo con caché de 1 hora. **La cifra real debe ser legible desde el primer fotograma: si se anima el conteo, la animación no puede dejar a la vista un valor distinto del real más allá de una transición imperceptible, porque esa primera lectura es la que capturan las vistas previas y los usuarios que solo echan un vistazo** *(nuevo v4; precisado en v6)* | CU-36 | Should |
 
 ### 4.4 Proyectos enriquecidos *(nuevo v4)*
 
 | ID | Requerimiento | CU | Prioridad |
 |---|---|---|---|
 | RF-45 | El proyecto debe capturar, además de sus datos de clasificación, **datos de contenido**: problema que resuelve, objetivo general, objetivos específicos, población beneficiaria, actividades principales, resultados esperados, duración en meses, presupuesto estimado y experiencia de la empresa | CU-09 | Must |
-| RF-46 | Mostrar un **indicador de completitud del proyecto** con los campos faltantes y su efecto sobre la calidad del documento generado | CU-09 | Must |
+| RF-46 | Mostrar un **indicador de completitud del proyecto** con los campos faltantes y su efecto sobre la calidad del documento generado. **El indicador es accionable: desde él se llega a la edición del campo que falta (RF-81)** *(mod. v6)* | CU-09 | Must |
 | RF-47 | Permitir generar documentos sobre un proyecto incompleto, advirtiendo previamente del resultado limitado | CU-09, CU-33 | Should |
 
 ### 4.5 Postulación y seguimiento
@@ -498,7 +498,7 @@ Heredado de la sección 6 del alcance inicial y ahora **operativo**: el document
 |---|---|---|---|
 | RF-17 | Iniciar postulación generando el checklist automáticamente. Requiere suscripción | CU-11 | Must |
 | RF-18 | Marcar ítems del checklist y mostrar porcentaje de avance | CU-12 | Must |
-| RF-19 | Estados de la postulación con historial fechado | CU-13 | Must |
+| RF-19 | Estados de la postulación con historial fechado, **según el grafo de transiciones declarado en RF-83** *(mod. v6)* | CU-13 | Must |
 | RF-20 | Panel del usuario con postulaciones activas, avance y fechas de cierre | CU-12, 13 | Should |
 | RF-21 | Impedir postulaciones sobre convocatorias cerradas o despublicadas | CU-06, 11 | Must |
 
@@ -516,19 +516,19 @@ Heredado de la sección 6 del alcance inicial y ahora **operativo**: el document
 | ID | Requerimiento | CU | Prioridad |
 |---|---|---|---|
 | RF-26 | Directorio solo con consultores aprobados, activos y con suscripción vigente, con filtros por especialidad y rating | CU-20 | Must |
-| RF-27 | Perfil completo visible; **hoja de vida, sitio web y redes sociales solo para admins y empresas con solicitud activa** *(mod. v5 — antes solo aplicaba a la hoja de vida)* | CU-21 | Should |
+| RF-27 | Perfil completo visible; **hoja de vida, sitio web y redes sociales solo para admins y para la empresa que tenga la solicitud activa con ese consultor** — el alcance exacto del filtro lo fija RF-80 *(mod. v5; precisado en v6)* | CU-21 | Should |
 | RF-28 | Acción "Solicitar consultor": **exige elegir tipo de ayuda (convocatoria específica, con selector, o búsqueda de convocatoria) antes de confirmar**; la descripción de la tarea es complementaria. Disponible en la ficha del proyecto, **en la tarjeta del proyecto en el listado (`/proyectos`, mismo modal) y, de forma simétrica, en el detalle de una postulación (CU-13) — ahí el proyecto y la convocatoria quedan preseleccionados (tipo de ayuda fijo en "convocatoria específica"); si la postulación no tiene proyecto vinculado, primero pide vincular uno** *(mod. v5 — antes solo desde la ficha del proyecto)* | CU-19, **13** | Must |
 | RF-29 | Solicitud de encargo con su ciclo de estados | CU-22 | Must |
 | RF-30 | El consultor acepta o rechaza cada solicitud | CU-18, 22 | Must |
 | RF-31 | Asignación interna con bandeja para administradores | CU-23, 26 | Must |
 | RF-32 | Registro de avances y marcación de finalización | CU-18 | Must |
-| RF-33 | Calificación única por encargo con recálculo del rating | CU-24 | Must |
+| RF-33 | Calificación única por encargo con recálculo del rating. **El contador de encargos completados del consultor avanza al completarse el encargo (CU-18), no al calificarlo: la calificación es potestad de la empresa y puede no llegar nunca, sin que eso deba restarle trayectoria al consultor** *(mod. v6)* | CU-24 | Must |
 | **RF-68** | El sistema adjunta automáticamente al encargo los datos de contenido del proyecto (problema, objetivo, población, presupuesto, etc.) y, si se eligió convocatoria específica, sus datos y requisitos — visibles para el consultor desde que recibe la solicitud, antes de aceptar o rechazar *(nuevo v5)* | CU-19, 22 | Must |
 | **RF-69** | Cuando el tipo de ayuda es "buscar convocatoria", mostrar al consultor los datos de clasificación del proyecto (categorías, monto buscado, ubicación); el consultor reporta convocatorias candidatas mediante los avances del encargo *(nuevo v5)* | CU-19, 18 | Should |
 | **RF-70** | Al aceptar una solicitud de encargo — por directorio o por asignación interna — revelar a empresa y consultor el correo de contacto de la contraparte; no visible mientras el encargo esté `pendiente` o `esperando_asignación` *(nuevo v5)* | CU-18, 22, 23, 26 | Must |
 | **RF-71** | Permitir a la empresa autorizar o revocar, para un consultor con encargo `en_curso`, acceso de **lectura, edición manual y solicitud de ajustes con IA** a un documento generado específico — **nunca descarga**; sin autorización explícita el consultor no lo ve, aunque el encargo esté activo *(nuevo v5)* | CU-34, 18 | Must |
 | **RF-72** | Bloquear en el servidor el endpoint de exportación del documento (`.../exportar`) para cualquier usuario distinto al dueño (la empresa), incluido un consultor autorizado a editarlo — refuerza RNF-20: la restricción no depende de ocultar el botón en la interfaz *(nuevo v5)* | CU-34 | Must |
-| **RF-73** | Mostrar un botón "Ir al portal de la entidad" en la ficha de la convocatoria y en el detalle de la postulación, que abre el enlace oficial de postulación en una pestaña nueva sin salir de la sesión actual *(nuevo v5)* | CU-08, 13 | Must |
+| **RF-73** | Mostrar un botón "Ir al portal de la entidad" en la ficha de la convocatoria y en el detalle de la postulación, que abre el enlace oficial de postulación en una pestaña nueva sin salir de la sesión actual. **En el detalle de la postulación es la acción primaria de la pantalla y se presenta con mayor prominencia visual que cualquier otra —incluida "Solicitar consultor"—: si el producto sostiene que la radicación ocurre en el portal de la entidad (RN-19), la interfaz no puede contradecirlo con su jerarquía** *(nuevo v5; precisado en v6)* | CU-08, 13 | Must |
 | **RF-74** | Permitir a la empresa solicitar un consultor directamente desde el directorio o su ficha de perfil, eligiendo en el mismo flujo **(a)** un proyecto propio (y opcionalmente el tipo de ayuda: convocatoria específica o buscar convocatoria) **o (b)** una postulación propia ya vinculada a un proyecto — fija automáticamente proyecto y convocatoria — sin depender de haber iniciado la solicitud antes desde la ficha del proyecto (CU-19) *(nuevo v5)* | CU-20, 21, 22 | Must |
 | **RF-75** | El selector de "convocatoria específica" dentro de los flujos de solicitud de consultor (RF-28, RF-74) incluye un campo de búsqueda por texto que filtra las convocatorias vigentes por nombre mientras el usuario escribe, en vez de un menú desplegable con toda la lista — relevante a medida que crece el catálogo (RNF-04) *(nuevo v5)* | CU-19, 21 | Should |
 
@@ -548,7 +548,7 @@ Heredado de la sección 6 del alcance inicial y ahora **operativo**: el document
 | RF-38 | Activación, renovación y suspensión manual por el administrador, con el modelo preparado para pasarela sin cambios de esquema | CU-28, 31 | Must |
 | RF-39 | Job diario de vencimientos con periodo de gracia de 5 días | CU-29, 32 | Must |
 | RF-40 | Verificación de suscripción en cada acción restringida, incluida la generación con IA | CU-32 | Must |
-| RF-41 | Vista del suscriptor con plan, fechas, **cupo de créditos** e historial de pagos *(mod. v4)* | CU-30 | Should |
+| RF-41 | Vista del suscriptor con plan, fechas e historial de pagos; el **cupo de créditos** se muestra únicamente en los planes que lo incluyen — el plan de consultor no lo lleva (RN-28) *(mod. v4; precisado en v6)* | CU-30 | Should |
 | RF-42 | Tablero admin de suscripciones por estado **y consumo de IA del periodo** *(mod. v4)* | CU-31 | Should |
 | RF-48 | Descontar **un crédito por generación exitosa**; las generaciones fallidas no consumen crédito *(nuevo v4)* | CU-35 | Must |
 | RF-49 | Reiniciar el cupo mensualmente según la fecha de la suscripción, también en planes anuales; los créditos no consumidos **no se acumulan** *(nuevo v4)* | CU-35 | Must |
@@ -581,11 +581,33 @@ Heredado de la sección 6 del alcance inicial y ahora **operativo**: el document
 | RF-66 | Aplicar límite de tasa por usuario e IP en los endpoints de la capa de aplicación, en especial en la generación con IA, de forma independiente al cupo de créditos | CU-40 | Must |
 | RF-67 | Permitir al administrador liberar manualmente un bloqueo por límite de tasa antes de su expiración | CU-40 | Should |
 
+### 4.12 Autorización y aislamiento *(nuevo v6)*
+
+Requerimientos derivados de la auditoría de implementación. Traducen a comportamiento exigible las reglas RN-12, RN-27, RN-28 y RN-30, que hasta ahora declaraban el *qué* sin fijar el *cómo se hace cumplir*.
+
+| ID | Requerimiento | CU | Prioridad |
+|---|---|---|---|
+| RF-76 | **Revocar automáticamente en cascada** las autorizaciones de documento de un consultor cuando el encargo que las sustenta sale de `en_curso` (completado, cancelado o rechazado), cuando el administrador suspende su perfil o cuando vence su suscripción. La revocación no depende de una acción manual de la empresa (RN-27, RN-29) | CU-27, 32, 34 | Must |
+| RF-77 | Validar el cupo de la **empresa dueña** del documento antes de aplicar cualquier ajuste con IA solicitado por un consultor autorizado; sin cupo disponible se rechaza sin consumir crédito y sin modificar el documento, con un mensaje dirigido al consultor que le indique que debe avisar a la empresa (RN-28, RNF-20) | CU-34 | Must |
+| RF-78 | Verificar **en el servidor** que la convocatoria esté `publicada` y vigente antes de generar un documento o crear una postulación sobre ella; la restricción no puede depender de deshabilitar el botón en la interfaz, del mismo modo que RF-72 protege la exportación (RN-03, RNF-20) | CU-11, 33 | Must |
+| RF-79 | Registrar cada **acceso de lectura** de un consultor a un documento autorizado, no solo las ediciones, de modo que tras revocar la autorización pueda reconstruirse qué consultó mientras estuvo activa (RNF-11) | CU-34 | Should |
+| RF-80 | Revelar sitio web, redes sociales y hoja de vida de un consultor únicamente cuando exista una solicitud activa **entre ese consultor y la empresa autenticada**; la existencia de solicitudes de otras empresas no habilita la visibilidad (RN-12, RNF-16) | CU-21 | Must |
+
+### 4.13 Usabilidad de los flujos *(nuevo v6)*
+
+Requerimientos derivados de la auditoría de interfaz. Cada uno corrige un punto donde la aplicación informa correctamente pero no deja actuar, o donde la presentación contradice lo que el producto afirma.
+
+| ID | Requerimiento | CU | Prioridad |
+|---|---|---|---|
+| RF-81 | Permitir **completar y editar los datos de contenido del proyecto desde la propia ficha del proyecto**, en el mismo lugar donde el indicador de completitud enumera los campos que faltan. Todo enlace o aviso que invite a "completar el proyecto" —incluido el de la pantalla de generación cuando la completitud es baja (RF-47)— debe conducir a un punto donde la edición sea posible, nunca a una pantalla que solo describa la carencia | CU-09, 33 | Must |
+| RF-82 | El comparador de planes muestra, para cada plan, **los atributos que efectivamente lo diferencian —en particular el cupo de créditos de IA mensual—** leídos del dato del plan y no de una lista de beneficios fija en el código (RNF-14). Dos planes de distinto precio nunca presentan el mismo conjunto de beneficios: si el usuario no puede ver en qué se diferencian, no puede elegir | CU-28, 31 | Must |
+| RF-83 | Las transiciones de estado de la postulación siguen un **grafo declarado**: la interfaz ofrece únicamente los estados alcanzables desde el actual, el servidor rechaza cualquier otro, y las transiciones terminales o difíciles de revertir piden confirmación explícita antes de aplicarse | CU-13 | Must |
+
 ---
 
 ## 5. Requerimientos no funcionales
 
-**28 RNF.** Críticos para el piloto: RNF-01..04, 11, 12, 16, 17, 20, 21, 24, **25, 26, 27 y 28** *(ampliado en la auditoría de seguridad v5)*.
+**34 RNF.** Críticos para el piloto: RNF-01..04, 07, 08, 11, 12, 16, 17, 20, 21, 24, 25, 26, 27, 28, 29 y **30..34** *(ampliado en las auditorías de implementación e interfaz v6)*.
 
 ### 5.1 Seguridad
 
@@ -593,12 +615,17 @@ Heredado de la sección 6 del alcance inicial y ahora **operativo**: el document
 |---|---|---|---|
 | RNF-01 | Autenticación y acceso | Contraseñas con hash seguro; funciones administrativas inaccesibles para otros roles incluso vía API | Empresa/consultor a endpoints admin → 403 |
 | RNF-02 | Cifrado | HTTPS/TLS en tránsito; archivos cifrados en reposo | Escaneo TLS y de buckets |
-| RNF-03 | Aislamiento de datos | Cada empresa ve solo sus proyectos, postulaciones, encargos **y documentos generados**; cada consultor solo sus encargos. Perfiles aprobados visibles salvo la hoja de vida | Prueba cruzada entre 2 empresas y 2 consultores |
+| RNF-03 | Aislamiento de datos | Cada empresa ve solo sus proyectos, postulaciones, encargos **y documentos generados**; cada consultor solo sus encargos. Perfiles aprobados visibles salvo la hoja de vida. **Ningún endpoint de listado devuelve registros de otro propietario, ni siquiera parcialmente (RN-30)** *(criterio precisado en v6)* | Prueba cruzada entre 2 empresas y 2 consultores, **ejecutada listado por listado** (`/proyectos`, `/postulaciones`, `/documentos`, `/encargos`): cada cuenta ve exclusivamente lo propio |
 | RNF-25 | **Cobertura de RLS** | Row Level Security habilitado y con política explícita en las 24 tablas sin excepción; ninguna tabla nueva se despliega sin su política escrita y probada *(nuevo v5)* | Revisión de esquema: cada tabla tiene ≥1 política activa; lectura cruzada por tabla entre 2 cuentas → denegada |
 | RNF-26 | **Gobierno de credenciales elevadas** | La `service_role key` de Supabase solo se referencia en código de servidor (API routes, jobs de `pg_cron`); nunca en el bundle del cliente ni en variables `NEXT_PUBLIC_*` *(nuevo v5)* | Búsqueda de la key en el bundle compilado del cliente → 0 resultados |
-| RNF-27 | **Límite de tasa** | Los endpoints de la capa de aplicación —en especial la generación con IA— aplican límite de tasa por usuario e IP, independiente del cupo de créditos *(nuevo v5)* | Ráfaga de requests por encima del límite → 429 antes de agotar el cupo real |
+| RNF-27 | **Límite de tasa** | Los endpoints de la capa de aplicación —en especial la generación con IA— aplican límite de tasa por usuario e IP, independiente del cupo de créditos. **Si el almacén que lo sostiene no responde, rige RNF-33: se rechaza, no se permite** *(ampliado en v6)* | Ráfaga de requests por encima del límite → 429 antes de agotar el cupo real |
 | RNF-28 | **Autenticación reforzada de administradores** | Toda cuenta con rol administrador exige verificación en dos pasos (MFA/TOTP) para iniciar sesión; no se completa el login admin sin un segundo factor activo *(nuevo v5)* | Login admin sin MFA configurado → flujo obligatorio de activación antes de continuar |
 | RNF-29 | **Validación del enlace oficial de postulación** | El enlace debe ser una URL `http`/`https` bien formada, verificada en el servidor antes de guardar (no solo en el cliente); se rechaza cualquier otro esquema *(nuevo v5)* | Guardar `javascript:`, una cadena inválida o un dominio malformado → rechazado con mensaje claro |
+| RNF-30 | **Autorización por rol en rutas y endpoints** | Cada ruta de portal y cada endpoint declara explícitamente los roles admitidos. El acceso con un rol distinto se rechaza con 403 y se registra como `acceso_denegado` en `eventos_seguridad`. **Ningún control de rol vive solo en la interfaz**: ocultar un enlace o deshabilitar un botón no constituye autorización. Generaliza RNF-01, que hasta ahora solo cubría las funciones administrativas *(nuevo v6)* | Matriz rol × ruta ejecutada completa. En particular: consultor → `/convocatorias/[id]/generar` y `/documentos` → 403; empresa → cualquier ruta `/admin` → 403; y el evento correspondiente presente en la bitácora |
+| RNF-31 | **Defensa ante instrucciones incrustadas en documentos de terceros** | El texto extraído del TDR y demás adjuntos se sanea antes de entrar al prompt (RN-23): se neutralizan las instrucciones dirigidas al modelo y se aplica el tope de tamaño de contexto. La técnica empleada queda documentada, no implícita *(nuevo v6)* | Corpus de al menos 10 TDR con instrucciones incrustadas conocidas (ignorar reglas previas, revelar el prompt, alterar la estructura) → ninguna ejecutada por el modelo; el documento generado conserva la estructura derivada de los requisitos |
+| RNF-32 | **Retención y eliminación de contenido** | Se declara el plazo de conservación de los documentos generados, los registros de consumo de IA y el contenido enviado al proveedor externo, más el procedimiento de eliminación a petición del titular. Complementa RNF-16 (que cubre el perfil del consultor) y RNF-24 (que informa del tratamiento pero no del plazo), conforme a la Ley 1581 de 2012 *(nuevo v6)* | Política de retención publicada en los términos; solicitud de eliminación ejecutada extremo a extremo sobre una cuenta de prueba, incluidos documentos generados y bitácora de consumos |
+| RNF-33 | **Degradación segura de los controles** | Cuando un control de seguridad depende de un servicio externo y este no responde, la operación protegida se **rechaza** (fail-closed), nunca se permite por omisión. Aplica en particular al almacén del límite de tasa de RNF-27, que vive fuera de Postgres *(nuevo v6)* | Simulacro con el almacén de límite de tasa caído → la generación con IA responde 503/429, no 200; el incidente queda registrado |
+| RNF-34 | **Lenguaje de cara al usuario** | La interfaz **no muestra identificadores internos de la especificación** (`CU-xx`, `RF-xx`, `RNF-xx`, `RN-xx`) ni nomenclatura técnica del esquema: las reglas se explican con palabras que el usuario reconoce. Los identificadores son trazabilidad del equipo y viven en la documentación y en los comentarios del código, nunca en el texto renderizado *(nuevo v6)* | Búsqueda de los patrones `CU-`, `RF-`, `RNF-` y `RN-` sobre el texto visible de las tres portales → 0 resultados |
 
 ### 5.2 Rendimiento
 
@@ -613,8 +640,8 @@ Heredado de la sección 6 del alcance inicial y ahora **operativo**: el document
 
 | ID | Atributo | Requerimiento | Verificación |
 |---|---|---|---|
-| RNF-07 | Idioma y simplicidad | Interfaz en español; flujos completables sin capacitación | Prueba con 3 usuarios piloto |
-| RNF-08 | Responsivo | Usable en escritorio y móvil; panel admin puede ser solo escritorio | Revisión en 3 tamaños |
+| RNF-07 | Idioma y simplicidad | Interfaz en español; flujos completables sin capacitación. **El texto respeta la gramática del español en todos los estados: concordancia de número en contadores y plazos ("cierra en 1 día" / "en 3 días"), género y puntuación** *(ampliado en v6)* | Prueba con 3 usuarios piloto; **revisión de los textos con valor 0, 1 y n en cada contador, plazo y listado** |
+| RNF-08 | Responsivo | Usable en escritorio y móvil; panel admin puede ser solo escritorio. **Ninguna barra de navegación —incluida la pública, previa al ingreso— desborda el ancho de la pantalla; cuando una barra se desplaza en horizontal, lo indica visualmente para que no se pierdan sus últimas opciones** *(ampliado en v6)* | Revisión en 3 tamaños, **incluida la landing sin sesión a 375 px: ningún elemento sobresale del viewport ni obliga a desplazamiento horizontal de la página** |
 
 ### 5.4 Disponibilidad y respaldo
 
@@ -627,7 +654,7 @@ Heredado de la sección 6 del alcance inicial y ahora **operativo**: el document
 
 | ID | Atributo | Requerimiento | Verificación |
 |---|---|---|---|
-| RNF-11 | Trazabilidad | Auditoría de creación y publicación de convocatorias, aprobación de consultores, historial de postulaciones y encargos, **y consumos de IA** | Revisión de campos de auditoría |
+| RNF-11 | Trazabilidad | Auditoría de creación y publicación de convocatorias, aprobación de consultores, historial de postulaciones y encargos, **consumos de IA** y **accesos de lectura de un consultor a un documento autorizado (RF-79)** *(ampliado en v6)* | Revisión de campos de auditoría; tras revocar una autorización debe poder reconstruirse qué consultó el consultor mientras estuvo activa |
 | RNF-12 | Consistencia | Integridad referencial sin registros huérfanos | Restricciones del esquema |
 | RNF-17 | Integridad del rating | Una calificación por encargo, inmutable, promedio no editable | Segunda calificación → rechazada |
 
@@ -644,7 +671,7 @@ Heredado de la sección 6 del alcance inicial y ahora **operativo**: el document
 
 | ID | Atributo | Requerimiento | Verificación |
 |---|---|---|---|
-| RNF-16 | Protección de datos personales | Datos del consultor bajo consentimiento explícito (Ley 1581 de 2012). Hoja de vida solo por URLs firmadas con expiración **máxima de 15 minutos** *(precisado en v5)*. Derecho a eliminación del perfil | Acceso directo a la URL del CV sin autorización → denegado; URL reutilizada pasados 15 min → denegada |
+| RNF-16 | Protección de datos personales | Datos del consultor bajo consentimiento explícito (Ley 1581 de 2012). Hoja de vida solo por URLs firmadas con expiración **máxima de 15 minutos** *(precisado en v5)*. Derecho a eliminación del perfil. **La visibilidad de hoja de vida, sitio web y redes es por pareja empresa-consultor, nunca global (RN-12, RF-80)** *(precisado en v6)* | Acceso directo a la URL del CV sin autorización → denegado; URL reutilizada pasados 15 min → denegada. **Prueba cruzada: dos empresas sobre el mismo consultor, una con solicitud activa y otra sin ella → solo la primera ve contacto, CV y redes** |
 | RNF-18 | Archivos de perfil | Foto ≤5 MB (JPG/PNG); hoja de vida ≤10 MB (PDF); validación en cliente y servidor | Archivos límite y tipos inválidos |
 | RNF-19 | Rendimiento del directorio | Listado con filtros < 2 s con hasta 500 consultores | Prueba de carga |
 | RNF-20 | Enforcement en servidor | Suscripción y cupo verificados en la capa de aplicación y en RLS, nunca solo en UI; cambios de estado auditados | API directa sin cupo → 403; bitácora |
@@ -658,7 +685,7 @@ Heredado de la sección 6 del alcance inicial y ahora **operativo**: el document
 | ID | Regla |
 |---|---|
 | RN-01 | Una convocatoria es visible solo cuando el admin completa datos mínimos —**incluido el enlace oficial de postulación**—, adjunta ≥1 documento, define requisitos y publica *(ampliado en v5)* |
-| RN-02 | Convocatoria vencida pasa automáticamente a "cerrada" y sale de catálogo, sugerencias y generación con IA |
+| RN-02 | Convocatoria vencida pasa automáticamente a "cerrada". Queda **excluida de las sugerencias y de la generación con IA sin excepción**, y **fuera del listado del catálogo por defecto**; solo reaparece en el catálogo si el usuario activa el filtro explícito de convocatorias cerradas, donde se muestra marcada como tal y con sus acciones deshabilitadas (RF-11, RN-03) *(precisado en v6)* |
 | RN-03 | No se puede postular ni generar documentos sobre convocatorias cerradas o despublicadas |
 | RN-04 | El checklist se genera copiando los requisitos vigentes al postular; ediciones posteriores no alteran postulaciones en curso |
 | RN-05 | El porcentaje de compatibilidad es un cálculo determinístico de coincidencias, no una predicción de éxito ni un resultado de IA, y así se comunica; la decisión de postular es del usuario |
@@ -668,7 +695,7 @@ Heredado de la sección 6 del alcance inicial y ahora **operativo**: el document
 | RN-09 | Una calificación por encargo completado, emitida solo por la empresa de ese encargo, inmutable |
 | RN-10 | Consultor con suscripción vencida termina sus encargos en curso pero no recibe nuevos |
 | RN-11 | Trial de 14 días con 3 créditos, único por cuenta de empresa; el consultor paga desde su aprobación; los administradores no pagan |
-| RN-12 | La hoja de vida, **el sitio web y las redes sociales** solo son visibles para administradores y empresas con solicitud activa con ese consultor; sin solicitud, la empresa solo ve descripción, especialidades, portafolio (sin links de contacto) y rating *(ampliado en v5 — antes solo cubría la hoja de vida)* |
+| RN-12 | La hoja de vida, **el sitio web y las redes sociales** solo son visibles para administradores y para **la empresa que tiene la solicitud activa con ese consultor** — la visibilidad es por pareja empresa-consultor, nunca global: que otra empresa tenga una solicitud abierta no habilita a las demás. Sin solicitud propia, la empresa solo ve descripción, especialidades, portafolio (sin links de contacto) y rating *(ampliado en v5; precisado en v6)* |
 | RN-13 | Todo rechazo de perfil lleva motivo obligatorio; reenvíos sin límite |
 | RN-14 | El pago del servicio de consultoría se acuerda entre empresa y consultor fuera de la plataforma; los ingresos vienen de las suscripciones |
 | RN-15 | La suspensión de un consultor no borra su historial |
@@ -683,9 +710,10 @@ Heredado de la sección 6 del alcance inicial y ahora **operativo**: el document
 | RN-24 | Ninguna tabla del esquema se despliega sin RLS habilitado y su política definida: es un requisito de diseño desde el Sprint 0, no una revisión posterior *(nuevo v5)* |
 | RN-25 | Un consultor con un encargo `pendiente`, `en_curso` o `esperando_asignación` sobre un proyecto puede ver el contenido de **ese** proyecto (y la convocatoria asociada, si el tipo de ayuda es "convocatoria específica") — limitado a ese encargo, no al resto de proyectos de la empresa *(nuevo v5)* |
 | RN-26 | El correo de contacto entre empresa y consultor solo se revela cuando el encargo pasa a `en_curso` (por aceptación en directorio o por asignación interna del administrador); nunca mientras está `pendiente` o `esperando_asignación`, ni tras un rechazo o cancelación *(nuevo v5)* |
-| RN-27 | La autorización de un documento generado a un consultor solo puede otorgarse mientras el encargo esté `en_curso`; la empresa puede revocarla en cualquier momento, lo que oculta el documento al consultor sin eliminarlo ni afectar el encargo *(nuevo v5)* |
-| RN-28 | Cuando el ajuste con IA sobre un documento lo solicita un consultor autorizado (no la empresa dueña), el consumo de crédito —si aplica, a partir del cuarto ajuste (RN-17)— se descuenta siempre del cupo de la **empresa** dueña del documento, nunca del cupo propio del consultor *(nuevo v5)* |
-| RN-29 | Suspender un consultor (CU-27) cancela de inmediato sus encargos `en_curso` — pasan a `cancelado` con un motivo registrado — sin alterar el historial ni las calificaciones ya emitidas; reactivar el perfil no los revive. El vencimiento de la suscripción del consultor (RN-10, CU-18) produce el mismo efecto sobre el dato, con un disparador distinto (el job diario, CU-32, en vez de una acción del administrador) *(nuevo v5)* |
+| RN-27 | La autorización de un documento generado a un consultor solo puede otorgarse mientras el encargo esté `en_curso`; la empresa puede revocarla en cualquier momento, lo que oculta el documento al consultor sin eliminarlo ni afectar el encargo. **La autorización es derivada, no almacenada: el acceso se evalúa en cada petición como (autorización explícita ∧ encargo `en_curso`), de modo que al perderse cualquiera de las dos condiciones el acceso cesa por sí solo, sin intervención manual de la empresa.** Un permiso guardado nunca basta por sí mismo *(nuevo v5; precisado en v6)* |
+| RN-28 | **El consultor no tiene cupo propio de créditos de IA**: su plan no incluye ninguno, porque no existe operación que pueda consumirlo (generar exige proyecto propio, que el consultor no tiene). Por eso, cuando el ajuste con IA sobre un documento lo solicita un consultor autorizado, el consumo —si aplica, a partir del cuarto ajuste (RN-17)— se descuenta **siempre** del cupo de la **empresa** dueña del documento. **Queda prohibido cualquier caso de respaldo que cargue el consumo a quien dispara la acción:** si no hay encargo `en_curso` tampoco hay acceso al documento (RN-27), luego no existe situación en la que haga falta un cupo alternativo *(nuevo v5; ampliado en v6)* |
+| RN-29 | Suspender un consultor (CU-27) cancela de inmediato sus encargos `en_curso` — pasan a `cancelado` con un motivo registrado — sin alterar el historial ni las calificaciones ya emitidas; reactivar el perfil no los revive. El vencimiento de la suscripción del consultor (RN-10, CU-18) produce el mismo efecto sobre el dato, con un disparador distinto (el job diario, CU-32, en vez de una acción del administrador). **Ambos disparadores arrastran también la revocación de las autorizaciones de documento (RF-76)** *(nuevo v5; ampliado en v6)* |
+| RN-30 | **Toda entidad de datos de usuario —proyecto, postulación, documento generado, encargo— declara su propietario como columna del esquema, y ningún endpoint de listado se sirve sin filtrar por el propietario de la sesión.** El filtrado en la capa de aplicación no sustituye a la política RLS ni al revés: se exigen los dos. Es requisito de diseño desde el Sprint 0, igual que RN-24, no una revisión posterior *(nuevo v6)* |
 
 ---
 
@@ -768,40 +796,43 @@ flowchart TB
 
 ### 8.2 Capa de presentación — rutas
 
-**Portal Empresa** (navbar: Convocatorias · Mis proyectos · Mis documentos · Mis postulaciones · Consultores · Mi suscripción):
+Cada ruta declara los roles que admite (RNF-30). El rol se verifica en el servidor mediante `requireRole(...)`; ocultar un enlace de navegación no constituye autorización.
 
-| Ruta | Pantalla | CU |
-|---|---|---|
-| `/` | Landing con **indicadores del catálogo** y registro por rol | CU-14, CU-36 |
-| `/convocatorias` | Catálogo con búsqueda, filtros y **chips sugeridos** | CU-07 |
-| `/convocatorias/[id]` | Ficha con botones **"Postular"**, **"Generar documento con IA"** e **"Ir al portal de la entidad"** *(v5)* | CU-08, 11, 33 |
-| `/convocatorias/[id]/generar` | Selección de proyecto, aviso de cupo y confirmación | CU-33 |
-| `/proyectos` · `/proyectos/[id]` | Lista y ficha del proyecto con **indicador de completitud**, botón "Solicitar consultor" y "Generar documento para..." | CU-09, 19, 33 |
-| `/proyectos/[id]/sugerencias` | Sugerencias con **% de compatibilidad** y desglose | CU-10 |
-| `/documentos` | Documentos generados: proyecto, convocatoria, pendientes, versión | CU-34 |
-| `/documentos/[id]` | Vista previa editable, ajustes con IA, exportar a Word, **interruptor de compartir con el consultor del encargo `en_curso`** | CU-34 |
-| `/consultores` · `/consultores/[id]` | Directorio y perfil — **redes/web/CV solo con solicitud activa**; **botón "Solicitar a este consultor" con selector de proyecto o postulación (RF-74)** | CU-20, 21 |
-| `/encargos` | Solicitudes y encargos + calificar | CU-22..24 |
-| `/postulaciones` · `/postulaciones/[id]` | Panel y detalle con checklist, historial, botón **"Generar/Editar documento con IA"** y **"Ir al portal de la entidad"** *(v5)* | CU-12, 13 |
-| `/suscripcion` | Plan, **cupo de créditos**, historial de pagos | CU-28..30 |
+**Portal Empresa** (navbar: Convocatorias · Mis proyectos · Mis documentos · Mis postulaciones · Consultores · Mi suscripción). **Rol admitido: `empresa`** en todas las rutas del grupo, salvo `/` que es pública:
 
-**Portal Consultor:** `/consultor/perfil` (editor + estado de revisión), `/consultor/encargos` (bandeja en 3 pestañas), `/consultor/documentos` (**solo los autorizados explícitamente — lectura, edición y ajustes con IA; sin botón de exportar**, RF-71/72) y `/consultor/suscripcion`.
+| Ruta | Pantalla | Rol | CU |
+|---|---|---|---|
+| `/` | Landing con **indicadores del catálogo** y registro por rol | pública | CU-14, CU-36 |
+| `/convocatorias` | Catálogo con búsqueda, filtros y **chips sugeridos**; las cerradas quedan fuera por defecto y solo aparecen bajo filtro explícito (RF-11, RN-02) | empresa | CU-07 |
+| `/convocatorias/[id]` | Ficha con botones **"Postular"**, **"Generar documento con IA"** e **"Ir al portal de la entidad"** *(v5)* | empresa | CU-08, 11, 33 |
+| `/convocatorias/[id]/generar` | Selección de proyecto, aviso de cupo y confirmación | empresa | CU-33 |
+| `/proyectos` · `/proyectos/[id]` | Lista y ficha del proyecto con **indicador de completitud accionable —los campos faltantes se editan aquí mismo (RF-81)**—, botón "Solicitar consultor" y "Generar documento para..." | empresa | CU-09, 19, 33 |
+| `/proyectos/[id]/sugerencias` | Sugerencias con **% de compatibilidad** y desglose | empresa | CU-10 |
+| `/documentos` | Documentos generados: proyecto, convocatoria, pendientes, versión — **solo los de la empresa de la sesión (RN-30)** | empresa | CU-34 |
+| `/documentos/[id]` | Vista previa editable, ajustes con IA, exportar a Word, **interruptor de compartir con el consultor del encargo `en_curso`** | empresa (dueña) | CU-34 |
+| `/consultores` · `/consultores/[id]` | Directorio y perfil — **redes/web/CV solo con solicitud activa de la empresa de la sesión (RF-80)**; **botón "Solicitar a este consultor" con selector de proyecto o postulación (RF-74)** | empresa | CU-20, 21 |
+| `/encargos` | Solicitudes y encargos + calificar | empresa | CU-22..24 |
+| `/postulaciones` · `/postulaciones/[id]` | Panel y detalle con checklist, historial, botón **"Generar/Editar documento con IA"** y **"Ir al portal de la entidad"** —**acción primaria de la pantalla (RF-73)**—, con el cambio de estado limitado al grafo de transiciones (RF-83) *(v5; mod. v6)* | empresa | CU-12, 13 |
+| `/suscripcion` | Plan, **cupo de créditos**, historial de pagos y comparador de planes **con los atributos que los diferencian leídos del dato del plan (RF-82)** | empresa | CU-28..30 |
 
-**Panel Administrador:** dashboard ampliado con perfiles en revisión, encargos por asignar, suscripciones y **consumo de IA**; `/admin/fuentes`, `/admin/convocatorias/[id]`, `/admin/categorias`, `/admin/consultores/revision`, `/admin/consultores`, `/admin/encargos`, `/admin/planes` (con créditos), `/admin/suscripciones` (con paquetes adicionales), **`/admin/plantillas`** (editor y versiones del prompt de generación — CU-37) y **`/admin/seguridad`** (activación de MFA, eventos de seguridad y bloqueos por límite de tasa — CU-38..40, *nuevo v5*). Ninguna ruta bajo `/admin` es accesible sin MFA verificado (RNF-28).
+**Portal Consultor** — **rol admitido: `consultor`** en todo el grupo: `/consultor/perfil` (editor + estado de revisión), `/consultor/encargos` (bandeja en 3 pestañas), `/consultor/documentos` (**solo los autorizados explícitamente — lectura, edición y ajustes con IA; sin botón de exportar**, RF-71/72) y `/consultor/suscripcion` (sin cupo de créditos: el plan de consultor no lo incluye — RN-28). **Ninguna ruta del Portal Empresa es accesible con rol `consultor`** (RNF-30): en particular `/convocatorias/[id]/generar` y `/documentos`, cuyo acceso desde ese rol devuelve 403.
+
+**Panel Administrador:** dashboard ampliado con perfiles en revisión, encargos por asignar, suscripciones y **consumo de IA**; `/admin/fuentes`, `/admin/convocatorias/[id]`, `/admin/categorias`, `/admin/consultores/revision`, `/admin/consultores`, `/admin/encargos`, `/admin/planes` (con créditos), `/admin/suscripciones` (con paquetes adicionales), **`/admin/plantillas`** (editor y versiones del prompt de generación — CU-37) y **`/admin/seguridad`** (activación de MFA, eventos de seguridad y bloqueos por límite de tasa — CU-38..40, *nuevo v5*). **Rol admitido: `admin`** en todo el grupo. Ninguna ruta bajo `/admin` es accesible sin rol administrador (RNF-30) **ni** sin MFA verificado (RNF-28); son dos comprobaciones independientes y ambas se hacen en el servidor.
 
 ### 8.3 Capa de aplicación — servicios y endpoints
 
 | Servicio | Endpoints principales | Reglas |
 |---|---|---|
+| **Autorización** *(nuevo v6)* | Middleware `requireRole(...roles)` aplicado a **toda** ruta de portal y **todo** endpoint: declara los roles admitidos, responde 403 al resto y escribe el evento `acceso_denegado` en `eventos_seguridad`. Se compone con `requireMFA()` en `/admin`, y con `requireSubscription()` / `requireCredits()` donde aplique | RNF-30, RNF-01, RN-06 |
 | Convocatorias y Fuentes | `GET/POST /api/fuentes` · `GET/POST/PATCH /api/convocatorias` (incluye `urlPostulacion`, validada como `http`/`https` — RNF-29) · `POST /api/convocatorias/[id]/publicar` (400 si falta o es inválida) · `.../documentos` | RN-01, RN-07 |
 | Búsqueda y Compatibilidad | `GET /api/convocatorias?filtros` · `GET /api/proyectos/[id]/sugerencias` (devuelve % y desglose) · `GET /api/indicadores` (landing, cacheado) | RN-05, RF-16, RF-44 |
 | Proyectos | `GET/POST/PATCH/DELETE /api/proyectos` (incluye campos de contenido y completitud) | RLS por usuario |
-| Postulaciones | `POST /api/postulaciones` · `PATCH /api/checklist/[itemId]` · `POST /api/postulaciones/[id]/estado` | RN-03, RN-04 |
-| Consultores y Perfiles | `GET/PATCH /api/consultor/perfil` · `POST .../enviar-revision` · `GET /api/consultores` · `GET /api/consultores/[id]/cv` | RN-08, RN-12 |
+| Postulaciones | `POST /api/postulaciones` (**verifica estado y vigencia de la convocatoria en el servidor, RF-78**) · `PATCH /api/checklist/[itemId]` · `POST /api/postulaciones/[id]/estado` | RN-03, RN-04 |
+| Consultores y Perfiles | `GET/PATCH /api/consultor/perfil` · `POST .../enviar-revision` · `GET /api/consultores` · `GET /api/consultores/[id]` (**omite web, redes y CV salvo solicitud activa de la empresa autenticada — RF-80**) · `GET /api/consultores/[id]/cv` | RN-08, RN-12, RNF-16 |
 | Encargos y Calificaciones | `POST /api/encargos` (incluye `tipoAyuda` + `convocatoriaId?` — adjunta contexto automáticamente, RF-68/69) · `.../responder` (revela `correoContacto` de la contraparte al aceptar, RF-70) · `.../avances` · `.../completar` · `.../calificar` · `POST /api/admin/encargos/[id]/asignar` (revela `correoContacto` al asignar) | RN-09, RN-10, RN-25, RN-26 |
 | Suscripciones, Créditos y Acceso | `GET /api/planes` · `GET /api/suscripcion` (incluye cupo) · `POST /api/admin/suscripciones/activar` · `POST /api/admin/suscripciones/[id]/creditos` · middlewares `requireSubscription()` y **`requireCredits()`** | RN-11, RN-16, RN-17, RN-18 |
-| **Generación Documental IA** | `POST /api/documentos/generar` (proyectoId + convocatoriaId) · `GET/PATCH /api/documentos/[id]` · `POST /api/documentos/[id]/ajustar` · `POST /api/documentos/[id]/compartir` / `.../revocar` (autoriza o quita al consultor — solo el dueño, solo con encargo `en_curso`, RF-71) · `GET /api/documentos/[id]/exportar` (devuelve .docx — **403 si quien llama no es el dueño**, RF-72) · `GET/POST /api/admin/plantillas` | RN-17, RN-19..22, 27, 28, RNF-23 |
-| **Seguridad y auditoría** *(nuevo v5)* | Enrolamiento y verificación de MFA vía Supabase Auth (`/auth/mfa/enroll`, `/auth/mfa/verify`) · `GET /api/admin/eventos-seguridad?filtros` · `POST /api/admin/eventos-seguridad/[id]/liberar` · middlewares `requireMFA()` (toda ruta `/admin`) y `requireRateLimit()` (endpoints públicos y de generación con IA) | RNF-25..28, RN-23, RN-24 |
+| **Generación Documental IA** | `POST /api/documentos/generar` (proyectoId + convocatoriaId — **verifica en el servidor que la convocatoria siga `publicada` y vigente antes de actuar, RF-78**) · `GET/PATCH /api/documentos/[id]` · `POST /api/documentos/[id]/ajustar` (**valida el cupo de la empresa dueña antes de aplicar, también cuando lo pide el consultor — RF-77; sin cupo, 402/403 sin modificar el documento**) · `POST /api/documentos/[id]/compartir` / `.../revocar` (autoriza o quita al consultor — solo el dueño, solo con encargo `en_curso`, RF-71). **El acceso se evalúa como (autorización ∧ encargo `en_curso`) en cada petición, no como permiso almacenado (RN-27), y se revoca en cascada al cerrarse el encargo, suspenderse el perfil o vencer la suscripción (RF-76)** · `GET /api/documentos/[id]/exportar` (devuelve .docx — **403 si quien llama no es el dueño**, RF-72) · `GET/POST /api/admin/plantillas` | RN-17, RN-19..22, 27, 28, RNF-23 |
+| **Seguridad y auditoría** *(nuevo v5)* | Enrolamiento y verificación de MFA vía Supabase Auth (`/auth/mfa/enroll`, `/auth/mfa/verify`) · `GET /api/admin/eventos-seguridad?filtros` · `POST /api/admin/eventos-seguridad/[id]/liberar` · middlewares `requireRole()` (toda ruta y endpoint — RNF-30), `requireMFA()` (toda ruta `/admin`) y `requireRateLimit()` (endpoints públicos y de generación con IA; **fail-closed si su almacén no responde — RNF-33**) | RNF-25..28, RN-23, RN-24 |
 
 **Flujo interno del servicio de generación:** valida suscripción y cupo → **verifica límite de tasa (RNF-27)** → arma el contexto (proyecto + convocatoria + requisitos + texto del TDR **saneado de instrucciones incrustadas**, con tope de tamaño — RN-23) → invoca Claude API con instrucciones de veracidad y estructura → parsea el resultado y extrae los pendientes → guarda el documento y registra el consumo → descuenta el crédito. Si algo falla antes del guardado, **no se descuenta**. El .docx se genera bajo demanda desde el contenido guardado, sin ocupar un cuarto bucket.
 
@@ -809,7 +840,9 @@ flowchart TB
 
 24 tablas con RLS **habilitado y con política explícita en todas, sin excepción** (RNF-25 — ver `docs/05-modelo-de-datos.md` §9.10 para las tablas base y §9.5 para las del módulo de IA) · Storage con 3 buckets (`documentos-convocatorias`, `fotos-consultores`, `hojas-de-vida` privado, URLs firmadas de máximo 15 min — RNF-16) · **pg_cron con 3 jobs diarios**: cierre de convocatorias, vencimiento de suscripciones con gracia y **reinicio mensual de créditos** · triggers para el rating del consultor.
 
-La `service_role key` de Supabase —que puede saltarse RLS— se usa **únicamente** dentro de las API routes de servidor y los jobs de `pg_cron`; nunca se referencia en código de cliente ni en variables `NEXT_PUBLIC_*` (RNF-26). El límite de tasa (RNF-27) se implementa en un almacén rápido fuera de Postgres (p. ej. Upstash Redis o Vercel Edge Config); solo el bloqueo confirmado se persiste en `eventos_seguridad` para auditoría.
+La `service_role key` de Supabase —que puede saltarse RLS— se usa **únicamente** dentro de las API routes de servidor y los jobs de `pg_cron`; nunca se referencia en código de cliente ni en variables `NEXT_PUBLIC_*` (RNF-26). El límite de tasa (RNF-27) se implementa en un almacén rápido fuera de Postgres (p. ej. Upstash Redis o Vercel Edge Config); solo el bloqueo confirmado se persiste en `eventos_seguridad` para auditoría. **Si ese almacén no responde, la operación protegida se rechaza en lugar de permitirse (fail-closed, RNF-33)**: un control de seguridad que depende de un servicio externo no puede volverse opcional cuando el servicio cae.
+
+Toda tabla con datos de usuario lleva su columna de propietario y ningún listado se sirve sin filtrar por ella (RN-30); el filtrado en la capa de aplicación y la política RLS son controles complementarios, no alternativos.
 
 ---
 
@@ -1044,6 +1077,8 @@ Hasta v4 solo estaba documentada la política de las tablas nuevas del módulo d
 
 > Los nombres de tabla aquí usados son los referidos en los casos de uso, los requerimientos y el diagrama entidad–relación de v2/v3. Concílialos con el esquema real al escribir la migración del Sprint 0 si difieren en el detalle.
 
+> **Precondición de todas estas políticas (RN-30, *nuevo v6*):** cada tabla con datos de usuario debe declarar su columna de propietario —`proyectos.usuario_id`, `postulaciones.usuario_id`, `documentos_generados.usuario_id`, `encargos.empresa_id` / `consultor_id`— antes de que la política pueda escribirse. La política RLS y el filtrado por propietario en la capa de aplicación son controles **complementarios**: se exigen los dos, no uno u otro.
+
 | Tabla | Política |
 |---|---|
 | perfiles | Cada usuario lee y edita solo su propio registro (`id = auth.uid()`); el administrador lee todos |
@@ -1051,7 +1086,7 @@ Hasta v4 solo estaba documentada la política de las tablas nuevas del módulo d
 | convocatorias, fuentes, categorias, convocatoria_categoria, requisitos_convocatoria, documentos_convocatoria | Lectura pública solo de las **publicadas y vigentes**; escritura exclusiva del administrador (RN-01, RN-07) |
 | proyecto_categoria | Sigue la misma regla que `proyectos`: visible y editable solo por el dueño del proyecto asociado |
 | postulaciones y su checklist/historial | Solo la empresa dueña de la postulación (`usuario_id = auth.uid()`); el administrador lee para soporte (RN-04, RNF-03) |
-| perfil de consultor (portafolio, especialidades, descripción) | Lectura pública si `estado_perfil = aprobado`; edición solo por el propio consultor. **Sitio web, redes y hoja de vida quedan excluidos de la lectura pública en todos los casos: solo administrador, o empresa con solicitud activa con ese consultor** (RN-12, RNF-16, *ampliado en v5*) |
+| perfil de consultor (portafolio, especialidades, descripción) | Lectura pública si `estado_perfil = aprobado`; edición solo por el propio consultor. **Sitio web, redes y hoja de vida quedan excluidos de la lectura pública en todos los casos: solo administrador, o la empresa que tenga una solicitud activa con ese consultor — la condición se evalúa sobre la pareja (empresa de la sesión, consultor), no sobre la existencia de cualquier solicitud** (RN-12, RF-80, RNF-16, *ampliado en v5; precisado en v6*) |
 | encargos y sus avances | Visibles solo para la empresa y el consultor del encargo; el administrador lee todos (RN-08, RN-10, RNF-03) |
 | calificaciones | Lectura pública (componen el rating); escritura solo por la empresa dueña del encargo calificado, una única vez, inmutable (RN-09, RNF-17) |
 | planes | Lectura pública; escritura exclusiva del administrador |
@@ -1079,8 +1114,8 @@ Hasta v4 solo estaba documentada la política de las tablas nuevas del módulo d
 | **Trial** | Empresa | Gratis 14 días | — | 3 | Todo el producto |
 | **Empresa Esencial** | Empresa | COP $89.000 | COP $890.000 (2 meses gratis) | 10 | Catálogo, sugerencias, postulaciones, encargos |
 | **Empresa Pro** | Empresa | COP $189.000 | COP $1.890.000 | 30 | Lo anterior + soporte prioritario y más usuarios |
-| **Consultor** | Consultor | COP $69.000 | COP $690.000 | 30 | Perfil en directorio, encargos, generación |
-| **Paquete adicional** | Ambos | COP $39.000 | — | +10 (no expiran) | Compra puntual |
+| **Consultor** | Consultor | COP $69.000 | COP $690.000 | — | Perfil en directorio, recepción de encargos, acceso a los documentos que la empresa le autorice (RF-71) |
+| **Paquete adicional** | Empresa | COP $39.000 | — | +10 (no expiran) | Compra puntual |
 
 En dólares, los planes de empresa quedan alrededor de USD $22 y $47 mensuales: por encima del buscador simple y por debajo de la suite británica, coherente con la capacidad de pago local.
 
@@ -1173,30 +1208,33 @@ Product Owner (fundador/socio) · Scrum Master (líder técnico) · 2 desarrolla
 | CU-04 Definir requisitos | RF-08 | RN-04 |
 | CU-05 Publicar *(v5: exige enlace válido)* | RF-09 | RN-01, RNF-11, 29 |
 | CU-06 Cierre automático | RF-10 | RN-02, RNF-12 |
-| CU-07 Catálogo y chips | RF-11, 12, 43 | RNF-04 |
+| CU-07 Catálogo y chips *(v6: cerradas fuera del listado por defecto)* | RF-11, 12, 43 | RNF-04, **RN-02** |
 | CU-08 Detalle y descargas *(v5: enlace al portal)* | RF-13, **73** | RNF-06 |
-| CU-09 Proyecto enriquecido | RF-14, 45, 46, 47 | RN-21, RNF-03 |
-| CU-10 Sugerencias con % | RF-15, 16 | RN-05, RNF-05 |
-| CU-11 Iniciar postulación | RF-17, 21 | RN-03, 04, 19 |
+| CU-09 Proyecto enriquecido *(v6: completitud accionable)* | RF-14, 45, 46, 47, **81** | RN-21, RNF-03, **RNF-07** |
+| CU-10 Sugerencias con % *(v6: solo vigentes)* | RF-15, 16 | RN-05, RNF-05, **RN-02** |
+| CU-11 Iniciar postulación *(v6: vigencia verificada en servidor)* | RF-17, 21, **78** | RN-03, 04, 19, **RNF-20** |
 | CU-12 Checklist | RF-18, 20 | — |
-| CU-13 Estados *(v5: generar/editar documento, enlace al portal, solicitar consultor)* | RF-19, 20, **28, 53, 73** | RNF-11, 12 |
-| CU-14 Cuenta | RF-01, 02, 03 | RNF-01, RN-06 |
+| CU-13 Estados *(v5: generar/editar documento, enlace al portal, solicitar consultor; v6: grafo de transiciones y jerarquía del portal)* | RF-19, 20, 28, 53, 73, **83** | RNF-11, 12, **RN-19** |
+| CU-14 Cuenta | RF-01, 02, 03 | RNF-01, **30**, RN-06 |
 | CU-15..17 Perfil consultor | RF-22..25 | RN-13, RNF-16, 18 |
 | CU-18 Encargos (consultor) *(v5: contexto, contacto)* | RF-30, 32, **68, 69, 70** | RN-10, **29**, RN-25, RN-26, RF-40 |
-| CU-19..23 Contratación *(v5: contexto, tipo de ayuda, contacto, solicitud directa, buscador)* | RF-26, 28..31, **68, 69, 70, 74, 75** | RN-08, 12, 25, 26, RNF-19 |
-| CU-24 Calificar | RF-33 | RN-09, RNF-17 |
-| CU-25..27 Gestión consultores *(CU-26 v5: contacto; CU-27 v5: cancela encargos en curso)* | RF-34, 35, **70** | RN-13, 15, 26, **29**, RNF-11 |
-| CU-28..30 Suscripción | RF-37, 38, 41 | RN-11, 16 |
+| CU-19..23 Contratación *(v5: contexto, tipo de ayuda, contacto, solicitud directa, buscador; v6: visibilidad por pareja empresa-consultor)* | RF-26, 28..31, 68, 69, 70, 74, 75, **80** | RN-08, 12, 25, 26, RNF-19, **RNF-16, 30** |
+| CU-24 Calificar *(v6: contador al completar)* | RF-33 | RN-09, RNF-17 |
+| CU-25..27 Gestión consultores *(CU-26 v5: contacto; CU-27 v5: cancela encargos en curso; v6: revoca autorizaciones en cascada)* | RF-34, 35, 70, **76** | RN-13, 15, 26, 29, RNF-11, **RN-27** |
+| CU-28..30 Suscripción *(v6: comparador con atributos reales)* | RF-37, 38, 41, **82** | RN-11, 16, **RNF-14** |
 | CU-31 Planes y suscripciones | RF-36, 42, 51 | RNF-14, 20 |
-| CU-32 Enforcement | RF-40, 39 | RNF-20, RN-08, 10 |
-| **CU-33 Generar documento** | **RF-53..57, 62, 48** | **RN-17, 19, 20, 21, RNF-21, 23, 24** |
-| **CU-34 Revisar y exportar** *(v5: acceso del consultor)* | **RF-58..61, 71, 72** | **RN-20, 22, 27, 28, RNF-23** |
+| CU-32 Enforcement *(v6: revocación en cascada al vencer)* | RF-40, 39, **76** | RNF-20, RN-08, 10, **RN-27, 29** |
+| **CU-33 Generar documento** *(v6: actor solo empresa; vigencia verificada en servidor)* | RF-53..57, 62, 48, **78** | RN-17, 19, 20, 21, RNF-21, 23, 24, **RN-28, RNF-30** |
+| **CU-34 Revisar y exportar** *(v5: acceso del consultor; v6: autorización derivada, cupo y traza)* | RF-58..61, 71, 72, **76, 77, 79** | RN-20, 22, 27, 28, RNF-23, **RNF-11, 20** |
 | **CU-35 Cupo de créditos** | **RF-48, 49, 50, 52** | **RN-17, 18, RNF-20, 24** |
-| **CU-36 Indicadores landing** | **RF-44** | RNF-04 |
+| **CU-36 Indicadores landing** *(v6: cifra legible en reposo)* | **RF-44** | RNF-04, **RNF-07** |
+| **CU-37 Plantilla de generación** *(v4 — ausente de la matriz hasta v6)* | **RF-63** | **RNF-14, 22, 23** |
 | **CU-38 Activar MFA** *(v5)* | **RF-64** | **RNF-28** |
 | **CU-39 Eventos de seguridad** *(v5)* | **RF-65** | **RNF-11, 25, 26, 27** |
-| **CU-40 Bloqueos por límite de tasa** *(v5)* | **RF-66, 67** | **RNF-27** |
+| **CU-40 Bloqueos por límite de tasa** *(v5)* | **RF-66, 67** | **RNF-27, 33** |
+| **Transversal — autorización y aislamiento** *(nuevo v6)* | **RF-76..80** | **RNF-03, 11, 16, 20, 30..33, RN-12, 27, 28, 30** |
+| **Transversal — usabilidad de los flujos** *(nuevo v6)* | **RF-81, 82, 83** | **RNF-07, 08, 14, 34** |
 
 ---
 
-*Especificación del MVP v4 + adenda de seguridad y marketplace v5 · Plataforma de Gestión de Convocatorias · Septiembre 2026. Diagramas complementarios: `Arquitectura_Empresarial_MVP_v4.png` y `Modelo_de_Datos_IA_Creditos.png`, más los de la v2 y v3 para la base y el módulo de consultores.*
+*Especificación del MVP v6 (v4 + adenda de seguridad y marketplace v5 + auditoría de implementación v6) · Plataforma de Gestión de Convocatorias · Septiembre 2026. Diagramas complementarios: `Arquitectura_Empresarial_MVP_v4.png` y `Modelo_de_Datos_IA_Creditos.png`, más los de la v2 y v3 para la base y el módulo de consultores.*

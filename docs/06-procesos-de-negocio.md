@@ -1,6 +1,6 @@
 # Procesos core y no core
 
-> Parte de la especificación del MVP v4 · Plataforma de Gestión de Convocatorias.
+> Parte de la especificación del MVP **v6** · Plataforma de Gestión de Convocatorias.
 > Índice general en `docs/README.md`. Contexto rápido en `CLAUDE.md`.
 
 ---

@@ -1,6 +1,6 @@
 # Contexto, alcance y actores
 
-> Parte de la especificación del MVP v4 · Plataforma de Gestión de Convocatorias.
+> Parte de la especificación del MVP **v6** · Plataforma de Gestión de Convocatorias.
 > Índice general en `docs/README.md`. Contexto rápido en `CLAUDE.md`.
 
 ---
@@ -19,7 +19,7 @@ El MVP valida tres hipótesis: (1) que una empresa encuentra la convocatoria cor
 | **Búsqueda sin IA** | Catálogo con filtros por categorías + sugerencias por cruce de atributos, presentadas como **porcentaje de compatibilidad** con desglose por criterio |
 | **La plataforma no presenta la postulación** | La radicación se hace en el portal de la entidad convocante. La plataforma acompaña la **preparación**: encontrar, evaluar compatibilidad, generar el documento base, organizar el checklist y hacer seguimiento |
 | **Red de consultores** | Tercer rol: perfil con portafolio, hoja de vida y redes; ingreso aprobado por administradores; encargos por tarea desde el proyecto o directo desde el directorio/perfil (RF-74), con directorio o asignación interna; rating por encargo completado |
-| **Modelo de ingresos** | Suscripción mensual o anual para empresas y consultores, **diferenciada por volumen de créditos de IA**. Trial de 14 días con 3 créditos, solo empresas. Piloto: activación manual; pasarela (Wompi) como primera evolución. La plataforma **no** intermedia el pago de los encargos (RN-14) |
+| **Modelo de ingresos** | Suscripción mensual o anual para empresas y consultores. Los planes de **empresa** se diferencian entre sí **por volumen de créditos de IA**; el plan de **consultor** no lleva cupo —no existe operación que pueda consumirlo (RN-28)— y se vende por presencia en el directorio y recepción de encargos *(precisado en v6)*. Trial de 14 días con 3 créditos, solo empresas. Piloto: activación manual; pasarela (Wompi) como primera evolución. La plataforma **no** intermedia el pago de los encargos (RN-14) |
 | **Fuera del MVP** | Alertas por correo, extracción de TDR para poblar el esquema, matching semántico, scraping, pasarela en línea, comisión por encargo, marketplace de aliados, LATAM/Brasil, bóveda de documentos de la empresa (backlog — ver 14) |
 
 ### 1.2 Principio rector: veracidad del contenido generado
@@ -33,7 +33,7 @@ Heredado de la sección 6 del alcance inicial y ahora **operativo**: el document
 | Actor | Descripción | Casos de uso |
 |---|---|---|
 | **Usuario Empresa / Consultora** | Suscriptor. Explora el catálogo, registra proyectos, genera documentos con IA, postula, hace seguimiento y contrata consultores | CU-07..14, CU-19..24, CU-28..30, CU-33..34 |
-| **Consultor** | Suscriptor. Perfil aprobado por administrador; recibe y ejecuta encargos; también dispone de créditos de IA | CU-14..18, CU-28..30, CU-33..34 |
+| **Consultor** | Suscriptor. Perfil aprobado por administrador; recibe y ejecuta encargos. **No genera documentos ni dispone de cupo propio de créditos de IA**: solo interviene sobre documentos que la empresa le autorice explícitamente (CU-34, RF-71), y esos ajustes los paga la empresa dueña (RN-28) *(precisado en v6)* | CU-14..18, CU-28..30, CU-34 |
 | **Administrador de Contenido** | Fuentes y convocatorias; revisión y aprobación de consultores; asignaciones internas; planes, precios y suscripciones; **seguridad y auditoría** *(v5)* | CU-01..05, CU-25..27, CU-31, CU-37, **CU-38..40** |
 | **Reloj del sistema** | pg_cron: cierre de convocatorias, vencimiento de suscripciones, reinicio mensual de créditos | CU-06, CU-32, CU-35 |
 | **Servicio de IA (Claude API)** | Actor externo. Recibe el contexto de generación y devuelve el documento base | CU-33 |
