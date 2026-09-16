@@ -17,6 +17,28 @@ import type {
   Suscripcion,
 } from "./types";
 
+/**
+ * Fechas del conjunto de ejemplo, relativas al dia en que se abre la demo.
+ * Antes eran literales anclados a un "hoy" congelado (2026-08-24), asi que el
+ * catalogo envejecia: convocatorias "vigentes" que ya habian cerrado y fichas
+ * que anunciaban "cierra en 1 dia" sobre fechas pasadas. Cada desplazamiento
+ * conserva la distancia original respecto de aquel ancla.
+ */
+function desdeHoy(dias: number): string {
+  const f = new Date();
+  f.setHours(0, 0, 0, 0);
+  f.setDate(f.getDate() + dias);
+  const mes = String(f.getMonth() + 1).padStart(2, "0");
+  const dia = String(f.getDate()).padStart(2, "0");
+  return `${f.getFullYear()}-${mes}-${dia}`;
+}
+
+/** Igual que `desdeHoy`, conservando la hora para las marcas de tiempo. */
+function desdeHoyHora(dias: number, hora: string): string {
+  return `${desdeHoy(dias)}T${hora}`;
+}
+
+
 function avatarUrl(nombre: string, fondo: string): string {
   const encoded = encodeURIComponent(nombre);
   return `https://ui-avatars.com/api/?name=${encoded}&background=${fondo}&color=ffffff&size=256&bold=true&font-size=0.36`;
@@ -71,8 +93,8 @@ export const convocatorias: Convocatoria[] = [
     montoMin: 80_000_000,
     montoMax: 400_000_000,
     ubicacion: "Nacional",
-    fechaApertura: "2026-07-01",
-    fechaCierre: "2026-09-05",
+    fechaApertura: desdeHoy(-54),
+    fechaCierre: desdeHoy(12),
     estado: "publicada",
     categorias: ["tp-innovacion", "tp-investigacion", "sec-tic", "sec-manufactura", "te-mipyme", "te-startup"],
     documentos: [
@@ -99,8 +121,8 @@ export const convocatorias: Convocatoria[] = [
     montoMin: 10_000_000,
     montoMax: 50_000_000,
     ubicacion: "Bogotá D.C.",
-    fechaApertura: "2026-08-01",
-    fechaCierre: "2026-10-15",
+    fechaApertura: desdeHoy(-23),
+    fechaCierre: desdeHoy(52),
     estado: "publicada",
     categorias: ["tp-fortalecimiento", "sec-comercio", "sec-servicios", "te-mipyme"],
     documentos: [
@@ -124,8 +146,8 @@ export const convocatorias: Convocatoria[] = [
     montoMin: 50_000_000,
     montoMax: 300_000_000,
     ubicacion: "Nacional",
-    fechaApertura: "2026-06-15",
-    fechaCierre: "2026-09-01",
+    fechaApertura: desdeHoy(-70),
+    fechaCierre: desdeHoy(8),
     estado: "publicada",
     categorias: ["tp-digital", "tp-innovacion", "sec-tic", "te-startup"],
     documentos: [
@@ -151,8 +173,8 @@ export const convocatorias: Convocatoria[] = [
     montoMin: 30_000_000,
     montoMax: 120_000_000,
     ubicacion: "Antioquia, Valle del Cauca, Cundinamarca",
-    fechaApertura: "2026-05-01",
-    fechaCierre: "2026-08-30",
+    fechaApertura: desdeHoy(-115),
+    fechaCierre: desdeHoy(6),
     estado: "publicada",
     categorias: ["tp-sostenibilidad", "sec-manufactura", "sec-agro", "te-mipyme"],
     documentos: [
@@ -175,8 +197,8 @@ export const convocatorias: Convocatoria[] = [
     montoMin: 60_000_000,
     montoMax: 250_000_000,
     ubicacion: "Cauca, Nariño, Putumayo",
-    fechaApertura: "2026-04-01",
-    fechaCierre: "2026-11-30",
+    fechaApertura: desdeHoy(-145),
+    fechaCierre: desdeHoy(98),
     estado: "publicada",
     categorias: ["tp-fortalecimiento", "tp-internacionalizacion", "sec-agro", "te-ong", "te-mipyme"],
     documentos: [
@@ -201,8 +223,8 @@ export const convocatorias: Convocatoria[] = [
     montoMin: 15_000_000,
     montoMax: 70_000_000,
     ubicacion: "Antioquia",
-    fechaApertura: "2026-07-15",
-    fechaCierre: "2026-09-10",
+    fechaApertura: desdeHoy(-40),
+    fechaCierre: desdeHoy(17),
     estado: "publicada",
     categorias: ["tp-internacionalizacion", "sec-manufactura", "sec-agro", "te-mipyme"],
     documentos: [
@@ -225,8 +247,8 @@ export const convocatorias: Convocatoria[] = [
     montoMin: 20_000_000,
     montoMax: 180_000_000,
     ubicacion: "Nacional",
-    fechaApertura: "2026-03-01",
-    fechaCierre: "2026-08-27",
+    fechaApertura: desdeHoy(-176),
+    fechaCierre: desdeHoy(3),
     estado: "publicada",
     categorias: ["tp-emprendimiento", "tp-innovacion", "sec-tic", "sec-servicios", "te-startup", "te-persona-natural"],
     documentos: [
@@ -251,8 +273,8 @@ export const convocatorias: Convocatoria[] = [
     montoMin: 40_000_000,
     montoMax: 500_000_000,
     ubicacion: "Nacional",
-    fechaApertura: "2026-02-01",
-    fechaCierre: "2026-12-20",
+    fechaApertura: desdeHoy(-204),
+    fechaCierre: desdeHoy(118),
     estado: "publicada",
     categorias: ["tp-digital", "sec-comercio", "sec-servicios", "sec-manufactura", "te-mipyme", "te-gran-empresa"],
     documentos: [
@@ -275,8 +297,8 @@ export const convocatorias: Convocatoria[] = [
     montoMin: 25_000_000,
     montoMax: 150_000_000,
     ubicacion: "Medellín, Antioquia",
-    fechaApertura: "2026-06-01",
-    fechaCierre: "2026-08-25",
+    fechaApertura: desdeHoy(-84),
+    fechaCierre: desdeHoy(1),
     estado: "publicada",
     categorias: ["tp-investigacion", "tp-digital", "sec-tic", "sec-salud", "te-startup"],
     documentos: [
@@ -300,8 +322,8 @@ export const convocatorias: Convocatoria[] = [
     montoMin: 100_000_000,
     montoMax: 600_000_000,
     ubicacion: "Meta, Tolima, Huila",
-    fechaApertura: "2026-01-15",
-    fechaCierre: "2026-07-30",
+    fechaApertura: desdeHoy(-221),
+    fechaCierre: desdeHoy(-25),
     estado: "cerrada",
     categorias: ["tp-fortalecimiento", "sec-agro", "te-mipyme", "te-ong"],
     documentos: [
@@ -324,8 +346,8 @@ export const convocatorias: Convocatoria[] = [
     montoMin: 12_000_000,
     montoMax: 60_000_000,
     ubicacion: "Valle del Cauca",
-    fechaApertura: "2026-09-01",
-    fechaCierre: "2026-11-01",
+    fechaApertura: desdeHoy(8),
+    fechaCierre: desdeHoy(69),
     estado: "borrador",
     categorias: ["tp-innovacion", "sec-tic", "sec-turismo", "te-mipyme", "te-startup"],
     documentos: [
@@ -345,8 +367,8 @@ export const convocatorias: Convocatoria[] = [
     montoMin: 20_000_000,
     montoMax: 90_000_000,
     ubicacion: "Nacional",
-    fechaApertura: "2026-05-10",
-    fechaCierre: "2026-06-10",
+    fechaApertura: desdeHoy(-106),
+    fechaCierre: desdeHoy(-75),
     estado: "despublicada",
     categorias: ["tp-sostenibilidad", "sec-educacion", "sec-salud", "te-ong"],
     documentos: [
@@ -368,8 +390,8 @@ export const convocatorias: Convocatoria[] = [
     montoMin: 18_000_000,
     montoMax: 80_000_000,
     ubicacion: "Antioquia",
-    fechaApertura: "2026-08-05",
-    fechaCierre: "2026-10-05",
+    fechaApertura: desdeHoy(-19),
+    fechaCierre: desdeHoy(42),
     estado: "publicada",
     categorias: ["tp-innovacion", "sec-agro", "te-mipyme"],
     documentos: [
@@ -479,9 +501,9 @@ export const postulaciones: Postulacion[] = [
       { id: "chk-1-5", descripcion: "Video pitch de 3 minutos", obligatorio: false, completado: false },
     ],
     historial: [
-      { id: "hist-1-1", estadoAnterior: null, estadoNuevo: "en_preparacion", fecha: "2026-07-02" },
-      { id: "hist-1-2", estadoAnterior: "en_preparacion", estadoNuevo: "presentada", fecha: "2026-07-20" },
-      { id: "hist-1-3", estadoAnterior: "presentada", estadoNuevo: "en_evaluacion", fecha: "2026-08-05" },
+      { id: "hist-1-1", estadoAnterior: null, estadoNuevo: "en_preparacion", fecha: desdeHoy(-53) },
+      { id: "hist-1-2", estadoAnterior: "en_preparacion", estadoNuevo: "presentada", fecha: desdeHoy(-35) },
+      { id: "hist-1-3", estadoAnterior: "presentada", estadoNuevo: "en_evaluacion", fecha: desdeHoy(-19) },
     ],
   },
   {
@@ -497,8 +519,8 @@ export const postulaciones: Postulacion[] = [
       { id: "chk-2-5", descripcion: "Alianza con grupo de investigación", obligatorio: false, completado: false },
     ],
     historial: [
-      { id: "hist-2-1", estadoAnterior: null, estadoNuevo: "en_preparacion", fecha: "2026-07-10" },
-      { id: "hist-2-2", estadoAnterior: "en_preparacion", estadoNuevo: "presentada", fecha: "2026-08-12" },
+      { id: "hist-2-1", estadoAnterior: null, estadoNuevo: "en_preparacion", fecha: desdeHoy(-45) },
+      { id: "hist-2-2", estadoAnterior: "en_preparacion", estadoNuevo: "presentada", fecha: desdeHoy(-12) },
     ],
   },
   {
@@ -512,7 +534,7 @@ export const postulaciones: Postulacion[] = [
       { id: "chk-3-3", descripcion: "Flujo de caja proyectado a 3 años", obligatorio: true, completado: false },
     ],
     historial: [
-      { id: "hist-3-1", estadoAnterior: null, estadoNuevo: "en_preparacion", fecha: "2026-08-15" },
+      { id: "hist-3-1", estadoAnterior: null, estadoNuevo: "en_preparacion", fecha: desdeHoy(-9) },
     ],
   },
   {
@@ -526,10 +548,10 @@ export const postulaciones: Postulacion[] = [
       { id: "chk-4-3", descripcion: "Plan de generación de empleo rural", obligatorio: true, completado: true },
     ],
     historial: [
-      { id: "hist-4-1", estadoAnterior: null, estadoNuevo: "en_preparacion", fecha: "2026-02-01" },
-      { id: "hist-4-2", estadoAnterior: "en_preparacion", estadoNuevo: "presentada", fecha: "2026-03-10" },
-      { id: "hist-4-3", estadoAnterior: "presentada", estadoNuevo: "en_evaluacion", fecha: "2026-04-22" },
-      { id: "hist-4-4", estadoAnterior: "en_evaluacion", estadoNuevo: "rechazada", fecha: "2026-06-30" },
+      { id: "hist-4-1", estadoAnterior: null, estadoNuevo: "en_preparacion", fecha: desdeHoy(-204) },
+      { id: "hist-4-2", estadoAnterior: "en_preparacion", estadoNuevo: "presentada", fecha: desdeHoy(-167) },
+      { id: "hist-4-3", estadoAnterior: "presentada", estadoNuevo: "en_evaluacion", fecha: desdeHoy(-124) },
+      { id: "hist-4-4", estadoAnterior: "en_evaluacion", estadoNuevo: "rechazada", fecha: desdeHoy(-55) },
     ],
   },
 ];
@@ -780,15 +802,15 @@ export function consultorPorId(id: string): PerfilConsultor | undefined {
 // ---------------------------------------------------------------------------
 
 export const calificaciones: Calificacion[] = [
-  { id: "calif-1-a", encargoId: "encargo-hist-1a", consultorId: "consultor-1", estrellas: 5, comentario: "Excelente acompañamiento, cumplió todos los plazos.", fecha: "2025-11-10" },
-  { id: "calif-1-b", encargoId: "encargo-hist-1b", consultorId: "consultor-1", estrellas: 5, comentario: "Muy claro explicando los requisitos técnicos de Minciencias.", fecha: "2025-09-02" },
-  { id: "calif-1-c", encargoId: "encargo-hist-1c", consultorId: "consultor-1", estrellas: 4, comentario: "Buen trabajo, aunque la entrega final se retrasó un par de días.", fecha: "2025-06-18" },
-  { id: "calif-2-a", encargoId: "encargo-hist-2a", consultorId: "consultor-2", estrellas: 4, comentario: "Conoce muy bien el sector agro y la cooperación internacional.", fecha: "2025-10-05" },
-  { id: "calif-2-b", encargoId: "encargo-hist-2b", consultorId: "consultor-2", estrellas: 5, comentario: "Nos ayudó a conseguir la cofinanciación de ADEL.", fecha: "2025-04-22" },
-  { id: "calif-2-c", encargoId: "encargo-hist-2c", consultorId: "consultor-2", estrellas: 4, comentario: "Recomendada para proyectos rurales.", fecha: "2025-02-11" },
-  { id: "calif-3-a", encargoId: "encargo-hist-3a", consultorId: "consultor-3", estrellas: 3, comentario: "Cumplió, pero la comunicación pudo ser más frecuente.", fecha: "2025-08-14" },
-  { id: "calif-3-b", encargoId: "encargo-hist-3b", consultorId: "consultor-3", estrellas: 4, comentario: "Buen diagnóstico exportador.", fecha: "2025-05-30" },
-  { id: "calif-4-a", encargoId: "encargo-hist-4a", consultorId: "consultor-4", estrellas: 5, comentario: "Muy juiciosa con los indicadores ambientales, súper recomendada.", fecha: "2026-07-20" },
+  { id: "calif-1-a", encargoId: "encargo-hist-1a", consultorId: "consultor-1", estrellas: 5, comentario: "Excelente acompañamiento, cumplió todos los plazos.", fecha: desdeHoy(-287) },
+  { id: "calif-1-b", encargoId: "encargo-hist-1b", consultorId: "consultor-1", estrellas: 5, comentario: "Muy claro explicando los requisitos técnicos de Minciencias.", fecha: desdeHoy(-356) },
+  { id: "calif-1-c", encargoId: "encargo-hist-1c", consultorId: "consultor-1", estrellas: 4, comentario: "Buen trabajo, aunque la entrega final se retrasó un par de días.", fecha: desdeHoy(-432) },
+  { id: "calif-2-a", encargoId: "encargo-hist-2a", consultorId: "consultor-2", estrellas: 4, comentario: "Conoce muy bien el sector agro y la cooperación internacional.", fecha: desdeHoy(-323) },
+  { id: "calif-2-b", encargoId: "encargo-hist-2b", consultorId: "consultor-2", estrellas: 5, comentario: "Nos ayudó a conseguir la cofinanciación de ADEL.", fecha: desdeHoy(-489) },
+  { id: "calif-2-c", encargoId: "encargo-hist-2c", consultorId: "consultor-2", estrellas: 4, comentario: "Recomendada para proyectos rurales.", fecha: desdeHoy(-559) },
+  { id: "calif-3-a", encargoId: "encargo-hist-3a", consultorId: "consultor-3", estrellas: 3, comentario: "Cumplió, pero la comunicación pudo ser más frecuente.", fecha: desdeHoy(-375) },
+  { id: "calif-3-b", encargoId: "encargo-hist-3b", consultorId: "consultor-3", estrellas: 4, comentario: "Buen diagnóstico exportador.", fecha: desdeHoy(-451) },
+  { id: "calif-4-a", encargoId: "encargo-hist-4a", consultorId: "consultor-4", estrellas: 5, comentario: "Muy juiciosa con los indicadores ambientales, súper recomendada.", fecha: desdeHoy(-35) },
 ];
 
 // ---------------------------------------------------------------------------
@@ -807,7 +829,7 @@ export const encargos: Encargo[] = [
     via: "directorio",
     estado: "pendiente",
     avances: [],
-    fechas: { creada: "2026-08-20", aceptado: null, completado: null },
+    fechas: { creada: desdeHoy(-4), aceptado: null, completado: null },
     tipoAyuda: "convocatoria_especifica",
     convocatoriaId: "conv-1",
     postulacionId: "post-2",
@@ -823,10 +845,10 @@ export const encargos: Encargo[] = [
     via: "directorio",
     estado: "en_curso",
     avances: [
-      { id: "avance-2-1", nota: "Revisé el modelo de datos actual y detecté 3 brechas de trazabilidad en el módulo climático.", fecha: "2026-08-18" },
-      { id: "avance-2-2", nota: "Entregué el primer borrador del plan de mejora a AgroDatos para retroalimentación.", fecha: "2026-08-22" },
+      { id: "avance-2-1", nota: "Revisé el modelo de datos actual y detecté 3 brechas de trazabilidad en el módulo climático.", fecha: desdeHoy(-6) },
+      { id: "avance-2-2", nota: "Entregué el primer borrador del plan de mejora a AgroDatos para retroalimentación.", fecha: desdeHoy(-2) },
     ],
-    fechas: { creada: "2026-08-10", aceptado: "2026-08-12", completado: null },
+    fechas: { creada: desdeHoy(-14), aceptado: desdeHoy(-12), completado: null },
     tipoAyuda: "convocatoria_especifica",
     convocatoriaId: "conv-3",
     postulacionId: "post-1",
@@ -842,9 +864,9 @@ export const encargos: Encargo[] = [
     via: "directorio",
     estado: "calificado",
     avances: [
-      { id: "avance-3-1", nota: "Ajustamos el modelo de ingresos y la propuesta de valor con base en la validación de mercado.", fecha: "2026-07-05" },
+      { id: "avance-3-1", nota: "Ajustamos el modelo de ingresos y la propuesta de valor con base en la validación de mercado.", fecha: desdeHoy(-50) },
     ],
-    fechas: { creada: "2026-06-20", aceptado: "2026-06-21", completado: "2026-07-08" },
+    fechas: { creada: desdeHoy(-65), aceptado: desdeHoy(-64), completado: desdeHoy(-47) },
     tipoAyuda: "convocatoria_especifica",
     convocatoriaId: "conv-7",
     postulacionId: "post-3",
@@ -860,7 +882,7 @@ export const encargos: Encargo[] = [
     via: "asignacion_interna",
     estado: "esperando_asignacion",
     avances: [],
-    fechas: { creada: "2026-08-23", aceptado: null, completado: null },
+    fechas: { creada: desdeHoy(-1), aceptado: null, completado: null },
     tipoAyuda: "convocatoria_especifica",
     convocatoriaId: "conv-7",
     postulacionId: "post-3",
@@ -876,9 +898,9 @@ export const encargos: Encargo[] = [
     via: "directorio",
     estado: "completado",
     avances: [
-      { id: "avance-5-1", nota: "Diagnóstico ambiental entregado con indicadores de reducción de material virgen.", fecha: "2026-08-05" },
+      { id: "avance-5-1", nota: "Diagnóstico ambiental entregado con indicadores de reducción de material virgen.", fecha: desdeHoy(-19) },
     ],
-    fechas: { creada: "2026-07-15", aceptado: "2026-07-16", completado: "2026-08-06" },
+    fechas: { creada: desdeHoy(-40), aceptado: desdeHoy(-39), completado: desdeHoy(-18) },
     tipoAyuda: "convocatoria_especifica",
     convocatoriaId: "conv-4",
     postulacionId: null,
@@ -894,7 +916,7 @@ export const encargos: Encargo[] = [
     via: "directorio",
     estado: "pendiente",
     avances: [],
-    fechas: { creada: "2026-08-24", aceptado: null, completado: null },
+    fechas: { creada: desdeHoy(0), aceptado: null, completado: null },
     tipoAyuda: "buscar_convocatoria",
     convocatoriaId: null,
     postulacionId: null,
@@ -913,7 +935,7 @@ export const planes: Plan[] = [
   { id: "plan-trial", nombre: "Trial", rol: "empresa", precioMensual: 0, precioAnual: 0, creditosIaMensuales: 3 },
   { id: "plan-empresa-esencial", nombre: "Empresa Esencial", rol: "empresa", precioMensual: 89_000, precioAnual: 890_000, creditosIaMensuales: 10 },
   { id: "plan-empresa-pro", nombre: "Empresa Pro", rol: "empresa", precioMensual: 189_000, precioAnual: 1_890_000, creditosIaMensuales: 30 },
-  { id: "plan-consultor", nombre: "Consultor", rol: "consultor", precioMensual: 69_000, precioAnual: 690_000, creditosIaMensuales: 30 },
+  { id: "plan-consultor", nombre: "Consultor", rol: "consultor", precioMensual: 69_000, precioAnual: 690_000, creditosIaMensuales: 0 },
 ];
 
 export function planPorId(id: string): Plan | undefined {
@@ -934,11 +956,11 @@ export const suscripciones: Suscripcion[] = [
     planId: "plan-trial",
     modalidad: "trial",
     estado: "trial",
-    fechaInicio: "2026-08-13",
-    fechaVencimiento: "2026-08-27",
+    fechaInicio: desdeHoy(-11),
+    fechaVencimiento: desdeHoy(3),
     creditosUsadosPeriodo: 1,
     creditosExtra: 0,
-    periodoCreditosInicio: "2026-08-13",
+    periodoCreditosInicio: desdeHoy(-11),
   },
   {
     id: "sub-2",
@@ -946,11 +968,11 @@ export const suscripciones: Suscripcion[] = [
     planId: "plan-empresa-pro",
     modalidad: "mensual",
     estado: "vencida",
-    fechaInicio: "2026-06-01",
-    fechaVencimiento: "2026-07-01",
+    fechaInicio: desdeHoy(-84),
+    fechaVencimiento: desdeHoy(-54),
     creditosUsadosPeriodo: 30,
     creditosExtra: 0,
-    periodoCreditosInicio: "2026-06-01",
+    periodoCreditosInicio: desdeHoy(-84),
   },
   {
     id: "sub-3",
@@ -958,11 +980,11 @@ export const suscripciones: Suscripcion[] = [
     planId: "plan-empresa-pro",
     modalidad: "anual",
     estado: "activa",
-    fechaInicio: "2026-01-10",
-    fechaVencimiento: "2027-01-10",
+    fechaInicio: desdeHoy(-226),
+    fechaVencimiento: desdeHoy(139),
     creditosUsadosPeriodo: 12,
     creditosExtra: 5,
-    periodoCreditosInicio: "2026-08-01",
+    periodoCreditosInicio: desdeHoy(-23),
   },
   {
     id: "sub-4",
@@ -970,11 +992,11 @@ export const suscripciones: Suscripcion[] = [
     planId: "plan-consultor",
     modalidad: "mensual",
     estado: "activa",
-    fechaInicio: "2026-08-01",
-    fechaVencimiento: "2026-09-01",
+    fechaInicio: desdeHoy(-23),
+    fechaVencimiento: desdeHoy(8),
     creditosUsadosPeriodo: 5,
     creditosExtra: 0,
-    periodoCreditosInicio: "2026-08-01",
+    periodoCreditosInicio: desdeHoy(-23),
   },
   {
     id: "sub-5",
@@ -982,11 +1004,11 @@ export const suscripciones: Suscripcion[] = [
     planId: "plan-consultor",
     modalidad: "anual",
     estado: "activa",
-    fechaInicio: "2026-02-01",
-    fechaVencimiento: "2027-02-01",
+    fechaInicio: desdeHoy(-204),
+    fechaVencimiento: desdeHoy(161),
     creditosUsadosPeriodo: 30,
     creditosExtra: 0,
-    periodoCreditosInicio: "2026-08-01",
+    periodoCreditosInicio: desdeHoy(-23),
   },
   {
     id: "sub-6",
@@ -994,11 +1016,11 @@ export const suscripciones: Suscripcion[] = [
     planId: "plan-consultor",
     modalidad: "trial",
     estado: "trial",
-    fechaInicio: "2026-08-18",
-    fechaVencimiento: "2026-09-01",
+    fechaInicio: desdeHoy(-6),
+    fechaVencimiento: desdeHoy(8),
     creditosUsadosPeriodo: 0,
     creditosExtra: 0,
-    periodoCreditosInicio: "2026-08-18",
+    periodoCreditosInicio: desdeHoy(-6),
   },
   {
     id: "sub-7",
@@ -1006,11 +1028,11 @@ export const suscripciones: Suscripcion[] = [
     planId: "plan-consultor",
     modalidad: "mensual",
     estado: "vencida",
-    fechaInicio: "2026-05-01",
-    fechaVencimiento: "2026-06-01",
+    fechaInicio: desdeHoy(-115),
+    fechaVencimiento: desdeHoy(-84),
     creditosUsadosPeriodo: 20,
     creditosExtra: 0,
-    periodoCreditosInicio: "2026-05-01",
+    periodoCreditosInicio: desdeHoy(-115),
   },
   {
     id: "sub-8",
@@ -1018,11 +1040,11 @@ export const suscripciones: Suscripcion[] = [
     planId: "plan-empresa-esencial",
     modalidad: "mensual",
     estado: "activa",
-    fechaInicio: "2026-08-01",
-    fechaVencimiento: "2026-09-01",
+    fechaInicio: desdeHoy(-23),
+    fechaVencimiento: desdeHoy(8),
     creditosUsadosPeriodo: 10,
     creditosExtra: 0,
-    periodoCreditosInicio: "2026-08-01",
+    periodoCreditosInicio: desdeHoy(-23),
   },
 ];
 
@@ -1035,13 +1057,13 @@ export function suscripcionDeUsuario(usuarioId: string): Suscripcion | undefined
 // ---------------------------------------------------------------------------
 
 export const pagos: Pago[] = [
-  { id: "pago-1", suscripcionId: "sub-2", monto: 189_000, fecha: "2026-06-01" },
-  { id: "pago-2", suscripcionId: "sub-3", monto: 1_890_000, fecha: "2026-01-10" },
-  { id: "pago-3", suscripcionId: "sub-4", monto: 69_000, fecha: "2026-08-01" },
-  { id: "pago-4", suscripcionId: "sub-4", monto: 69_000, fecha: "2026-07-01" },
-  { id: "pago-5", suscripcionId: "sub-5", monto: 690_000, fecha: "2026-02-01" },
-  { id: "pago-6", suscripcionId: "sub-7", monto: 69_000, fecha: "2026-05-01" },
-  { id: "pago-7", suscripcionId: "sub-8", monto: 89_000, fecha: "2026-08-01" },
+  { id: "pago-1", suscripcionId: "sub-2", monto: 189_000, fecha: desdeHoy(-84) },
+  { id: "pago-2", suscripcionId: "sub-3", monto: 1_890_000, fecha: desdeHoy(-226) },
+  { id: "pago-3", suscripcionId: "sub-4", monto: 69_000, fecha: desdeHoy(-23) },
+  { id: "pago-4", suscripcionId: "sub-4", monto: 69_000, fecha: desdeHoy(-54) },
+  { id: "pago-5", suscripcionId: "sub-5", monto: 690_000, fecha: desdeHoy(-204) },
+  { id: "pago-6", suscripcionId: "sub-7", monto: 69_000, fecha: desdeHoy(-115) },
+  { id: "pago-7", suscripcionId: "sub-8", monto: 89_000, fecha: desdeHoy(-23) },
 ];
 
 // ---------------------------------------------------------------------------
@@ -1055,7 +1077,7 @@ export const promptVersiones: PromptVersion[] = [
     contenido:
       "Actúa como consultor experto en cofinanciación pública. A partir de los datos del proyecto, redacta un borrador para la convocatoria indicada, sección por sección. No inventes datos: si un campo no existe, márcalo como [COMPLETAR: ...].",
     activa: false,
-    fechaCreacion: "2026-06-01",
+    fechaCreacion: desdeHoy(-84),
   },
   {
     id: "prompt-v2",
@@ -1063,7 +1085,7 @@ export const promptVersiones: PromptVersion[] = [
     contenido:
       "Eres un asistente de redacción de propuestas para convocatorias colombianas de financiación. Usa exclusivamente la información provista del proyecto y de la convocatoria. Estructura el documento en las secciones: resumen ejecutivo, problema y justificación, objetivos, población beneficiaria, metodología y actividades, resultados esperados, presupuesto, cronograma y experiencia de la organización. Cuando un dato no esté disponible en el proyecto, insértalo como [COMPLETAR: descripción específica de lo que falta] — nunca inventes cifras, poblaciones ni resultados. Menciona siempre el nombre de la convocatoria y la entidad convocante en el resumen ejecutivo.",
     activa: true,
-    fechaCreacion: "2026-08-10",
+    fechaCreacion: desdeHoy(-14),
   },
 ];
 
@@ -1085,8 +1107,8 @@ export const documentos: DocumentoGenerado[] = [
     estado: "editado",
     promptVersionId: "prompt-v2",
     ajustesGratisUsados: 1,
-    fechaCreacion: "2026-08-18",
-    fechaActualizacion: "2026-08-20",
+    fechaCreacion: desdeHoy(-6),
+    fechaActualizacion: desdeHoy(-4),
     // Compartido con consultor-1: tiene el encargo-2 en_curso sobre este mismo par proyecto-convocatoria.
     compartidoConConsultorId: "consultor-1",
     ultimaEdicionPor: "empresa",
@@ -1180,7 +1202,7 @@ export const eventosSeguridad: EventoSeguridad[] = [
     ruta: "/admin",
     detalle: "Contraseña incorrecta, intento 2 de 5.",
     bloqueadoHasta: null,
-    fecha: "2026-09-13T09:12:00",
+    fecha: desdeHoyHora(20, "09:12:00"),
   },
   {
     id: "evt-2",
@@ -1190,7 +1212,7 @@ export const eventosSeguridad: EventoSeguridad[] = [
     ruta: "/api/admin/convocatorias",
     detalle: "Cuenta con rol empresa intentó acceder a un endpoint administrativo.",
     bloqueadoHasta: null,
-    fecha: "2026-09-12T16:40:00",
+    fecha: desdeHoyHora(19, "16:40:00"),
   },
   {
     id: "evt-3",
@@ -1199,8 +1221,8 @@ export const eventosSeguridad: EventoSeguridad[] = [
     ip: "186.30.201.5",
     ruta: "/api/documentos/generar",
     detalle: "27 solicitudes de generación en 60 segundos — supera el límite por usuario.",
-    bloqueadoHasta: "2026-09-14T23:59:00",
-    fecha: "2026-09-13T22:05:00",
+    bloqueadoHasta: desdeHoyHora(21, "23:59:00"),
+    fecha: desdeHoyHora(20, "22:05:00"),
   },
   {
     id: "evt-4",
@@ -1209,8 +1231,8 @@ export const eventosSeguridad: EventoSeguridad[] = [
     ip: "45.90.12.201",
     ruta: "/api/convocatorias",
     detalle: "Ráfaga de 400 solicitudes/minuto al catálogo público desde una sola IP.",
-    bloqueadoHasta: "2026-09-12T10:00:00",
-    fecha: "2026-09-12T08:30:00",
+    bloqueadoHasta: desdeHoyHora(19, "10:00:00"),
+    fecha: desdeHoyHora(19, "08:30:00"),
   },
   {
     id: "evt-5",
@@ -1220,6 +1242,6 @@ export const eventosSeguridad: EventoSeguridad[] = [
     ruta: "/admin/seguridad",
     detalle: "Verificación en dos pasos activada correctamente.",
     bloqueadoHasta: null,
-    fecha: "2026-08-01T08:00:00",
+    fecha: desdeHoyHora(-23, "08:00:00"),
   },
 ];

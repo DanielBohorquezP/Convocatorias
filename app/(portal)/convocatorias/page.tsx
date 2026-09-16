@@ -36,6 +36,9 @@ export default function CatalogoConvocatoriasPage() {
   const [ubicacionSel, setUbicacionSel] = useState<string>("");
   const [montoMax, setMontoMax] = useState<string>("");
   const [cierraAntesDe, setCierraAntesDe] = useState<string>("");
+  // RF-11 / RN-02: las cerradas salen del listado por defecto y solo
+  // reaparecen bajo este filtro explícito, marcadas y sin acciones.
+  const [incluirCerradas, setIncluirCerradas] = useState(false);
   const [filtrosAbiertos, setFiltrosAbiertos] = useState(true);
 
   const entidades = useMemo(
@@ -53,7 +56,7 @@ export default function CatalogoConvocatoriasPage() {
 
   const resultados = useMemo(() => {
     return convocatorias
-      .filter((c) => c.estado === "publicada" || c.estado === "cerrada")
+      .filter((c) => c.estado === "publicada" || (incluirCerradas && c.estado === "cerrada"))
       .filter((c) =>
         busqueda.trim()
           ? (c.nombre + " " + c.entidadConvocante + " " + c.descripcion)
@@ -68,7 +71,7 @@ export default function CatalogoConvocatoriasPage() {
       .filter((c) => (montoMax ? c.montoMin <= Number(montoMax) * 1_000_000 : true))
       .filter((c) => (cierraAntesDe ? c.fechaCierre <= cierraAntesDe : true))
       .sort((a, b) => diasRestantes(a.fechaCierre) - diasRestantes(b.fechaCierre));
-  }, [convocatorias, busqueda, tipoProyectoSel, sectorSel, entidadSel, ubicacionSel, montoMax, cierraAntesDe]);
+  }, [convocatorias, busqueda, tipoProyectoSel, sectorSel, entidadSel, ubicacionSel, montoMax, cierraAntesDe, incluirCerradas]);
 
   const hayFiltrosActivos =
     tipoProyectoSel.length > 0 ||
@@ -76,7 +79,8 @@ export default function CatalogoConvocatoriasPage() {
     !!entidadSel ||
     !!ubicacionSel ||
     !!montoMax ||
-    !!cierraAntesDe;
+    !!cierraAntesDe ||
+    incluirCerradas;
 
   const limpiarFiltros = () => {
     setTipoProyectoSel([]);
@@ -85,6 +89,7 @@ export default function CatalogoConvocatoriasPage() {
     setUbicacionSel("");
     setMontoMax("");
     setCierraAntesDe("");
+    setIncluirCerradas(false);
   };
 
   const aplicarBusquedaSugerida = (sugerida: BusquedaSugerida) => {
@@ -121,7 +126,7 @@ export default function CatalogoConvocatoriasPage() {
           className="sm:w-auto"
         >
           <SlidersHorizontal className="h-4 w-4" />
-          Filtros {hayFiltrosActivos && `(${tipoProyectoSel.length + sectorSel.length + [entidadSel, ubicacionSel, montoMax, cierraAntesDe].filter(Boolean).length})`}
+          Filtros {hayFiltrosActivos && `(${tipoProyectoSel.length + sectorSel.length + [entidadSel, ubicacionSel, montoMax, cierraAntesDe, incluirCerradas].filter(Boolean).length})`}
         </Button>
       </div>
 
@@ -221,7 +226,7 @@ export default function CatalogoConvocatoriasPage() {
               </div>
             </FiltroGrupo>
 
-            <FiltroGrupo titulo="Fecha de cierre" ultimo>
+            <FiltroGrupo titulo="Fecha de cierre">
               <input
                 type="date"
                 value={cierraAntesDe}
@@ -229,6 +234,24 @@ export default function CatalogoConvocatoriasPage() {
                 className="w-full rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-primary-500"
               />
               <p className="mt-1 text-xs text-ink-faint">Mostrar convocatorias que cierran antes de esta fecha</p>
+            </FiltroGrupo>
+
+            {/* RF-11 / RN-02: las cerradas solo entran bajo petición explícita. */}
+            <FiltroGrupo titulo="Convocatorias cerradas" ultimo>
+              <label className="flex cursor-pointer items-start gap-2">
+                <input
+                  type="checkbox"
+                  checked={incluirCerradas}
+                  onChange={(e) => setIncluirCerradas(e.target.checked)}
+                  className="mt-0.5"
+                />
+                <span>
+                  <span className="block text-sm text-ink">Incluirlas en los resultados</span>
+                  <span className="block text-xs text-ink-faint">
+                    Sirven de referencia sobre lo que suele abrirse, pero ya no admiten postulación.
+                  </span>
+                </span>
+              </label>
             </FiltroGrupo>
           </aside>
         )}

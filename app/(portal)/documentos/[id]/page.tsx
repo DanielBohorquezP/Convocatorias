@@ -85,7 +85,7 @@ export default function DocumentoPage({ params }: { params: Promise<{ id: string
         <EmptyState
           icon={Lock}
           titulo="No tienes acceso a este documento"
-          descripcion="La empresa no ha autorizado tu acceso a este documento generado (RN-22). Pídele que active el acceso desde la vista del documento."
+          descripcion="La empresa aún no te ha dado acceso a este documento. Pídele que lo comparta contigo desde la vista del documento."
         />
       </div>
     );
@@ -192,7 +192,7 @@ export default function DocumentoPage({ params }: { params: Promise<{ id: string
         <div className="flex flex-wrap items-center gap-2">
           {esConsultor ? (
             <span className="flex items-center gap-1.5 rounded-lg bg-slate-50 px-3 py-2 text-xs text-ink-faint ring-1 ring-inset ring-line">
-              <Lock className="h-3.5 w-3.5" /> Puedes editar, pero no descargar ni regenerar (RF-71/72)
+              <Lock className="h-3.5 w-3.5" /> Puedes editar, pero no descargar ni regenerar
             </span>
           ) : (
             <>
@@ -226,7 +226,7 @@ export default function DocumentoPage({ params }: { params: Promise<{ id: string
       {!esConsultor && documento.compartidoConConsultorId && consultorDelEncargo && (
         <p className="mb-4 flex items-center gap-1.5 rounded-lg bg-gold-50 px-3 py-2 text-xs text-gold-700 ring-1 ring-inset ring-gold-200">
           <Share2 className="h-3.5 w-3.5" /> Compartido con {consultorDelEncargo.nombreProfesional}: puede leer, editar
-          y pedir ajustes con IA, pero no descargarlo ni regenerarlo (RN-22, RN-27).
+          y pedir ajustes con IA, pero no descargarlo ni regenerarlo. Puedes dejar de compartirlo cuando quieras.
         </p>
       )}
 

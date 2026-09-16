@@ -3,7 +3,7 @@
 import { use, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, MapPin, Wallet, Sparkles, UserPlus, FileStack, Users, X } from "lucide-react";
+import { ArrowLeft, MapPin, Wallet, Sparkles, UserPlus, FileStack, Users, X, Pencil } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import { categoriaPorId } from "@/lib/mock-data";
 import { useAccesoSuscripcion } from "@/lib/hooks";
@@ -12,6 +12,8 @@ import { Chip } from "@/components/ui/Chip";
 import { Button, LinkButton } from "@/components/ui/Button";
 import { CompletitudDetalle } from "@/components/CompletitudProyecto";
 import { SolicitarConsultorModal } from "@/components/SolicitarConsultorModal";
+import { ProyectoFormModal } from "@/components/ProyectoFormModal";
+import type { CampoContenido } from "@/lib/proyectos";
 
 export default function DetalleProyectoPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -25,6 +27,15 @@ export default function DetalleProyectoPage({ params }: { params: Promise<{ id: 
 
   const [modalConsultorAbierto, setModalConsultorAbierto] = useState(false);
   const [modalGenerarAbierto, setModalGenerarAbierto] = useState(false);
+  // RF-81: edición del proyecto desde su propia ficha, opcionalmente situada
+  // en el campo que el indicador de completitud señala como faltante.
+  const [modalEditarAbierto, setModalEditarAbierto] = useState(false);
+  const [campoAEditar, setCampoAEditar] = useState<CampoContenido["clave"] | null>(null);
+
+  const abrirEdicion = (clave?: CampoContenido["clave"]) => {
+    setCampoAEditar(clave ?? null);
+    setModalEditarAbierto(true);
+  };
 
   const convocatoriasVigentes = useMemo(
     () => todasLasConvocatorias.filter((c) => c.estado === "publicada" && diasRestantes(c.fechaCierre) >= 0),
@@ -80,11 +91,14 @@ export default function DetalleProyectoPage({ params }: { params: Promise<{ id: 
             <Button variant="brick" size="lg" onClick={abrirFlujo}>
               <UserPlus className="h-4 w-4" /> Solicitar consultor
             </Button>
+            <Button variant="ghost" size="lg" onClick={() => abrirEdicion()}>
+              <Pencil className="h-4 w-4" /> Editar
+            </Button>
           </div>
         </div>
 
         <div className="mt-6">
-          <CompletitudDetalle proyecto={proyecto} />
+          <CompletitudDetalle proyecto={proyecto} onCompletar={(clave) => abrirEdicion(clave)} />
         </div>
 
         <div className="mt-6 grid gap-4 rounded-xl bg-primary-50/60 p-5 sm:grid-cols-2">
@@ -139,6 +153,14 @@ export default function DetalleProyectoPage({ params }: { params: Promise<{ id: 
             ))}
           </ul>
         </div>
+      )}
+
+      {modalEditarAbierto && (
+        <ProyectoFormModal
+          proyecto={proyecto}
+          campoInicial={campoAEditar}
+          onClose={() => setModalEditarAbierto(false)}
+        />
       )}
 
       <SolicitarConsultorModal

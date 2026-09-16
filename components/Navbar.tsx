@@ -69,7 +69,10 @@ export function Navbar() {
         </div>
       </div>
 
-      <nav className="flex items-center gap-1 overflow-x-auto border-t border-line-soft px-4 py-2 md:hidden">
+      <nav
+        aria-label="Secciones"
+        className="barra-desplazable flex items-center gap-1 overflow-x-auto border-t border-line-soft px-4 py-2 md:hidden"
+      >
         {enlaces.map((enlace) => {
           const activo = pathname === enlace.href || pathname.startsWith(enlace.href + "/");
           return (

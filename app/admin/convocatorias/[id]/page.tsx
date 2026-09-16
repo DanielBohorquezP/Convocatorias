@@ -164,7 +164,7 @@ function EditorForm({
     if (!descripcion.trim()) problemas.push("Falta la descripción");
     if (!ubicacion.trim()) problemas.push("Falta la ubicación");
     if (!urlPostulacion.trim() || !esUrlValida(urlPostulacion.trim()))
-      problemas.push("Falta un enlace oficial de postulación válido (http/https) — RNF-29");
+      problemas.push("Falta un enlace oficial de postulación válido (debe empezar por http:// o https://)");
     if (!fechaApertura || !fechaCierre) problemas.push("Faltan las fechas de apertura o cierre");
     if (fechaApertura && fechaCierre && fechaApertura > fechaCierre)
       problemas.push("La fecha de apertura debe ser anterior a la de cierre");
@@ -260,7 +260,7 @@ function EditorForm({
                 className="w-full rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-primary-500"
               />
               <p className="mt-1 text-xs text-ink-faint">
-                Obligatorio para publicar (RN-01): es donde la empresa radica su postulación, no en esta plataforma.
+                Obligatorio para publicar: es donde la empresa radica su postulación, no en esta plataforma.
               </p>
             </Campo>
             <Campo etiqueta="Descripción" span2>

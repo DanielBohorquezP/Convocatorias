@@ -188,7 +188,7 @@ function ContenidoEncargos() {
                   {e.tipoAyuda === "buscar_convocatoria" && (
                     <p className="mt-2 flex items-center gap-1.5 rounded-lg bg-brick-50/60 px-3 py-2 text-xs text-brick-700">
                       <Compass className="h-3.5 w-3.5 shrink-0" />
-                      Reporta las convocatorias candidatas que encuentres como notas de avance (RF-69).
+                      Reporta las convocatorias candidatas que encuentres como notas de avance.
                     </p>
                   )}
 

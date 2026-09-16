@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CreditCard, Receipt, Check } from "lucide-react";
+import { CreditCard, Receipt, Check, Sparkles } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import { useAccesoSuscripcion } from "@/lib/hooks";
 import type { ModalidadSuscripcion } from "@/lib/types";
@@ -12,6 +12,7 @@ import {
   ESTADO_SUSCRIPCION_LABEL,
   ESTADO_SUSCRIPCION_ESTILO,
 } from "@/lib/utils";
+import { beneficiosDePlan } from "@/lib/planes";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { BloqueCreditos } from "@/components/BloqueCreditos";
@@ -121,12 +122,22 @@ export default function SuscripcionEmpresaPage() {
                   <span className="text-sm text-ink-faint"> / {modalidad === "anual" ? "año" : "mes"}</span>
                 </p>
                 <ul className="mt-4 flex-1 space-y-2 text-sm text-ink-soft">
-                  <li className="flex items-center gap-2">
-                    <Check className="h-3.5 w-3.5 text-success" /> Postulaciones y sugerencias ilimitadas
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="h-3.5 w-3.5 text-success" /> Solicitud de consultores
-                  </li>
+                  {beneficiosDePlan(plan).map((b) => (
+                    <li
+                      key={b.texto}
+                      className={cn(
+                        "flex items-start gap-2",
+                        b.destacado && "font-semibold text-teal-700"
+                      )}
+                    >
+                      {b.destacado ? (
+                        <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                      ) : (
+                        <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-success" />
+                      )}
+                      {b.texto}
+                    </li>
+                  ))}
                 </ul>
                 <Button
                   variant={esActual ? "secondary" : "primary"}

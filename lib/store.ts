@@ -22,6 +22,7 @@ import {
   suscripciones as suscripcionesIniciales,
 } from "./mock-data";
 import { componerDocumento, aplicarAjusteTexto, postulacionParaProyectoConv } from "./documentos";
+import { transicionPermitida } from "./utils";
 import type {
   Calificacion,
   Categoria,
@@ -373,6 +374,9 @@ export const useAppStore = create<AppState>((set, get) => ({
     set((s) => ({
       postulaciones: s.postulaciones.map((p) => {
         if (p.id !== postulacionId || p.estado === nuevoEstado) return p;
+        // RF-83: la transición se valida aquí, no solo en el selector. Al
+        // conectar el backend esta comprobación se traslada a la API route.
+        if (!transicionPermitida(p.estado, nuevoEstado)) return p;
         return {
           ...p,
           estado: nuevoEstado,
@@ -512,13 +516,25 @@ export const useAppStore = create<AppState>((set, get) => ({
     }));
   },
   completarEncargo: (encargoId) => {
-    set((s) => ({
+    set((s) => {
+      const encargo = s.encargos.find((e) => e.id === encargoId);
+      const yaCompletado = !encargo || encargo.estado === "completado" || encargo.estado === "calificado";
+      return {
+      // RF-33: la trayectoria del consultor la marca haber completado el
+      // encargo. La calificación es potestad de la empresa y puede no llegar
+      // nunca; antes el contador dependía de ella y subestimaba su historial.
+      consultores: s.consultores.map((c) =>
+        !yaCompletado && encargo?.consultorId === c.id
+          ? { ...c, totalEncargosCompletados: c.totalEncargosCompletados + 1 }
+          : c
+      ),
       encargos: s.encargos.map((e) =>
         e.id === encargoId
           ? { ...e, estado: "completado" as EstadoEncargo, fechas: { ...e.fechas, completado: hoyIso() } }
           : e
       ),
-    }));
+      };
+    });
   },
   calificarEncargo: (encargoId, estrellas, comentario) => {
     set((s) => {
@@ -539,9 +555,11 @@ export const useAppStore = create<AppState>((set, get) => ({
       const delConsultor = calificaciones.filter((c) => c.consultorId === encargo.consultorId);
       const promedio = delConsultor.reduce((acc, c) => acc + c.estrellas, 0) / delConsultor.length;
 
+      // El contador de completados ya avanzó al completar el encargo (RF-33):
+      // aquí solo se recalcula el promedio.
       const consultores = s.consultores.map((c) =>
         c.id === encargo.consultorId
-          ? { ...c, ratingPromedio: Math.round(promedio * 10) / 10, totalEncargosCompletados: c.totalEncargosCompletados + 1 }
+          ? { ...c, ratingPromedio: Math.round(promedio * 10) / 10 }
           : c
       );
 

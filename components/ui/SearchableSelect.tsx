@@ -20,7 +20,7 @@ interface SearchableSelectProps {
 }
 
 /**
- * Selector con buscador por texto (RF-76) — reemplaza un `<select>` plano
+ * Selector con buscador por texto (RF-75) — reemplaza un `<select>` plano
  * cuando la lista de opciones puede crecer mucho, como las convocatorias
  * vigentes del catálogo dentro de otros flujos (RF-28, RF-74).
  */

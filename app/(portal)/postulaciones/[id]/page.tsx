@@ -24,7 +24,8 @@ import {
   formatFecha,
   ESTADO_POSTULACION_LABEL,
   ESTADO_POSTULACION_ESTILO,
-  ESTADO_POSTULACION_ORDEN,
+  estadosAlcanzables,
+  ESTADOS_POSTULACION_TERMINALES,
 } from "@/lib/utils";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -50,6 +51,8 @@ export default function DetallePostulacionPage({ params }: { params: Promise<{ i
   const { requerirAcceso } = useAccesoSuscripcion();
   const [proyectoParaVincular, setProyectoParaVincular] = useState("");
   const [modalConsultorAbierto, setModalConsultorAbierto] = useState(false);
+  // RF-83: los estados terminales se confirman antes de aplicarse.
+  const [estadoAConfirmar, setEstadoAConfirmar] = useState<EstadoPostulacion | null>(null);
 
   if (!postulacion) {
     return (
@@ -65,6 +68,25 @@ export default function DetallePostulacionPage({ params }: { params: Promise<{ i
   const total = postulacion.checklist.length;
   const completados = postulacion.checklist.filter((i) => i.completado).length;
   const porcentaje = total ? Math.round((completados / total) * 100) : 0;
+
+  // RF-83: solo se ofrecen los estados a los que se puede llegar desde el
+  // actual, y los terminales pasan por una confirmación.
+  const alcanzables = estadosAlcanzables(postulacion.estado);
+
+  const pedirCambioEstado = (nuevo: EstadoPostulacion) => {
+    if (nuevo === postulacion.estado) return;
+    if (ESTADOS_POSTULACION_TERMINALES.includes(nuevo)) {
+      setEstadoAConfirmar(nuevo);
+      return;
+    }
+    cambiarEstadoPostulacion(postulacion.id, nuevo);
+  };
+
+  const confirmarCambioEstado = () => {
+    if (!estadoAConfirmar) return;
+    cambiarEstadoPostulacion(postulacion.id, estadoAConfirmar);
+    setEstadoAConfirmar(null);
+  };
   const documento = postulacion.proyectoId
     ? documentoParaProyectoConv(postulacion.proyectoId, postulacion.convocatoriaId, documentos)
     : undefined;
@@ -124,39 +146,50 @@ export default function DetallePostulacionPage({ params }: { params: Promise<{ i
           </div>
 
           <div className="flex w-full flex-col gap-2 sm:w-56">
+            {/* RF-73: radicar en el portal de la entidad es la acción principal
+                de esta pantalla; todo lo demás queda por debajo. */}
             {convocatoria?.urlPostulacion && (
               <a href={convocatoria.urlPostulacion} target="_blank" rel="noreferrer" className="w-full">
-                <Button variant="secondary" className="w-full">
+                <Button variant="primary" size="lg" className="w-full">
                   <ExternalLink className="h-4 w-4" /> Ir al portal de la entidad
                 </Button>
               </a>
             )}
             {proyecto && (
-              <Button variant="brick" className="w-full" onClick={abrirSolicitudConsultor}>
+              <Button variant="ghost" className="w-full text-brick-600 hover:bg-brick-50" onClick={abrirSolicitudConsultor}>
                 <UserPlus className="h-4 w-4" /> Solicitar consultor
               </Button>
             )}
             <div>
-              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-ink-faint">
+              <label htmlFor="cambiar-estado" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-ink-faint">
                 Cambiar estado
               </label>
               <select
+                id="cambiar-estado"
                 value={postulacion.estado}
-                onChange={(e) => cambiarEstadoPostulacion(postulacion.id, e.target.value as EstadoPostulacion)}
-                className="w-full rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-primary-500"
+                onChange={(e) => pedirCambioEstado(e.target.value as EstadoPostulacion)}
+                disabled={alcanzables.length === 0}
+                className="w-full rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-primary-500 disabled:bg-slate-50 disabled:text-ink-faint"
               >
-                {ESTADO_POSTULACION_ORDEN.map((estado) => (
+                {/* RF-83: solo los estados alcanzables desde el actual. */}
+                <option value={postulacion.estado}>{ESTADO_POSTULACION_LABEL[postulacion.estado]}</option>
+                {alcanzables.map((estado) => (
                   <option key={estado} value={estado}>
                     {ESTADO_POSTULACION_LABEL[estado]}
                   </option>
                 ))}
               </select>
+              {alcanzables.length === 0 && (
+                <p className="mt-1.5 text-xs text-ink-faint">
+                  Esta postulación ya está cerrada: no admite más cambios de estado.
+                </p>
+              )}
             </div>
           </div>
         </div>
 
         <p className="mt-3 flex items-start gap-2 rounded-lg border border-dashed border-line px-4 py-2.5 text-xs text-ink-faint">
-          La postulación se radica en el portal de la entidad convocante, no en esta plataforma (RN-19).
+          La postulación se radica en el portal de la entidad convocante. Esta plataforma te ayuda a prepararla, pero no la presenta por ti.
         </p>
 
         {convocatoria && (
@@ -300,6 +333,29 @@ export default function DetallePostulacionPage({ params }: { params: Promise<{ i
           onClose={() => setModalConsultorAbierto(false)}
           convocatoriaFijaId={postulacion.convocatoriaId}
         />
+      )}
+
+      {/* RF-83: confirmación antes de una transición terminal. */}
+      {estadoAConfirmar && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-primary-950/40 p-4">
+          <div role="dialog" aria-modal="true" className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+            <h3 className="font-display text-lg font-semibold text-ink">
+              ¿Cerrar esta postulación?
+            </h3>
+            <p className="mt-2 text-sm text-ink-soft">
+              Una postulación cerrada deja de admitir cambios de estado. El checklist, el historial y el
+              documento generado se conservan, pero no podrás reabrirla desde aquí.
+            </p>
+            <div className="mt-6 flex justify-end gap-3">
+              <Button variant="ghost" onClick={() => setEstadoAConfirmar(null)}>
+                Cancelar
+              </Button>
+              <Button variant="primary" onClick={confirmarCambioEstado}>
+                Sí, cerrar postulación
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

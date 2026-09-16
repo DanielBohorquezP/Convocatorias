@@ -35,7 +35,7 @@ function ContenidoDocumentos() {
         </p>
         <h1 className="mt-1 font-display text-2xl font-bold text-ink">Documentos</h1>
         <p className="text-sm text-ink-soft">
-          Borradores generados con IA que la empresa autorizó explícitamente para ti (RN-22). Puedes leerlos, editarlos
+          Borradores generados con IA que la empresa autorizó explícitamente para ti . Puedes leerlos, editarlos
           y pedir ajustes con IA, pero no descargarlos.
         </p>
       </div>

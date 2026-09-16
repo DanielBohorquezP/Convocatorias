@@ -3,9 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FolderKanban, Plus, Pencil, Trash2, MapPin, Wallet, Sparkles, UserPlus, X } from "lucide-react";
+import { FolderKanban, Plus, Pencil, Trash2, MapPin, Wallet, Sparkles, UserPlus } from "lucide-react";
 import { useAppStore } from "@/lib/store";
-import { categorias, categoriaPorId } from "@/lib/mock-data";
+import { categoriaPorId } from "@/lib/mock-data";
 import type { Proyecto } from "@/lib/types";
 import { formatCOP } from "@/lib/utils";
 import { useAccesoSuscripcion } from "@/lib/hooks";
@@ -14,60 +14,23 @@ import { Chip } from "@/components/ui/Chip";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { CompletitudBadge } from "@/components/CompletitudProyecto";
 import { SolicitarConsultorModal } from "@/components/SolicitarConsultorModal";
-
-type FormularioProyecto = {
-  nombre: string;
-  descripcion: string;
-  montoBuscado: string;
-  ubicacion: string;
-  categorias: string[];
-  // Contenido
-  problema: string;
-  objetivoGeneral: string;
-  objetivosEspecificos: string;
-  poblacionBeneficiaria: string;
-  actividades: string;
-  resultadosEsperados: string;
-  duracionMeses: string;
-  presupuestoEstimado: string;
-  experienciaEmpresa: string;
-};
-
-const formularioVacio: FormularioProyecto = {
-  nombre: "",
-  descripcion: "",
-  montoBuscado: "",
-  ubicacion: "",
-  categorias: [],
-  problema: "",
-  objetivoGeneral: "",
-  objetivosEspecificos: "",
-  poblacionBeneficiaria: "",
-  actividades: "",
-  resultadosEsperados: "",
-  duracionMeses: "",
-  presupuestoEstimado: "",
-  experienciaEmpresa: "",
-};
+import { ProyectoFormModal } from "@/components/ProyectoFormModal";
 
 export default function ProyectosPage() {
   const router = useRouter();
   const proyectos = useAppStore((s) => s.proyectos);
-  const agregarProyecto = useAppStore((s) => s.agregarProyecto);
-  const actualizarProyecto = useAppStore((s) => s.actualizarProyecto);
   const eliminarProyecto = useAppStore((s) => s.eliminarProyecto);
   const { requerirAcceso } = useAccesoSuscripcion();
+
+  const [modalAbierto, setModalAbierto] = useState(false);
+  const [editando, setEditando] = useState<Proyecto | null>(null);
+  const [proyectoConsultorId, setProyectoConsultorId] = useState<string | null>(null);
+  const proyectoParaConsultor = proyectos.find((p) => p.id === proyectoConsultorId) ?? null;
 
   const verSugerencias = (proyectoId: string) => {
     if (!requerirAcceso("ver sugerencias de convocatorias")) return;
     router.push(`/proyectos/${proyectoId}/sugerencias`);
   };
-
-  const [modalAbierto, setModalAbierto] = useState(false);
-  const [editandoId, setEditandoId] = useState<string | null>(null);
-  const [form, setForm] = useState<FormularioProyecto>(formularioVacio);
-  const [proyectoConsultorId, setProyectoConsultorId] = useState<string | null>(null);
-  const proyectoParaConsultor = proyectos.find((p) => p.id === proyectoConsultorId) ?? null;
 
   const solicitarConsultor = (proyectoId: string) => {
     if (!requerirAcceso("solicitar un consultor")) return;
@@ -75,80 +38,25 @@ export default function ProyectosPage() {
   };
 
   const abrirCrear = () => {
-    setEditandoId(null);
-    setForm(formularioVacio);
+    setEditando(null);
     setModalAbierto(true);
   };
 
   const abrirEditar = (p: Proyecto) => {
-    setEditandoId(p.id);
-    setForm({
-      nombre: p.nombre,
-      descripcion: p.descripcion,
-      montoBuscado: String(p.montoBuscado),
-      ubicacion: p.ubicacion,
-      categorias: p.categorias,
-      problema: p.problema ?? "",
-      objetivoGeneral: p.objetivoGeneral ?? "",
-      objetivosEspecificos: (p.objetivosEspecificos ?? []).join("\n"),
-      poblacionBeneficiaria: p.poblacionBeneficiaria ?? "",
-      actividades: p.actividades ?? "",
-      resultadosEsperados: p.resultadosEsperados ?? "",
-      duracionMeses: p.duracionMeses ? String(p.duracionMeses) : "",
-      presupuestoEstimado: p.presupuestoEstimado ? String(p.presupuestoEstimado) : "",
-      experienciaEmpresa: p.experienciaEmpresa ?? "",
-    });
+    setEditando(p);
     setModalAbierto(true);
-  };
-
-  const toggleCategoria = (id: string) => {
-    setForm((f) => ({
-      ...f,
-      categorias: f.categorias.includes(id)
-        ? f.categorias.filter((c) => c !== id)
-        : [...f.categorias, id],
-    }));
-  };
-
-  const guardar = () => {
-    if (!form.nombre.trim()) return;
-    const datos = {
-      nombre: form.nombre.trim(),
-      descripcion: form.descripcion.trim(),
-      montoBuscado: Number(form.montoBuscado) || 0,
-      ubicacion: form.ubicacion.trim(),
-      categorias: form.categorias,
-      problema: form.problema.trim() || undefined,
-      objetivoGeneral: form.objetivoGeneral.trim() || undefined,
-      objetivosEspecificos: form.objetivosEspecificos
-        .split("\n")
-        .map((o) => o.trim())
-        .filter(Boolean),
-      poblacionBeneficiaria: form.poblacionBeneficiaria.trim() || undefined,
-      actividades: form.actividades.trim() || undefined,
-      resultadosEsperados: form.resultadosEsperados.trim() || undefined,
-      duracionMeses: Number(form.duracionMeses) || undefined,
-      presupuestoEstimado: Number(form.presupuestoEstimado) || undefined,
-      experienciaEmpresa: form.experienciaEmpresa.trim() || undefined,
-    };
-    if (editandoId) {
-      actualizarProyecto(editandoId, datos);
-    } else {
-      agregarProyecto(datos);
-    }
-    setModalAbierto(false);
   };
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex items-center justify-between gap-4">
         <div>
           <h1 className="font-display text-2xl font-bold text-ink">Mis proyectos</h1>
           <p className="text-sm text-ink-soft">
             Registra los proyectos de tu empresa para cruzarlos con convocatorias.
           </p>
         </div>
-        <Button variant="primary" onClick={abrirCrear}>
+        <Button variant="primary" className="shrink-0" onClick={abrirCrear}>
           <Plus className="h-4 w-4" /> Nuevo proyecto
         </Button>
       </div>
@@ -230,188 +138,7 @@ export default function ProyectosPage() {
       )}
 
       {modalAbierto && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-primary-950/40 p-4">
-          <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl">
-            <div className="mb-4 flex items-center justify-between">
-              <h3 className="font-display text-lg font-semibold text-ink">
-                {editandoId ? "Editar proyecto" : "Nuevo proyecto"}
-              </h3>
-              <button onClick={() => setModalAbierto(false)} className="text-ink-faint hover:text-ink">
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              <Campo etiqueta="Nombre del proyecto">
-                <input
-                  value={form.nombre}
-                  onChange={(e) => setForm({ ...form, nombre: e.target.value })}
-                  className="w-full rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-primary-500"
-                  placeholder="Ej. EcoEmpaques Andinos"
-                />
-              </Campo>
-
-              <Campo etiqueta="Descripción">
-                <textarea
-                  value={form.descripcion}
-                  onChange={(e) => setForm({ ...form, descripcion: e.target.value })}
-                  rows={3}
-                  className="w-full resize-none rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-primary-500"
-                  placeholder="Describe brevemente el proyecto"
-                />
-              </Campo>
-
-              <div className="grid grid-cols-2 gap-4">
-                <Campo etiqueta="Monto buscado (COP)">
-                  <input
-                    type="number"
-                    value={form.montoBuscado}
-                    onChange={(e) => setForm({ ...form, montoBuscado: e.target.value })}
-                    className="w-full rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-primary-500"
-                    placeholder="Ej. 100000000"
-                  />
-                </Campo>
-                <Campo etiqueta="Ubicación">
-                  <input
-                    value={form.ubicacion}
-                    onChange={(e) => setForm({ ...form, ubicacion: e.target.value })}
-                    className="w-full rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-primary-500"
-                    placeholder="Ej. Bogotá D.C."
-                  />
-                </Campo>
-              </div>
-
-              <Campo etiqueta="Categorías">
-                <div className="max-h-48 space-y-3 overflow-y-auto rounded-lg border border-line-soft p-3">
-                  {(["tipo_proyecto", "sector", "tipo_entidad"] as const).map((tipo) => (
-                    <div key={tipo}>
-                      <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-ink-faint">
-                        {tipo === "tipo_proyecto" ? "Tipo de proyecto" : tipo === "sector" ? "Sector" : "Tipo de entidad"}
-                      </p>
-                      <div className="flex flex-wrap gap-1.5">
-                        {categorias
-                          .filter((c) => c.tipo === tipo)
-                          .map((c) => {
-                            const activo = form.categorias.includes(c.id);
-                            return (
-                              <button
-                                key={c.id}
-                                type="button"
-                                onClick={() => toggleCategoria(c.id)}
-                                className={`rounded-md px-2.5 py-1 text-xs font-medium ring-1 ring-inset transition-colors ${
-                                  activo
-                                    ? "bg-primary-800 text-white ring-primary-800"
-                                    : "bg-white text-ink-soft ring-line hover:bg-slate-50"
-                                }`}
-                              >
-                                {c.nombre}
-                              </button>
-                            );
-                          })}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </Campo>
-
-              <div className="border-t border-dashed border-line pt-4">
-                <p className="mb-1 flex items-center gap-1.5 text-sm font-semibold text-teal-700">
-                  <Sparkles className="h-3.5 w-3.5" /> Contenido para generación de documentos
-                </p>
-                <p className="mb-3 text-xs text-ink-faint">
-                  Estos campos alimentan la generación de documentos con IA y determinan la completitud del proyecto.
-                </p>
-
-                <div className="space-y-4">
-                  <Campo etiqueta="Problema que atiende el proyecto">
-                    <textarea
-                      value={form.problema}
-                      onChange={(e) => setForm({ ...form, problema: e.target.value })}
-                      rows={2}
-                      className="w-full resize-none rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-teal-500"
-                    />
-                  </Campo>
-                  <Campo etiqueta="Objetivo general">
-                    <textarea
-                      value={form.objetivoGeneral}
-                      onChange={(e) => setForm({ ...form, objetivoGeneral: e.target.value })}
-                      rows={2}
-                      className="w-full resize-none rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-teal-500"
-                    />
-                  </Campo>
-                  <Campo etiqueta="Objetivos específicos (uno por línea)">
-                    <textarea
-                      value={form.objetivosEspecificos}
-                      onChange={(e) => setForm({ ...form, objetivosEspecificos: e.target.value })}
-                      rows={3}
-                      placeholder={"Ej.\nInstalar 5 sensores climáticos\nCapacitar a 100 productores"}
-                      className="w-full resize-none rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-teal-500"
-                    />
-                  </Campo>
-                  <Campo etiqueta="Población beneficiaria">
-                    <textarea
-                      value={form.poblacionBeneficiaria}
-                      onChange={(e) => setForm({ ...form, poblacionBeneficiaria: e.target.value })}
-                      rows={2}
-                      className="w-full resize-none rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-teal-500"
-                    />
-                  </Campo>
-                  <Campo etiqueta="Actividades y metodología">
-                    <textarea
-                      value={form.actividades}
-                      onChange={(e) => setForm({ ...form, actividades: e.target.value })}
-                      rows={2}
-                      className="w-full resize-none rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-teal-500"
-                    />
-                  </Campo>
-                  <Campo etiqueta="Resultados esperados">
-                    <textarea
-                      value={form.resultadosEsperados}
-                      onChange={(e) => setForm({ ...form, resultadosEsperados: e.target.value })}
-                      rows={2}
-                      className="w-full resize-none rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-teal-500"
-                    />
-                  </Campo>
-                  <div className="grid grid-cols-2 gap-4">
-                    <Campo etiqueta="Duración (meses)">
-                      <input
-                        type="number"
-                        value={form.duracionMeses}
-                        onChange={(e) => setForm({ ...form, duracionMeses: e.target.value })}
-                        className="w-full rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-teal-500"
-                      />
-                    </Campo>
-                    <Campo etiqueta="Presupuesto estimado (COP)">
-                      <input
-                        type="number"
-                        value={form.presupuestoEstimado}
-                        onChange={(e) => setForm({ ...form, presupuestoEstimado: e.target.value })}
-                        className="w-full rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-teal-500"
-                      />
-                    </Campo>
-                  </div>
-                  <Campo etiqueta="Experiencia de la empresa">
-                    <textarea
-                      value={form.experienciaEmpresa}
-                      onChange={(e) => setForm({ ...form, experienciaEmpresa: e.target.value })}
-                      rows={2}
-                      className="w-full resize-none rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-teal-500"
-                    />
-                  </Campo>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-6 flex justify-end gap-3">
-              <Button variant="ghost" onClick={() => setModalAbierto(false)}>
-                Cancelar
-              </Button>
-              <Button variant="primary" onClick={guardar}>
-                {editandoId ? "Guardar cambios" : "Crear proyecto"}
-              </Button>
-            </div>
-          </div>
-        </div>
+        <ProyectoFormModal proyecto={editando} onClose={() => setModalAbierto(false)} />
       )}
 
       {proyectoParaConsultor && (
@@ -421,17 +148,6 @@ export default function ProyectosPage() {
           onClose={() => setProyectoConsultorId(null)}
         />
       )}
-    </div>
-  );
-}
-
-function Campo({ etiqueta, children }: { etiqueta: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-ink-faint">
-        {etiqueta}
-      </label>
-      {children}
     </div>
   );
 }

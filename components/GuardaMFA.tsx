@@ -40,7 +40,7 @@ export function GuardaMFA({ children }: { children: React.ReactNode }) {
         </div>
         <h2 className="font-display text-lg font-bold text-ink">Verificación en dos pasos requerida</h2>
         <p className="mt-1.5 text-sm text-ink-soft">
-          Ninguna sesión administrativa puede operar sin MFA verificado (RNF-28). Escanea el código con tu app
+          Ninguna sesión administrativa puede operar sin verificación en dos pasos. Escanea el código con tu app
           autenticadora y confirma con el código de 6 dígitos.
         </p>
 

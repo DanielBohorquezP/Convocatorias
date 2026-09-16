@@ -6,7 +6,6 @@ import { LayoutGrid, HardHat } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useConsultorActual } from "@/lib/hooks";
 import { SelectorModoDemo } from "./SelectorModoDemo";
-import { IndicadorCreditos } from "./IndicadorCreditos";
 
 const enlaces = [
   { href: "/consultor/perfil", label: "Mi perfil" },
@@ -52,7 +51,7 @@ export function ConsultorNavbar() {
         </nav>
 
         <div className="flex shrink-0 items-center gap-2.5">
-          <IndicadorCreditos href="/consultor/suscripcion" />
+          {/* El consultor no tiene cupo propio de IA (RN-28): no hay contador que mostrar. */}
           <SelectorModoDemo />
           <Link
             href="/admin"

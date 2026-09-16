@@ -12,7 +12,7 @@ import { LinkButton } from "@/components/ui/Button";
 import { ContadorAnimado } from "@/components/ContadorAnimado";
 
 const vigentes = convocatorias.filter((c) => c.estado === "publicada" && diasRestantes(c.fechaCierre) >= 0);
-const destacadas = vigentes.sort((a, b) => diasRestantes(a.fechaCierre) - diasRestantes(b.fechaCierre)).slice(0, 3);
+const destacadas = [...vigentes].sort((a, b) => diasRestantes(a.fechaCierre) - diasRestantes(b.fechaCierre)).slice(0, 3);
 
 const montoTotalDisponible = vigentes.reduce((acc, c) => acc + c.montoMax, 0);
 const entidadesConvocantes = new Set(convocatorias.map((c) => c.entidadConvocante)).size;
@@ -22,23 +22,23 @@ export default function LandingPage() {
   return (
     <div className="flex min-h-screen flex-col bg-white">
       <header className="border-b border-line-soft">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-2.5">
-            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-800 text-white">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+          <div className="flex min-w-0 items-center gap-2.5">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary-800 text-white">
               <Building2 className="h-5 w-5" strokeWidth={2} />
             </span>
-            <span className="font-display text-[15px] font-bold leading-none text-ink">
+            <span className="hidden font-display text-[15px] font-bold leading-none text-ink min-[420px]:inline">
               Gestión de
               <br />
               Convocatorias
             </span>
           </div>
-          <div className="flex items-center gap-3">
-            <LinkButton href="/convocatorias" variant="ghost" size="sm">
+          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+            <LinkButton href="/convocatorias" variant="ghost" size="sm" className="whitespace-nowrap">
               Iniciar sesión
             </LinkButton>
-            <LinkButton href="/convocatorias" variant="primary" size="sm">
-              Crear cuenta gratis
+            <LinkButton href="/convocatorias" variant="primary" size="sm" className="whitespace-nowrap">
+              Crear cuenta<span className="hidden sm:inline"> gratis</span>
             </LinkButton>
           </div>
         </div>
@@ -96,7 +96,7 @@ export default function LandingPage() {
                 >
                   <div className="flex items-center justify-between">
                     <p className="text-xs font-semibold uppercase tracking-wide text-gold-700">
-                      Cierra en {dias} días
+                      Cierra en {dias} {dias === 1 ? "día" : "días"}
                     </p>
                   </div>
                   <p className="mt-1 font-display text-sm font-semibold text-ink">{c.nombre}</p>

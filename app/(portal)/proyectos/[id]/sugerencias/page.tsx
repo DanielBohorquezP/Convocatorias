@@ -84,7 +84,9 @@ export default function SugerenciasPage({ params }: { params: Promise<{ id: stri
   const sugerencias = useMemo(() => {
     if (!proyecto) return [];
     return convocatorias
-      .filter((c) => c.estado === "publicada")
+      // RF-15 / RN-02: publicadas y aún vigentes. Una convocatoria cuya
+      // fecha pasó queda fuera aunque el job diario no la haya cerrado.
+      .filter((c) => c.estado === "publicada" && diasRestantes(c.fechaCierre) >= 0)
       .map((c) => {
         const criterios = evaluarCriterios(proyecto, c);
         const coincidencias = criterios.filter((cr) => cr.cumple).length;

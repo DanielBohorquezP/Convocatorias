@@ -229,7 +229,7 @@ export default function PerfilConsultorPage({ params }: { params: Promise<{ id: 
           ) : (
             <span className="flex items-center gap-1.5 rounded-lg bg-slate-50 px-3 py-1.5 text-xs text-ink-faint ring-1 ring-inset ring-line">
               <Lock className="h-3.5 w-3.5" />
-              Sitio web, redes y hoja de vida disponibles al iniciar una solicitud con este consultor (RN-12)
+              Sitio web, redes y hoja de vida se muestran cuando inicies una solicitud con este consultor
             </span>
           )}
         </div>

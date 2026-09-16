@@ -32,12 +32,22 @@ export function formatFechaLarga(iso: string): string {
   }).format(new Date(iso + "T00:00:00"));
 }
 
-export const HOY = new Date("2026-08-24T00:00:00");
+/**
+ * Hoy, a medianoche. Antes era una constante congelada en 2026-08-24, lo que
+ * hacía envejecer la demo: las convocatorias "vigentes" iban quedando en el
+ * pasado. Las fechas del conjunto de ejemplo ahora son relativas (ver
+ * `lib/mock-data.ts`), así que esto puede seguir al reloj real.
+ */
+function hoyMedianoche(): Date {
+  const f = new Date();
+  f.setHours(0, 0, 0, 0);
+  return f;
+}
 
 export function diasRestantes(fechaCierre: string): number {
   const cierre = new Date(fechaCierre + "T00:00:00");
-  const diff = cierre.getTime() - HOY.getTime();
-  return Math.ceil(diff / (1000 * 60 * 60 * 24));
+  const diff = cierre.getTime() - hoyMedianoche().getTime();
+  return Math.round(diff / (1000 * 60 * 60 * 24));
 }
 
 export function cn(...clases: Array<string | false | null | undefined>): string {
@@ -84,6 +94,32 @@ export const ESTADO_POSTULACION_ORDEN: EstadoPostulacion[] = [
   "rechazada",
   "cerrada",
 ];
+
+/**
+ * RF-83: grafo de transiciones de la postulación. La interfaz solo ofrece los
+ * estados alcanzables desde el actual; al conectar el backend, este mismo mapa
+ * es el que valida `POST /api/postulaciones/[id]/estado` — la regla no puede
+ * vivir únicamente en el `<select>` (RNF-20).
+ */
+export const TRANSICIONES_POSTULACION: Record<EstadoPostulacion, EstadoPostulacion[]> = {
+  en_preparacion: ["presentada", "cerrada"],
+  presentada: ["en_evaluacion", "cerrada"],
+  en_evaluacion: ["aprobada", "rechazada", "cerrada"],
+  aprobada: ["cerrada"],
+  rechazada: ["cerrada"],
+  cerrada: [],
+};
+
+/** Estados que terminan el ciclo: se confirman antes de aplicarse (RF-83). */
+export const ESTADOS_POSTULACION_TERMINALES: EstadoPostulacion[] = ["cerrada"];
+
+export function transicionPermitida(desde: EstadoPostulacion, hacia: EstadoPostulacion): boolean {
+  return TRANSICIONES_POSTULACION[desde].includes(hacia);
+}
+
+export function estadosAlcanzables(desde: EstadoPostulacion): EstadoPostulacion[] {
+  return TRANSICIONES_POSTULACION[desde];
+}
 
 export const TIPO_DOCUMENTO_LABEL: Record<string, string> = {
   TDR: "Términos de referencia (TDR)",
@@ -192,7 +228,7 @@ export function formatFechaHora(iso: string): string {
 
 export function diasRestantesHasta(fechaIso: string): number {
   const fecha = new Date(fechaIso + "T00:00:00");
-  const diff = fecha.getTime() - HOY.getTime();
+  const diff = fecha.getTime() - hoyMedianoche().getTime();
   return Math.ceil(diff / (1000 * 60 * 60 * 24));
 }
 

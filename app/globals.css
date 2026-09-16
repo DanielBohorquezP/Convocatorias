@@ -76,3 +76,40 @@ h1, h2, h3, h4, .font-display {
   outline: 2px solid var(--color-primary-700);
   outline-offset: 2px;
 }
+
+/* Entrada suave de los indicadores de la landing. La cifra ya es correcta en
+   el primer fotograma (RF-44); esto solo la acompaña. */
+@keyframes entrada-suave {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.animar-entrada {
+  display: inline-block;
+  animation: entrada-suave 420ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animar-entrada {
+    animation: none;
+  }
+}
+
+/* RNF-08: una barra que se desplaza en horizontal lo indica, para que no se
+   pierdan sus últimas opciones. Degradado al borde derecho mientras haya
+   contenido por descubrir. */
+.barra-desplazable {
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  mask-image: linear-gradient(to right, black calc(100% - 28px), transparent 100%);
+}
+
+.barra-desplazable::-webkit-scrollbar {
+  display: none;
+}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CreditCard, Receipt, Check } from "lucide-react";
+import { CreditCard, Receipt, Check, Sparkles } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import { useAccesoSuscripcion } from "@/lib/hooks";
 import type { ModalidadSuscripcion } from "@/lib/types";
@@ -15,7 +15,7 @@ import {
 import { GuardaConsultor } from "@/components/GuardaConsultor";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { BloqueCreditos } from "@/components/BloqueCreditos";
+import { beneficiosDePlan } from "@/lib/planes";
 
 export default function SuscripcionConsultorPage() {
   return (
@@ -80,7 +80,6 @@ function ContenidoSuscripcion() {
         )}
       </div>
 
-      <BloqueCreditos />
 
       <div className="mt-8">
         <div className="mb-4 flex items-center justify-between">
@@ -128,12 +127,22 @@ function ContenidoSuscripcion() {
                   <span className="text-sm text-ink-faint"> / {modalidad === "anual" ? "año" : "mes"}</span>
                 </p>
                 <ul className="mt-4 flex-1 space-y-2 text-sm text-ink-soft">
-                  <li className="flex items-center gap-2">
-                    <Check className="h-3.5 w-3.5 text-success" /> Visibilidad en el directorio
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="h-3.5 w-3.5 text-success" /> Recepción de encargos ilimitados
-                  </li>
+                  {beneficiosDePlan(plan).map((b) => (
+                    <li
+                      key={b.texto}
+                      className={cn(
+                        "flex items-start gap-2",
+                        b.destacado && "font-semibold text-teal-700"
+                      )}
+                    >
+                      {b.destacado ? (
+                        <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                      ) : (
+                        <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-success" />
+                      )}
+                      {b.texto}
+                    </li>
+                  ))}
                 </ul>
                 <Button
                   variant={esActual ? "secondary" : "primary"}
