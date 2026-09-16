@@ -7,7 +7,7 @@
 
 **Actualizado:** 16 de septiembre de 2026 · cierre de la sesión 001
 **Sprint:** — (día 0 de 30, sin arrancar)
-**Rama de trabajo:** `auditoria-v6` (pendiente de fusionar a `main`)
+**Rama de trabajo:** `main` — `auditoria-v6` ya está fusionada
 
 ---
 
@@ -21,7 +21,8 @@ Dos auditorías cerraron esta etapa —una de implementación y otra de interfaz
 
 - Especificación v6 completa: 83 RF, 34 RNF, 30 RN, matriz de trazabilidad al día.
 - Arreglados los 9 hallazgos de la auditoría de interfaz en el prototipo.
-- Plan de 30 días, matriz de avance y bitácora creados (esta sesión).
+- Plan de 30 días, matriz de avance y bitácora creados.
+- `auditoria-v6` fusionada a `main` (fast-forward) y subida: `main` y `origin/main` en `ede7949`.
 
 Detalle en [`docs/bitacora/2026-09-15-sesion-001.md`](docs/bitacora/2026-09-15-sesion-001.md).
 
@@ -51,7 +52,6 @@ Esperan al Product Owner. No bloquean el Sprint 1.
 | Decisión | Contexto | Cuándo hace falta |
 |---|---|---|
 | **Precio del plan Consultor** | Quedó en COP $69.000 al retirarle el cupo de IA. `docs/07 §10.2` marca los planes como "a validar con los pilotos" | Antes de cobrar |
-| **Fusionar `auditoria-v6` a `main`** | Dos commits listos y subidos, sin fusionar | Antes de empezar el Sprint 1 |
 | **Proveedor del límite de tasa** | RNF-27 pide un almacén fuera de Postgres (Upstash Redis o Vercel Edge Config); no está elegido | Sprint 5 |
 
 ## Hallazgos no planificados
