@@ -22,7 +22,8 @@ Dos auditorías cerraron esta etapa —una de implementación y otra de interfaz
 - Especificación v6 completa: 83 RF, 34 RNF, 30 RN, matriz de trazabilidad al día.
 - Arreglados los 9 hallazgos de la auditoría de interfaz en el prototipo.
 - Plan de 30 días, matriz de avance y bitácora creados.
-- `auditoria-v6` fusionada a `main` (fast-forward) y subida: `main` y `origin/main` en `ede7949`.
+- `auditoria-v6` fusionada a `main` (fast-forward) y subida.
+- Comprobado que Vercel despliega solo y que producción sirve la última versión (ver "Infraestructura que ya existe").
 
 Detalle en [`docs/bitacora/2026-09-15-sesion-001.md`](docs/bitacora/2026-09-15-sesion-001.md).
 
@@ -41,9 +42,25 @@ Por orden, porque cada uno desbloquea al siguiente:
 
 **Hito 1 (día 6):** un consultor recibe 403 en `/admin` y en `/convocatorias/[id]/generar`; dos empresas no ven nada la una de la otra en los cuatro listados. Probado, no supuesto.
 
+## Infraestructura que ya existe
+
+- **Vercel está conectado al repositorio.** Cada push a `main` despliega a producción y cada push a otra rama crea una vista previa. El entregable "CI/CD en Vercel" del Sprint 1 **ya está cubierto**; solo faltará cargar ahí las variables de entorno de Supabase.
+- **Producción:** `https://convocatorias-gamma.vercel.app`. Es la única URL que siempre sirve lo último.
+- Las URLs con código (`convocatorias-xxxxxxxx-danielbohorquezps-projects.vercel.app`) apuntan a un despliegue fijo y **están protegidas con el inicio de sesión de Vercel**: no sirven para verificar desde fuera.
+- `.gitignore` ya excluye `.env*`, así que las claves locales no se suben al repositorio.
+
 ## Bloqueos
 
-Ninguno.
+**Para el paso 2 del día 1 (no para el paso 1).** El agente no puede crear cuentas ni escribir claves, así que esto lo hace el Product Owner:
+
+1. Crear el proyecto en [supabase.com](https://supabase.com) (región recomendada: la más cercana a Colombia, `us-east-1`).
+2. Crear en la raíz del repositorio un archivo `.env.local` con la URL del proyecto y las dos claves:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `SUPABASE_SERVICE_ROLE_KEY` — **nunca** con prefijo `NEXT_PUBLIC_`: esta clave se salta RLS y solo puede vivir en el servidor (RNF-26).
+3. Cargar las mismas tres variables en Vercel → *Settings* → *Environment Variables*.
+
+Las claves no se pegan en el chat. El agente solo necesita que existan; el código las lee del entorno.
 
 ## Decisiones abiertas
 
